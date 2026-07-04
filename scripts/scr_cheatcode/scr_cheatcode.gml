@@ -550,6 +550,7 @@ function draw_planet_debug_forces() {
         "Orks",
         "Tau",
         "Tyranids",
+        "Eldar",
         "Chaos",
         "Heretics",
         "Daemons",
@@ -560,6 +561,7 @@ function draw_planet_debug_forces() {
         "p_orks",
         "p_tau",
         "p_tyranids",
+        "p_eldar",
         "p_chaos",
         "p_traitors",
         "p_demons",
@@ -724,7 +726,7 @@ function debug_spawn_heretic_fleet() {
 /// @self Asset.GMObject.obj_popup
 function debug_add_xenos_fleet_options() {
     text = "Select Xeno faction to spawn:";
-    replace_options([{str1: "Ork", choice_func: debug_spawn_ork_fleet}, {str1: "Tau", choice_func: debug_spawn_tau_fleet}, {str1: "Cancel", choice_func: popup_default_close}]);
+    replace_options([{str1: "Ork", choice_func: debug_spawn_ork_fleet}, {str1: "Tau", choice_func: debug_spawn_tau_fleet}, {str1: "Eldar", choice_func: debug_spawn_eldar_fleet}, {str1: "Cancel", choice_func: popup_default_close}]);
 }
 
 /// @self Asset.GMObject.obj_popup
@@ -755,6 +757,19 @@ function debug_spawn_tau_fleet() {
     instance_destroy();
 }
 
+/// @self Asset.GMObject.obj_popup
+function debug_spawn_eldar_fleet() {
+    /// @type {Asset.GMObject.obj_en_fleet}
+    var fleet = instance_create(star.x, star.y, obj_en_fleet);
+    fleet.owner = eFACTION.ELDAR;
+    fleet.sprite_index = spr_fleet_eldar;
+    fleet.capital_number = 2;
+    fleet.frigate_number = 5;
+    star.present_fleet[6] += 1;
+    fleet.image_index = 4;
+    fleet.orbiting = id;
+    instance_destroy();
+}
 /// @self Asset.GMObject.obj_popup
 function system_debug_remove_fleet() {
     var _opts = [];
