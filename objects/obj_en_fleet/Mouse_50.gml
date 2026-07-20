@@ -1,7 +1,14 @@
 /// Imperial Navy fleet clicked: open the Sector Governor's fleet-order audience.
-/// Only Imperial Navy fleets (owner IMPERIUM, navy == 1) are commandable this way; clicking
-/// any other fleet does nothing here. Guarded to the default map view so it never fires over
-/// another menu, a modal, or during load.
+/// Mouse_50 is GameMaker's GLOBAL left-button event, so every enemy fleet receives it whenever
+/// LMB is held anywhere. The first two guards turn that global signal into one actual click on
+/// this exact fleet instance before any diplomacy code can run.
+
+if (!mouse_check_button_pressed(mb_left)) {
+    exit;
+}
+if (!point_in_rectangle(mouse_x, mouse_y, bbox_left, bbox_top, bbox_right, bbox_bottom)) {
+    exit;
+}
 
 if (obj_controller.menu != eMENU.DEFAULT) {
     exit;
@@ -16,7 +23,8 @@ if (obj_controller.cooldown > 0) {
     exit;
 }
 
-// Only the Imperial Navy takes suggestions from the Chapter.
+// Only a genuine Imperial Navy fleet takes suggestions from the Chapter. Imperial defence
+// fleets and every non-Imperial fleet use the same object but fail this guard.
 if ((owner != eFACTION.IMPERIUM) || (navy != 1)) {
     exit;
 }
