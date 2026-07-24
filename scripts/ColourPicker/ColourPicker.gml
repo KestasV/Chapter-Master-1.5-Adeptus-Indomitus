@@ -50,11 +50,10 @@ function ColourPicker(xx, yy, max_width = 400) constructor {
         0,
     ];
 
-    static create_texture_surface = function(texture_set, sprite_draw_args) {
-        if (!surface_exists(textures_surface)) {
-            textures_surface = surface_create(1, 1);
-        }
+    static _last_texture_set = undefined;
+    static _last_sprite_args = undefined;
 
+    static create_texture_surface = function(texture_set, sprite_draw_args) {
         var texture_names = struct_get_names(texture_set);
         var total_width = sprite_draw_args.frame_width * array_length(texture_names);
         if (sprite_draw_args.frame_height <= 0 || total_width <= 0) {
@@ -66,6 +65,10 @@ function ColourPicker(xx, yy, max_width = 400) constructor {
             0,
         ];
         texture_coords = [];
+
+        if (!surface_exists(textures_surface)) {
+            textures_surface = surface_create(1, 1);
+        }
 
         surface_resize(textures_surface, total_width, sprite_draw_args.frame_height);
         surface_set_target(textures_surface);
@@ -81,12 +84,22 @@ function ColourPicker(xx, yy, max_width = 400) constructor {
             array_push(texture_coords, [[draw_x, draw_y, draw_x + _frame_width, draw_y + _frame_height], texture_names[i]]);
             draw_x += sprite_draw_args.frame_width;
         }
+
         surface_reset_target();
+
+        _last_texture_set = texture_set;
+        _last_sprite_args = sprite_draw_args;
     };
 
     static draw_textures_surface = function(selection_method) {
         if (!surface_exists(textures_surface)) {
-            return;
+            if (is_struct(_last_texture_set) && is_struct(_last_sprite_args)) {
+                create_texture_surface(_last_texture_set, _last_sprite_args);
+            }
+
+            if (!surface_exists(textures_surface)) {
+                return;
+            }
         }
 
         draw_set_alpha(1);
