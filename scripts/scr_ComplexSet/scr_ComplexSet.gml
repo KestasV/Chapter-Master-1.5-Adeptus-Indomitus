@@ -847,8 +847,6 @@ function ComplexSet(_unit) constructor {
         } else {
             return modular_mandatory_checks(mod_item);
         }
-        
-        return true;
     };
 
     static validate_modular_item = function(_mod, position){

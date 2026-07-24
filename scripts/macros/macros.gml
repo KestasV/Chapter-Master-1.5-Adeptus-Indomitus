@@ -446,7 +446,10 @@ enum eFACTION {
     CHAOS,
     HERETICS,
     GENESTEALER,
-    NECRONS = 13
+    NECRONS = 13,
+    // Sentinel: number of faction slots. Added by upstream (the fleet presence rebuild
+    // iterates 0.._COUNT-1); keep it LAST so every named value above stays unchanged.
+    _COUNT
 }
 
 
