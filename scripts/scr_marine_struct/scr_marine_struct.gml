@@ -1770,8 +1770,11 @@ function TTRPG_stats(faction, comp, mar, class = "marine", other_spawn_data = {}
 
     //TODO just did this so that we're not loosing featuring but this porbably needs a rethink
     static hammer_of_wrath = function() {
-        var _melee_attack = melee_damage_data[0];
-        var _melee_weapon = melee_damage_data[3];
+        // melee_damage_data was retired with upstream's attack refactor; fetch the
+        // fresh array (same shape: [0] attack, [3] primary weapon struct).
+        var _melee_data = melee_attack();
+        var _melee_attack = _melee_data[0];
+        var _melee_weapon = _melee_data[3];
 
         var wrath = new EquipmentStruct(
             {

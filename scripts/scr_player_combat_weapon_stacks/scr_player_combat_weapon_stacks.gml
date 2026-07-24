@@ -391,7 +391,14 @@ function scr_player_combat_weapon_stacks() {
                         add_squad_weapon(unit.weapon_one(), _sq_men, head_role, unit);
                         add_squad_weapon(unit.weapon_two(), 1, head_role, unit);
                     } else {
-                        var primary_ranged = unit.ranged_damage_data[3]; //collect unit ranged data
+                        // Upstream's attack refactor removed the cached ranged_damage_data /
+                        // melee_damage_data fields; ranged_attack()/melee_attack() now return
+                        // the same-shaped array ([0] attack, [3] primary weapon struct) computed
+                        // fresh, including the packless-Hellgun swap. Call once per unit and
+                        // reuse; reading the retired field crashed the first stack build of
+                        // every battle.
+                        var _ranged_data = unit.ranged_attack();
+                        var primary_ranged = _ranged_data[3]; //collect unit ranged data
                         // Hot-shot power draw is handled upstream: ranged_attack() in
                         // scr_marine_struct swaps a packless Hellgun for Lasgun data
                         // (Skitarii exempt), so by the time it reaches this stack it
@@ -406,21 +413,22 @@ function scr_player_combat_weapon_stacks() {
                             weapon_stack_index = find_stack_index(primary_ranged.name, head_role, unit);
                         }
                         if (weapon_stack_index > -1) {
-                            add_data_to_stack(weapon_stack_index, primary_ranged, unit.ranged_damage_data[0], head_role, unit);
+                            add_data_to_stack(weapon_stack_index, primary_ranged, _ranged_data[0], head_role, unit);
                             if (head_role) {
                                 player_head_role_stack(weapon_stack_index, unit);
                             }
                         }
                     }
 
-                    var primary_melee = unit.melee_damage_data[3]; //collect unit melee data
+                    var _melee_data = unit.melee_attack();
+                    var primary_melee = _melee_data[3]; //collect unit melee data
                     weapon_stack_index = find_stack_index(primary_melee.name, head_role, unit);
                     if (weapon_stack_index > -1) {
                         if (range[weapon_stack_index] > 1.9) {
                             continue;
                         } //creates secondary weapon stack for close combat ranged weaponry use
                         primary_melee.range = 1;
-                        add_data_to_stack(weapon_stack_index, primary_melee, unit.melee_damage_data[0], head_role, unit);
+                        add_data_to_stack(weapon_stack_index, primary_melee, _melee_data[0], head_role, unit);
                         if (head_role) {
                             player_head_role_stack(weapon_stack_index, unit);
                         }
