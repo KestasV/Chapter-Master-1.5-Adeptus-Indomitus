@@ -227,6 +227,12 @@ function set_up_visual_overides() {
                             }
                         }
                     }
+                    if (!_found_sprite){
+                        if (struct_exists(global.reuseable_drawing_items , _overide)){
+                            _item.overides[$ _overide_areas[o]] = global.reuseable_drawing_items[$ _overide];
+                            _found_sprite = true;
+                        }
+                    }
                     if (!_found_sprite) {
                         struct_remove(_item.overides, _overide_areas[o]);
                     }
@@ -244,10 +250,13 @@ function set_up_visual_overides() {
                     var _found_sprite = false;
                     var _subimg = _sub_group[g];
                     if (!is_string(_subimg)) {
-                        if (!sprite_exists(_subimg)) {
-                            array_delete(_sub_group, g, 1);
+                        if (!is_struct(_subimg)){
+                            if (!sprite_exists(_subimg)) {
+                                array_delete(_sub_group, g, 1);
+                            }
+                            continue;
                         }
-                        continue;
+                        _found_sprite = true;
                     }
                     if (_subimg == "blank") {
                         _item.subcomponents[s][g] = spr_blank;
@@ -256,10 +265,16 @@ function set_up_visual_overides() {
                         for (var m = 0; m < array_length(_mods); m++) {
                             if (struct_exists(_mods[m], "name")) {
                                 if (_mods[m].name == _subimg) {
-                                    _item.subcomponents[s][g] = _mods[m].sprite;
+                                    _item.subcomponents[s][g] = _mods[m];
                                     _found_sprite = true;
                                     break;
                                 }
+                            }
+                        }
+                        if (!_found_sprite){
+                            if (struct_exists(global.reuseable_drawing_items , _subimg)){
+                                _item.subcomponents[s][g] = global.reuseable_drawing_items[$ _subimg];
+                                _found_sprite = true;
                             }
                         }
                     }
@@ -278,7 +293,34 @@ function set_up_visual_overides() {
                     array_push(global.culture_styles, _culture);
                 }
             }
+        } 
+    var _weapon_double_strings = [
+        "min_quality",
+        "max_quality",
+        "equipment_has_tag",
+        "equipped",
+    ];
+
+    for (var w = 0; w < array_length(_weapon_double_strings); w++) {
+        var _wds_key = _weapon_double_strings[w];
+        if (struct_exists(_item, _wds_key)) {
+            var _wds_struct = _item[$ _wds_key];
+            if (!is_struct(_wds_struct)){
+                continue;
+            }
+            var _wds_areas = struct_get_names(_wds_struct);
+            for (var a = 0; a < array_length(_wds_areas); a++) {
+                var _wds_area = _wds_areas[a];
+                if (_wds_area == "weapon") {
+                    var _weapon_value = _wds_struct[$ "weapon"];
+                    _wds_struct[$ "wep1"] = _weapon_value;
+                    _wds_struct[$ "wep2"] = _weapon_value;
+                    struct_remove(_wds_struct, "weapon");
+                }
+            }
         }
+    }
+        
     }
 
     var _new_mods = [];
@@ -290,9 +332,9 @@ function set_up_visual_overides() {
             if (struct_exists(_flip_mod, "prevent_others")) {
                 if (struct_exists(_flip_mod, "ban")) {
                     for (var b = 0; b < array_length(_flip_mod.ban); b++) {
-                        var _ban_pos = _flip_mod.ban[b];
-                        if (struct_exists(flip_components, _ban_pos)) {
-                            _flip_mod.ban[b] = flip_components[$ _ban_pos];
+                        var _ban_position = _flip_mod.ban[b];
+                        if (struct_exists(flip_components, _ban_position)) {
+                            _flip_mod.ban[b] = flip_components[$ _ban_position];
                         }
                     }
                 }
@@ -300,13 +342,17 @@ function set_up_visual_overides() {
 
             if (struct_exists(_flip_mod, "body_parts")) {
                 var _new_body_parts = {};
-                var _bp_keys = struct_get_names(_flip_mod.body_parts);
+                var _old_body_parts = _flip_mod.body_parts;
+                var _bp_keys = struct_get_names(_old_body_parts);
                 for (var b = 0; b < array_length(_bp_keys); b++) {
                     var _bp_key = _bp_keys[b];
+                    var _old_part_data = _old_body_parts[$ _bp_key];
+
                     if (struct_exists(flip_components, _bp_key)) {
-                        _new_body_parts[$ flip_components[$ _bp_key]] = _flip_mod.body_parts[$ _bp_key];
+                        var _flipped_area = flip_components[$ _bp_key];
+                        _new_body_parts[$ _flipped_area] = _old_part_data;
                     } else {
-                        _new_body_parts[$ _bp_key] = _flip_mod.body_parts[$ _bp_key];
+                        _new_body_parts[$ _bp_key] = _old_part_data;
                     }
                 }
                 _flip_mod.body_parts = _new_body_parts;
@@ -315,11 +361,12 @@ function set_up_visual_overides() {
             if (struct_exists(_flip_mod, "overides")) {
                 var _overides_name = struct_get_names(_flip_mod.overides);
                 for (var o = 0; o < array_length(_overides_name); o++) {
-                    if (struct_exists(flip_components, _overides_name[o])) {
-                        var _flip = flip_components[$ _overides_name[o]];
-                        _flip_mod.overides[$ _flip] = variable_clone(_mod.overides[$ _overides_name[o]]);
+                    var _start_override_area = _overides_name[o];
+                    if (struct_exists(flip_components, _start_override_area)) {
+                        var _flip_area = flip_components[$ _start_override_area];
+                        _flip_mod.overides[$ _flip_area] = variable_clone(_mod.overides[$ _start_override_area]);
 
-                        struct_remove(_flip_mod.overides, _overides_name[o]);
+                        struct_remove(_flip_mod.overides, _start_override_area);
                     }
                 }
             }
@@ -332,8 +379,18 @@ function set_up_visual_overides() {
                 var _subs = _mod.subcomponents;
                 for (var s = 0; s < array_length(_subs); s++) {
                     for (var ss = 0; ss < array_length(_subs[s]); ss++) {
-                        if (sprite_exists(_subs[s][ss])) {
-                            _flip_mod.subcomponents[s][ss] = return_sprite_mirrored(_subs[s][ss], false);
+                        var _sub_item = _subs[s][ss];
+                        if (is_struct(_sub_item)) {
+                            var _flipped_item = variable_clone(_sub_item);
+                            if (struct_exists(_flipped_item, "sprite") && sprite_exists(_flipped_item.sprite)) {
+                                _flipped_item.sprite = return_sprite_mirrored(_flipped_item.sprite, false);
+                            }
+                            if (struct_exists(_flipped_item, "shadows") && sprite_exists(_flipped_item.shadows)) {
+                                _flipped_item.shadows = return_sprite_mirrored(_flipped_item.shadows, false);
+                            }
+                            _flip_mod.subcomponents[s][ss] = _flipped_item;
+                        } else if (sprite_exists(_sub_item)) {
+                            _flip_mod.subcomponents[s][ss] = return_sprite_mirrored(_sub_item, false);
                         }
                     }
                 }
@@ -351,6 +408,20 @@ function set_up_visual_overides() {
     }
 }
 
+global.reuseable_drawing_items = {
+    "roman_crest" : {
+        sprite: spr_roman_centurian_crest,
+        shadows: spr_roman_centurian_crest_shadows        
+    },
+    "default_backpack_fastening" :{
+        sprite : spr_backpack_fastening,
+        armours_exclude : [
+            "MK4 Maximus",
+			"MK5 Heresy",
+            "MK6 Corvus",
+        ]
+    }
+}
 global.modular_drawing_items = [
 	// MK7 Aquila Sprites
 	{
@@ -362,6 +433,20 @@ global.modular_drawing_items = [
         body_types: [0],
         sprite: spr_mk7_chest_variants,
         shadows: spr_mk7_chest_variants_shadow,
+        subcomponents: [[]]
+    },
+    {
+        position: "armour",
+        armours: ["MK5 Heresy",
+                  "MK6 Corvus",
+                  "MK7 Aquila",
+                  "MK8 Errant",
+                  "Artificer Armour"
+        ],
+        traits: ["tinkerer"],
+        body_types: [0],
+        sprite: spr_techmarine_complex,
+        role_type: [SPECIALISTS_TECHS]
     },
 	// Other Stuff
     {
@@ -483,7 +568,7 @@ global.modular_drawing_items = [
         assign_by_rank: 2,
     },
     {
-        sprite: spr_terminator_laurel,
+        sprite: spr_laurel_term,
         armours: [
             "Terminator Armour",
             "Tartaros",
@@ -494,19 +579,17 @@ global.modular_drawing_items = [
         ],
         position: "crown",
         body_types: [2],
+        prevent_others: true,
     },
     {
         sprite: spr_laurel,
         body_types: [0],
-        armours: [
-            "Terminator Armour",
-            "Tartaros",
-        ],
         roles: [
             eROLE.CAPTAIN,
             eROLE.CHAMPION,
         ],
         position: "crown",
+        prevent_others: true,
     },
     {
         sprite: spr_special_helm,
@@ -516,7 +599,6 @@ global.modular_drawing_items = [
             eROLE.CAPTAIN,
             eROLE.CHAMPION,
         ],
-        assign_by_rank: 2,
         position: "mouth_variants",
     },
     {
@@ -966,7 +1048,9 @@ global.modular_drawing_items = [
         sprite: spr_victrix_mouth,
         cultures: ["Ultra"],
         body_types: [0],
-        assign_by_rank: 2,
+        roles: [
+            eROLE.HONOURGUARD,
+        ],
         position: "mouth_variants",
         armours: [
 
@@ -1144,7 +1228,7 @@ global.modular_drawing_items = [
             "mobi": "Heavy Weapons Pack",
         },
         overides: {
-            "chest_fastening": spr_backpack_fastening,
+            "chest_fastening": "default_backpack_fastening"
         },
     },
     {
@@ -1155,7 +1239,7 @@ global.modular_drawing_items = [
             "mobi": "Jump Pack",
         },
         overides: {
-            "chest_fastening": spr_backpack_fastening,
+            "chest_fastening" : "default_backpack_fastening"
         },
     },
     {
@@ -1174,7 +1258,7 @@ global.modular_drawing_items = [
             "mobi": "Serpha Jump Pack",
         },
         overides: {
-            "chest_fastening": spr_backpack_fastening,
+            "chest_fastening" : "default_backpack_fastening"
         },
     },
     {
@@ -1485,22 +1569,27 @@ global.modular_drawing_items = [
     },
     {
         position: "forehead",
-        sprite: spr_helm_decorations,
-        body_types: [
-            0,
-            2,
-        ],
+        sprite: spr_sgt_skull_term,
+        body_types: [2],
         max_saturation: 50,
         roles: [
             eROLE.SERGEANT,
             eROLE.CHAMPION,
             eROLE.VETERANSERGEANT,
         ],
-        offsets: {
-            "Terminator Armour": {
-                y: -10,
-            },
-        },
+        prevent_others: true,
+    },
+    {
+        position: "forehead",
+        sprite: spr_sgt_skull,
+        body_types: [0],
+        max_saturation: 50,
+        roles: [
+            eROLE.SERGEANT,
+            eROLE.CHAMPION,
+            eROLE.VETERANSERGEANT,
+        ],
+        prevent_others: true,
     },
     {
         position: "right_arm",
@@ -1809,6 +1898,7 @@ global.modular_drawing_items = [
         sprite: spr_indomitus_leg_variants,
         shadows: spr_indomitus_leg_variants_shadows,
         body_types: [2],
+        flip: true
     },
     {
         position: "right_shin",
@@ -2081,6 +2171,7 @@ function DummyMarine() constructor {
     static unit_profile_text = scr_unit_detail_text;
     static has_equipped = unit_has_equipped;
     static get_body_data = scr_get_body_data;
+    static unit_equipment_data = scr_get_unit_equipment;
     traits = [];
     company = irandom_range(1, 10);
 
@@ -2160,7 +2251,24 @@ function DummyMarine() constructor {
         return is_specialist(role(), search_type, include_trainee, include_heads);
     };
 
-    static has_trait = marine_has_trait;
+    static has_trait = function (_wanted_trait, _any = true) {
+        if (is_array(_wanted_trait)) {
+            var _len = array_length(_wanted_trait);
+
+            for (var i = 0; i < _len; i++) {
+                var _has = array_contains(traits, _wanted_trait[i]);
+                if (_any && _has) {
+                    return true;
+                } else if (!_any && !_has) {
+                    return false;
+                }
+            }
+            
+            return _any ? false : true;
+        }
+
+        return array_contains(traits, _wanted_trait);
+    }
 
     static is_dreadnought = function() {
         var _arm_data = gear_weapon_data("armour", last_armour);

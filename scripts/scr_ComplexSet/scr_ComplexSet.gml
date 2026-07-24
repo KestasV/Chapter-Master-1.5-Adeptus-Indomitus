@@ -96,9 +96,10 @@ function ComplexSet(_unit) constructor {
     overides = {};
     subcomponents = {};
     unit_armour = _unit.armour();
-    unit = _unit;
+    draw_unit = _unit;
     draw_helms = instance_exists(obj_creation) ? obj_creation.draw_helms : obj_controller.draw_helms;
 
+    equipment_data = draw_unit.unit_equipment_data();
     current_texture_draws = {};
     _has_exceptions = false;
     exceptions = [];
@@ -134,54 +135,54 @@ function ComplexSet(_unit) constructor {
     blocked = [];
     banned = [];
     variation_map = {
-        backpack: unit.get_body_data("backpack_variation", "torso"),
-        armour: unit.get_body_data("armour_choice", "torso"),
-        chest_variants: unit.get_body_data("chest_variation", "torso"),
-        thorax_variants: unit.get_body_data("thorax_variation", "torso"),
-        leg_variants: unit.get_body_data("leg_variants", "left_leg"),
-        left_leg: unit.get_body_data("leg_variants", "left_leg"),
-        right_leg: unit.get_body_data("leg_variants", "right_leg"),
-        left_shin: unit.get_body_data("shin_variant", "left_leg"),
-        right_shin: unit.get_body_data("shin_variant", "right_leg"),
-        left_knee: unit.get_body_data("knee_variant", "left_leg"),
-        right_knee: unit.get_body_data("knee_variant", "right_leg"),
-        left_trim: unit.get_body_data("trim_variation", "left_arm"),
-        right_trim: unit.get_body_data("trim_variation", "right_arm"),
-        left_arm: unit.get_body_data("variation", "left_arm"),
-        right_arm: unit.get_body_data("variation", "right_arm"),
-        gorget: unit.get_body_data("variant", "throat"),
-        right_pauldron_icons: unit.get_body_data("pad_variation", "right_arm"),
-        left_pauldron_icons: unit.get_body_data("pad_variation", "left_arm"),
-        right_pauldron_base: unit.get_body_data("pad_variation", "right_arm"),
-        left_pauldron_base: unit.get_body_data("pad_variation", "left_arm"),
-        right_pauldron_embeleshments: unit.get_body_data("pad_variation", "right_arm"),
-        left_pauldron_embeleshments: unit.get_body_data("pad_variation", "left_arm"),
-        right_pauldron_hangings: unit.get_body_data("pad_variation", "right_arm"),
-        left_pauldron_hangings: unit.get_body_data("pad_variation", "left_arm"),
-        left_personal_livery: unit.get_body_data("personal_livery", "left_arm"),
-        tabbard: unit.get_body_data("tabbard_variation", "torso"),
-        robe: unit.get_body_data("tabbard_variation", "torso"),
-        crest: unit.get_body_data("crest_variation", "head"),
-        head: unit.get_body_data("variation", "head"),
-        bare_head: unit.get_body_data("variation", "head"),
-        bare_neck: unit.get_body_data("variation", "head"),
-        bare_eyes: unit.get_body_data("variation", "head"),
-        mouth_variants: unit.get_body_data("variant", "jaw"),
-        left_eye: unit.get_body_data("variant", "left_eye"),
-        right_eye: unit.get_body_data("variant", "right_eye"),
-        crown: unit.get_body_data("crown_variation", "head"),
-        forehead: unit.get_body_data("forehead_variation", "head"),
-        backpack_decoration: unit.get_body_data("backpack_decoration_variation", "torso"),
-        belt: unit.get_body_data("belt_variation", "torso"),
-        cloak: unit.get_body_data("variant", "cloak"),
-        cloak_image: unit.get_body_data("image_0", "cloak"),
-        cloak_trim: unit.get_body_data("image_1", "cloak"),
-        backpack_augment: unit.get_body_data("backpack_augment_variation", "torso"),
-        chest_fastening: unit.get_body_data("chest_fastening", "torso"),
-        left_weapon: unit.get_body_data("weapon_variation", "left_arm"),
-        right_weapon: unit.get_body_data("weapon_variation", "right_arm"),
-        necklace: unit.get_body_data("hanging_variant", "throat"),
-        foreground_item: unit.get_body_data("variant", "throat"),
+        backpack: draw_unit.get_body_data("backpack_variation", "torso"),
+        armour: draw_unit.get_body_data("armour_choice", "torso"),
+        chest_variants: draw_unit.get_body_data("chest_variation", "torso"),
+        thorax_variants: draw_unit.get_body_data("thorax_variation", "torso"),
+        leg_variants: draw_unit.get_body_data("leg_variants", "left_leg"),
+        left_leg: draw_unit.get_body_data("leg_variants", "left_leg"),
+        right_leg: draw_unit.get_body_data("leg_variants", "right_leg"),
+        left_shin: draw_unit.get_body_data("shin_variant", "left_leg"),
+        right_shin: draw_unit.get_body_data("shin_variant", "right_leg"),
+        left_knee: draw_unit.get_body_data("knee_variant", "left_leg"),
+        right_knee: draw_unit.get_body_data("knee_variant", "right_leg"),
+        left_trim: draw_unit.get_body_data("trim_variation", "left_arm"),
+        right_trim: draw_unit.get_body_data("trim_variation", "right_arm"),
+        left_arm: draw_unit.get_body_data("variation", "left_arm"),
+        right_arm: draw_unit.get_body_data("variation", "right_arm"),
+        gorget: draw_unit.get_body_data("variant", "throat"),
+        right_pauldron_icons: draw_unit.get_body_data("pad_variation", "right_arm"),
+        left_pauldron_icons: draw_unit.get_body_data("pad_variation", "left_arm"),
+        right_pauldron_base: draw_unit.get_body_data("pad_variation", "right_arm"),
+        left_pauldron_base: draw_unit.get_body_data("pad_variation", "left_arm"),
+        right_pauldron_embeleshments: draw_unit.get_body_data("pad_variation", "right_arm"),
+        left_pauldron_embeleshments: draw_unit.get_body_data("pad_variation", "left_arm"),
+        right_pauldron_hangings: draw_unit.get_body_data("pad_variation", "right_arm"),
+        left_pauldron_hangings: draw_unit.get_body_data("pad_variation", "left_arm"),
+        left_personal_livery: draw_unit.get_body_data("personal_livery", "left_arm"),
+        tabbard: draw_unit.get_body_data("tabbard_variation", "torso"),
+        robe: draw_unit.get_body_data("tabbard_variation", "torso"),
+        crest: draw_unit.get_body_data("crest_variation", "head"),
+        head: draw_unit.get_body_data("variation", "head"),
+        bare_head: draw_unit.get_body_data("variation", "head"),
+        bare_neck: draw_unit.get_body_data("variation", "head"),
+        bare_eyes: draw_unit.get_body_data("variation", "head"),
+        mouth_variants: draw_unit.get_body_data("variant", "jaw"),
+        left_eye: draw_unit.get_body_data("variant", "left_eye"),
+        right_eye: draw_unit.get_body_data("variant", "right_eye"),
+        crown: draw_unit.get_body_data("crown_variation", "head"),
+        forehead: draw_unit.get_body_data("forehead_variation", "head"),
+        backpack_decoration: draw_unit.get_body_data("backpack_decoration_variation", "torso"),
+        belt: draw_unit.get_body_data("belt_variation", "torso"),
+        cloak: draw_unit.get_body_data("variant", "cloak"),
+        cloak_image: draw_unit.get_body_data("image_0", "cloak"),
+        cloak_trim: draw_unit.get_body_data("image_1", "cloak"),
+        backpack_augment: draw_unit.get_body_data("backpack_augment_variation", "torso"),
+        chest_fastening: draw_unit.get_body_data("chest_fastening", "torso"),
+        left_weapon: draw_unit.get_body_data("weapon_variation", "left_arm"),
+        right_weapon: draw_unit.get_body_data("weapon_variation", "right_arm"),
+        necklace: draw_unit.get_body_data("hanging_variant", "throat"),
+        foreground_item: draw_unit.get_body_data("variant", "throat"),
     };
 
     component_final_draw_x = 0;
@@ -206,16 +207,6 @@ function ComplexSet(_unit) constructor {
 
     if (!surface_exists(global.base_component_surface)) {
         global.base_component_surface = surface_create(600, 600);
-    }
-
-    base_armour();
-
-    if (unit.IsSpecialist(SPECIALISTS_TECHS)) {
-        if (array_contains(["MK5 Heresy", "MK6 Corvus", "MK7 Aquila", "MK8 Errant", "Artificer Armour"], unit_armour)) {
-            if (unit.has_trait("tinkerer")) {
-                add_group({"armour": spr_techmarine_complex});
-            }
-        }
     }
 
     static mk7_bits = {
@@ -339,209 +330,18 @@ function ComplexSet(_unit) constructor {
         }
     };
 
-    /// @param {Struct} mod_item
-    /// @return {Bool}
-    static base_modulars_checks = function(mod_item) {
-        _has_exceptions = false;
+    static modular_mandatory_checks = function(mod_item){
+        // ---------------- MANDATORY CHECKS (always run, never gated) ----------------
+
         var _mod = mod_item;
-        exceptions = [];
 
-        if (array_contains(blocked, _mod.position)) {
-            return false;
-        }
 
-        if (struct_exists(_mod, "allow_either")) {
-            _has_exceptions = true;
-            exceptions = variable_clone(_mod.allow_either);
-        }
-        if (struct_exists(_mod, "max_saturation")) {
-            var _max_sat = _mod.max_saturation;
-        }
-        if (struct_exists(_mod, "exp")) {
-            var _exp_data = _mod.exp;
-            var _min = 0;
-            if (struct_exists(_exp_data, "min")) {
-                _min = _exp_data.min;
-                if (unit.experience < _exp_data.min) {
-                    if (!check_exception("min_exp")) {
-                        return false;
-                    }
-                }
-            }
-            if (struct_exists(_exp_data, "scale")) {
-                var _m_exp = _exp_data.exp_scale_max;
-                var _increment_count = max(1, floor(_mod.max_saturation / 5));
-                var _increments = (_m_exp - _min) / _increment_count;
-                var _sat_roof = _mod.max_saturation;
-                var _unit_exp = unit.experience;
-
-                if (_unit_exp >= _m_exp) {
-                    spawn_chance = _mod.max_saturation;
-                } else {
-                    var calc_exp = max(0, _unit_exp - _min);
-                    var _increment = floor(calc_exp / _increments);
-                    _max_sat = clamp(_increment * 5, 0, _mod.max_saturation);
-                }
-            }
-        }
-        if (struct_exists(_mod, "max_saturation")) {
-            if (struct_exists(variation_map, _mod.position)) {
-                if (variation_map[$ _mod.position] >= _max_sat) {
-                    if (!check_exception("max_saturation")) {
-                        return false;
-                    }
-                }
-            }
-        }
-        if (!struct_exists(_mod, "body_types")) {
-            _mod.body_types = [
-                0,
-                1,
-                2,
-            ];
-        }
-
-        if (!array_contains(_mod.body_types, armour_type)) {
-            if (!check_exception("body_types")) {
+        if (struct_exists(_mod, "position")) {
+            if (array_contains(blocked, _mod.position)) {
                 return false;
             }
-        }
-
-        if (struct_exists(_mod, "role_type")) {
-            var _viable = false;
-            for (var a = 0; a < array_length(_mod.role_type); a++) {
-                var _r_t = _mod.role_type[a];
-                _viable = unit.IsSpecialist(_r_t);
-                if (_viable) {
-                    break;
-                }
-            }
-            if (!_viable) {
-                if (!check_exception("role_type")) {
-                    return false;
-                }
-            }
-        }
-        if (struct_exists(_mod, "roles")) {
-            if (!array_contains(_mod.roles, unit.role())) {
-                if (!check_exception("roles")) {
-                    return false;
-                }
-            }
-        }
-        if (struct_exists(_mod, "cultures")) {
-            if (!scr_has_style(_mod.cultures)) {
-                if (!check_exception("cultures")) {
-                    return false;
-                }
-            }
-        }
-        if (struct_exists(_mod, "company")) {
-            if (!array_contains(_mod.company, unit.company)) {
-                if (!check_exception("company")) {
-                    return false;
-                }
-            }
-        }
-        if (struct_exists(_mod, "armours")) {
-            if (!array_contains(_mod.armours, unit_armour)) {
-                if (!check_exception("armours")) {
-                    return false;
-                }
-            }
-        }
-        if (struct_exists(_mod, "armours_exclude")) {
-            if (array_contains(_mod.armours_exclude, unit_armour)) {
-                if (!check_exception("armours_exclude")) {
-                    return false;
-                }
-            }
-        }
-        if (struct_exists(_mod, "chapter_adv")) {
-            var _viable = false;
-            for (var a = 0; a < array_length(_mod.chapter_adv); a++) {
-                var _adv = _mod.chapter_adv[a];
-                _viable = scr_has_adv(_adv);
-                if (_viable) {
-                    break;
-                }
-            }
-            if (!_viable) {
-                if (!check_exception("chapter_adv")) {
-                    return false;
-                }
-            }
-        }
-        if (struct_exists(_mod, "chapter_disadv")) {
-            var _viable = false;
-            for (var a = 0; a < array_length(_mod.chapter_disadv); a++) {
-                var _disadv = _mod.chapter_disadv[a];
-                _viable = scr_has_disadv(_disadv);
-                if (_viable) {
-                    break;
-                }
-            }
-            if (!_viable) {
-                if (!check_exception("chapter_disadv")) {
-                    return false;
-                }
-            }
-        }
-        if (struct_exists(_mod, "stats")) {
-            if (!stat_valuator(_mod.stats, unit)) {
-                if (!check_exception("stats")) {
-                    return false;
-                }
-            }
-        }
-        if (struct_exists(_mod, "equipped")) {
-            if (!unit.has_equipped(_mod.equipped)) {
-                if (!check_exception("equipped")) {
-                    return false;
-                }
-            }
-        }
-
-        if (struct_exists(_mod, "traits")) {
-            var _viable = false;
-            for (var a = 0; a < array_length(_mod.traits); a++) {
-                var _trait = _mod.traits[a];
-                _viable = unit.has_trait(_trait);
-                if (_viable) {
-                    break;
-                }
-            }
-            if (!_viable) {
-                if (!check_exception("traits")) {
-                    return false;
-                }
-            }
-        }
-
-        if (struct_exists(_mod, "equipment_has_tag")) {
-            var _viable = false;
-            var _tag_check_areas = struct_get_names(_mod.equipment_has_tag);
-            for (var i = 0; i < array_length(_tag_check_areas); i++) {
-                var _area = _tag_check_areas[i];
-                var _tag = _mod.equipment_has_tag[$ _area];
-                _viable = unit.equipment_has_tag(_tag, _area);
-                if (_viable) {
-                    break;
-                }
-            }
-            if (!_viable) {
-                if (!check_exception("equipment_has_tag")) {
-                    return false;
-                }
-            }
-        }
-        if (struct_exists(_mod, "chapter")) {
-            var chap_name = instance_exists(obj_creation) ? obj_creation.chapter_name : global.chapter_name;
-            if (chap_name != _mod.chapter) {
-                if (!check_exception("chapter")) {
-                    return false;
-                }
-            }
+        } else {
+            _mod.position = "";
         }
 
         _overides = "none";
@@ -550,6 +350,15 @@ function ComplexSet(_unit) constructor {
                 overides: _mod.overides,
             };
         }
+
+        if (struct_exists(_mod, "subcomponents")) {
+            _sub_comps = _mod.subcomponents;
+        }
+
+        if (struct_exists(_mod, "shadows")) {
+            _shadows = _mod.shadows;
+        }
+
         if (struct_exists(_mod, "offsets")) {
             var _x = 0;
             var _y = 0;
@@ -565,59 +374,48 @@ function ComplexSet(_unit) constructor {
             if (_x != 0 || _y != 0) {
                 if (_overides == "none") {
                     _overides = {
-                        offsets: [
-                            _x,
-                            _y,
-                        ],
+                        offsets: [_x, _y],
                     };
                 } else {
-                    _overides.offsets = [
-                        _x,
-                        _y,
-                    ];
+                    _overides.offsets = [_x, _y];
                 }
             }
         }
 
-        if (struct_exists(_mod, "subcomponents")) {
-            _sub_comps = _mod.subcomponents;
-        }
+        if (struct_exists(_mod, "ban")) {
 
-        if (struct_exists(_mod, "shadows")) {
-            _shadows = _mod.shadows;
-        }
-
-        if (struct_exists(_mod, "body_parts")) {
-            var _viable = true;
-            var _body_areas = struct_get_names(_mod.body_parts);
-            for (var b = 0; b < array_length(_body_areas); b++) {
-                var _area = _body_areas[b];
-                if (!struct_exists(unit.body[$ _area], _mod.body_parts[$ _area])) {
-                    _viable = false;
-                    break;
-                }
-            }
-            if (!_viable) {
-                if (!check_exception("body_parts")) {
-                    return false;
-                }
-            }
-        }
-
-        if (struct_exists(_mod, "prevent_others")) {
-            replace_area(_mod.position, _mod.sprite, _overides, _sub_comps);
-            array_push(blocked, _mod.position);
-            if (struct_exists(_mod, "ban")) {
-                for (var b = 0; b < array_length(_mod.ban); b++) {
-                    if (!array_contains(banned, _mod.ban[b])) {
-                        array_push(banned, _mod.ban[b]);
+            _banned = _mod.ban;
+            if (array_length(_banned)){
+                if (_overides == "none"){
+                    _overides = {
+                        bans : _banned
                     }
+                } else {
+                    _overides.bans = _banned;
                 }
             }
 
-            return false;
         }
+
+        return true;
+    }
+
+    static optional_modulars_checks = function(mod_item){
+        var _mod = mod_item;
+    // Keys that are mandatory / pass-through data, not optional pass-fail checks.
+        var _max_sat = 100;
+        var _control_max_sat = false;
+        if (struct_exists(_mod, "max_saturation")) {
+            remaining_component_checks--;
+            _control_max_sat = true;
+            _max_sat = _mod.max_saturation;
+            if (remaining_component_checks <= 0){
+                return true;
+            }
+        }
+
         if (struct_exists(_mod, "assign_by_rank")) {
+            remaining_component_checks--;
             var _area = _mod.position;
             var _status_level = _mod.assign_by_rank;
             var _roles = active_roles();
@@ -661,7 +459,7 @@ function ComplexSet(_unit) constructor {
             if (_unit_tier == 8) {
                 for (var t = 0; t < array_length(tiers); t++) {
                     var tier = tiers[t];
-                    if (array_contains(tier, unit.role())) {
+                    if (array_contains(tier, draw_unit.role())) {
                         _unit_tier = t;
                     }
                 }
@@ -672,51 +470,458 @@ function ComplexSet(_unit) constructor {
                     return false;
                 }
             }
+            if (remaining_component_checks <= 0){
+                return true;
+            }
+        }
+
+        if (struct_exists(_mod, "body_parts")) {
+            remaining_component_checks--;
+            var _bp_viable = true;
+            var _body_areas = struct_get_names(_mod.body_parts);
+            for (var b = 0; b < array_length(_body_areas); b++) {
+                var _area = _body_areas[b];
+                if (!struct_exists(draw_unit.body[$ _area], _mod.body_parts[$ _area])) {
+                    _bp_viable = false;
+                    break;
+                }
+            }
+            if (!_bp_viable) {
+                if (!check_exception("body_parts")) {
+                    return false;
+                }
+            }
+            if (remaining_component_checks <= 0){
+                return true;
+            }
+        }
+
+        if (!array_contains(_mod.body_types, armour_type)) {
+            remaining_component_checks--;
+            if (!check_exception("body_types")) {
+                return false;
+            }
+            if (remaining_component_checks <= 0){
+                return true;
+            }
+        }
+
+        if (struct_exists(_mod, "exp")) {
+            remaining_component_checks--;
+            var _exp_data = _mod.exp;
+            var _min = 0;
+            if (struct_exists(_exp_data, "min")) {
+                _min = _exp_data.min;
+                if (draw_unit.experience < _exp_data.min) {
+                    if (!check_exception("min_exp")) {
+                        return false;
+                    }
+                }
+            }
+            if (struct_exists(_exp_data, "scale")) {
+                var _m_exp = _exp_data.exp_scale_max;
+                var _increment_count = max(1, floor(_mod.max_saturation / 5));
+                var _increments = (_m_exp - _min) / _increment_count;
+                var _sat_roof = _mod.max_saturation;
+                var _unit_exp = draw_unit.experience;
+
+                if (_unit_exp >= _m_exp) {
+                    spawn_chance = _mod.max_saturation;
+                } else {
+                    var calc_exp = max(0, _unit_exp - _min);
+                    var _increment = floor(calc_exp / _increments);
+                    _max_sat = clamp(_increment * 5, 0, _mod.max_saturation);
+                }
+            }
+            if (remaining_component_checks <= 0 && !_control_max_sat) return true;
+        }
+
+        if (_control_max_sat) {
+            if (struct_exists(variation_map, _mod.position)) {
+                if (variation_map[$ _mod.position] >= _max_sat) {
+                    if (!check_exception("max_saturation")) {
+                        return false;
+                    }
+                }
+            }
+            if (remaining_component_checks <= 0){
+                return true;
+            }
+        }
+
+        if (struct_exists(_mod, "role_type")) {
+            remaining_component_checks--;
+            var _viable = false;
+            for (var a = 0; a < array_length(_mod.role_type); a++) {
+                var _r_t = _mod.role_type[a];
+                _viable = draw_unit.IsSpecialist(_r_t);
+                if (_viable) {
+                    break;
+                }
+            }
+            if (!_viable) {
+                if (!check_exception("role_type")) {
+                    return false;
+                }
+            }
+            if (remaining_component_checks <= 0){
+                return true;
+            }
+        }
+        if (struct_exists(_mod, "roles")) {
+            remaining_component_checks--;
+            if (!array_contains(_mod.roles, draw_unit.role())) {
+                if (!check_exception("roles")) {
+                    return false;
+                }
+            }
+            if (remaining_component_checks <= 0){
+                return true;
+            }
+        }
+        if (struct_exists(_mod, "cultures")) {
+            remaining_component_checks--;
+            if (!scr_has_style(_mod.cultures)) {
+                if (!check_exception("cultures")) {
+                    return false;
+                }
+            }
+            if (remaining_component_checks <= 0){
+                return true;
+            }
+        }
+        if (struct_exists(_mod, "company")) {
+            remaining_component_checks--;
+            if (!array_contains(_mod.company, draw_unit.company)) {
+                if (!check_exception("company")) {
+                    return false;
+                }
+            }
+            if (remaining_component_checks <= 0){
+                return true;
+            }
+        }
+
+        if (struct_exists(_mod, "armours")) {
+            remaining_component_checks--;
+            if (!array_contains(_mod.armours, unit_armour)) {
+                if (!check_exception("armours")) {
+                    return false;
+                }
+            }
+            if (remaining_component_checks <= 0){
+                return true;
+            }
+        }
+        if (struct_exists(_mod, "armours_exclude")) {
+            remaining_component_checks--;
+            if (array_contains(_mod.armours_exclude, unit_armour)) {
+                if (!check_exception("armours_exclude")) {
+                    return false;
+                }
+            }
+            if (remaining_component_checks <= 0){
+                return true;
+            }
+        }
+        if (struct_exists(_mod, "chapter_adv")) {
+            remaining_component_checks--;
+            var _viable = false;
+            for (var a = 0; a < array_length(_mod.chapter_adv); a++) {
+                var _adv = _mod.chapter_adv[a];
+                _viable = scr_has_adv(_adv);
+                if (_viable) {
+                    break;
+                }
+            }
+            if (!_viable) {
+                if (!check_exception("chapter_adv")) {
+                    return false;
+                }
+            }
+            if (remaining_component_checks <= 0){
+                return true;
+            }
+        }
+        if (struct_exists(_mod, "chapter_disadv")) {
+            remaining_component_checks--;
+            var _viable = false;
+            for (var a = 0; a < array_length(_mod.chapter_disadv); a++) {
+                var _disadv = _mod.chapter_disadv[a];
+                _viable = scr_has_disadv(_disadv);
+                if (_viable) {
+                    break;
+                }
+            }
+            if (!_viable) {
+                if (!check_exception("chapter_disadv")) {
+                    return false;
+                }
+            }
+            if (remaining_component_checks <= 0){
+                return true;
+            }
+        }
+        if (struct_exists(_mod, "stats")) {
+            remaining_component_checks--;
+            if (!stat_valuator(_mod.stats, draw_unit)) {
+                if (!check_exception("stats")) {
+                    return false;
+                }
+            }
+            if (remaining_component_checks <= 0){
+                return true;
+            }
+        }
+        if (struct_exists(_mod, "equipped")) {
+            remaining_component_checks--;
+            if (!draw_unit.has_equipped(_mod.equipped)) {
+                if (!check_exception("equipped")) {
+                    return false;
+                }
+            }
+            if (remaining_component_checks <= 0){
+                return true;
+            }
+        }
+
+        if (struct_exists(_mod, "traits")) {
+            remaining_component_checks--;
+            var _viable = false;
+            for (var a = 0; a < array_length(_mod.traits); a++) {
+                var _trait = _mod.traits[a];
+                _viable = draw_unit.has_trait(_trait);
+                if (_viable) {
+                    break;
+                }
+            }
+            if (!_viable) {
+                if (!check_exception("traits")) {
+                    return false;
+                }
+            }
+            if (remaining_component_checks <= 0){
+                return true;
+            }
+        }
+
+
+        if (struct_exists(_mod, "equipment_has_tag")) {
+            remaining_component_checks--;
+            var _viable = false;
+            var _tag_check_areas = struct_get_names(_mod.equipment_has_tag);
+            for (var i = 0; i < array_length(_tag_check_areas); i++) {
+                var _area = _tag_check_areas[i];
+
+                if (!array_contains(equipment_data.present_items, _area)) {
+                    continue;
+                }
+
+                var _item = equipment_data.get_item(_area);
+                var _tag = _mod.equipment_has_tag[$ _area];
+
+                _viable = _item.has_tag(_tag);
+
+                if (_viable) {
+                    break;
+                }
+            }
+            if (!_viable) {
+                if (!check_exception("equipment_has_tag")) {
+                    return false;
+                }
+            }
+            if (remaining_component_checks <= 0){
+                return true;
+            }
+        }
+
+        var _is_weapon = _mod.position == "weapon";
+        if (!_is_weapon && struct_exists(_mod, "min_quality")) {
+            remaining_component_checks--;
+            var _viable = false;
+            var _quality_check_areas = struct_get_names(_mod.min_quality);
+            for (var i = 0; i < array_length(_quality_check_areas); i++) {
+                var _area = _quality_check_areas[i];
+                if (!array_contains(equipment_data.present_items, _area)) {
+                    continue;
+                }
+                var _item = equipment_data.get_item(_area);
+
+                _viable = compare_qualities(_item.quality, _mod.min_quality[$ _area], "more");
+                if (_viable) {
+                    break;
+                }
+            }
+            if (!_viable) {
+                if (!check_exception("min_quality")) {
+                    return false;
+                }
+            }
+            if (remaining_component_checks <= 0){
+                return true;
+            }
+        }
+
+        if (!_is_weapon && struct_exists(_mod, "max_quality")) {
+            remaining_component_checks--;
+            var _viable = false;
+            var _quality_check_areas = struct_get_names(_mod.max_quality);
+            for (var i = 0; i < array_length(_quality_check_areas); i++) {
+                var _area = _quality_check_areas[i];
+                if (!array_contains(equipment_data.present_items, _area)) {
+                    continue;
+                }
+                var _item = equipment_data.get_item(_area);
+
+                _viable = compare_qualities(_item.quality, _mod.max_quality[$ _area], "less");
+                if (_viable) {
+                    break;
+                }
+            }
+            if (!_viable) {
+                if (!check_exception("max_quality")) {
+                    return false;
+                }
+            }
+            if (remaining_component_checks <= 0){
+                return true;
+            }
+        }
+
+        if (struct_exists(_mod, "chapter")) {
+            remaining_component_checks--;
+            var chap_name = instance_exists(obj_creation) ? obj_creation.chapter_name : global.chapter_name;
+            if (chap_name != _mod.chapter) {
+                if (!check_exception("chapter")) {
+                    return false;
+                }
+            }
+            if (remaining_component_checks <= 0){
+                return true;
+            }
         }
 
         return true;
+    }
+
+
+    static mandatory_check_keys = [
+            "position", "shadows", "overides", "subcomponents",
+            "offsets" , "prevent_others" ,"sprite","allow_either",
+            "always_spawn", "ban"
+    ];
+
+    /// @param {Struct} mod_item
+    /// @return {Bool}
+    static base_modulars_checks = function(mod_item) {
+        _has_exceptions = false;
+        exceptions = [];
+        var _mod = mod_item;
+        var _mod_keys = struct_get_names(_mod);
+        remaining_component_checks = array_length(_mod_keys);
+        for (var nk = 0; nk < array_length(mandatory_check_keys); nk++) {
+            if (struct_exists(_mod, mandatory_check_keys[nk])) {
+                remaining_component_checks--;
+            }
+        }
+
+        if (!struct_exists(_mod, "body_types")) {
+            _mod.body_types = [0, 1, 2];
+        }
+
+        // Nothing optional left to check - short circuit immediately.
+        if (remaining_component_checks <= 0) {
+            return true;
+        }
+
+        // ---------------- OPTIONAL CHECKS (gated, self-terminating) ----------------
+        if (struct_exists(_mod, "allow_either")) {
+            _has_exceptions = true;
+            exceptions = variable_clone(_mod.allow_either);
+        }
+
+        var _optionals = optional_modulars_checks(mod_item);
+        if (!_optionals){
+            return false;
+        } else {
+            return modular_mandatory_checks(mod_item);
+        }
+        
+        return true;
     };
 
+    static validate_modular_item = function(_mod, position){
+        _sub_comps = "none";
+        _shadows = "none";
+        if (position != "") {
+            _mod.position = position;
+        }
+        if (array_contains(restricted, _mod.position)){
+            return false;
+        }
+
+        var _allowed = base_modulars_checks(_mod);
+
+        if (!_allowed) {
+            return false;
+        }
+        var _prevent_others = struct_exists(_mod, "prevent_others");
+        if (_mod.position == "weapon") {
+            var _weapon_map = _mod.weapon_map;
+            var _weapon_one = equipment_data.get_item("wep1");
+            var _weapon_two = equipment_data.get_item("wep2");
+
+            var _quality_ok = function(_item, _mod) {
+                if (struct_exists(_mod, "min_quality")) {
+                    if (!compare_qualities(_item.quality, _mod.min_quality, "more")) {
+                        return false;
+                    }
+                }
+                if (struct_exists(_mod, "max_quality")) {
+                    if (!compare_qualities(_item.quality, _mod.max_quality, "less")) {
+                        return false;
+                    }
+                }
+                return true;
+            };
+
+            if (_weapon_one.name == _weapon_map && _quality_ok(_weapon_one, _mod)) {
+                if (_prevent_others){
+                    right_arm_data = [_mod.weapon_data];
+                } else {
+                    array_push(right_arm_data, _mod.weapon_data);
+                }
+            }
+
+            if (_weapon_two.name == _weapon_map && _quality_ok(_weapon_two, _mod)) {
+                if (_prevent_others){
+                    left_arm_data = [_mod.weapon_data];
+                } else {
+                    array_push(left_arm_data, _mod.weapon_data);
+                }
+            }
+        } else {
+
+            if (replace_by_default || _prevent_others){
+                replace_area(_mod.position, _mod.sprite, _overides, _sub_comps, _shadows);
+            } else {
+                add_to_area(_mod.position, _mod.sprite, _overides, _sub_comps, _shadows);
+            }
+            if (_prevent_others){
+                array_push(restricted, _mod.position);
+            }
+        }
+    }
     /// @param {Array<Struct>} modulars
     /// @param {String} position
-    static assign_modulars = function(modulars = global.modular_drawing_items, position = "") {
+    static assign_modulars = function(modulars = global.modular_drawing_items, position = "", replace_by_default = false) {
+        self.replace_by_default = replace_by_default;
+        restricted = [];
         try {
             for (var i = 0; i < array_length(modulars); i++) {
-                _sub_comps = "none";
-                _shadows = "none";
                 var _mod = modulars[i];
-                if (position != "") {
-                    _mod.position = position;
-                }
-                var _allowed = base_modulars_checks(_mod);
-
-                if (!_allowed) {
-                    continue;
-                }
-                if (_mod.position != "") {
-                    if (_mod.position == "weapon") {
-                        var _weapon_map = _mod.weapon_map;
-                        if (unit.weapon_one() == _weapon_map) {
-                            array_push(right_arm_data, _mod.weapon_data);
-                        }
-                        if (unit.weapon_two() == _weapon_map) {
-                            array_push(left_arm_data, _mod.weapon_data);
-                        }
-                    } else {
-                        add_to_area(_mod.position, _mod.sprite, _overides, _sub_comps, _shadows);
-                    }
-                }
-                if (struct_exists(_mod, "prevent_others")) {
-                    replace_area(_mod.position, _mod.sprite, _overides, _sub_comps, _shadows);
-                    array_push(blocked, _mod.position);
-                    if (struct_exists(_mod, "ban")) {
-                        for (var b = 0; b < array_length(_mod.ban); b++) {
-                            if (!array_contains(banned, _mod.ban[b])) {
-                                array_push(banned, _mod.ban[b]);
-                            }
-                        }
-                    }
-                }
+                validate_modular_item(_mod, position)
             }
         } catch (_exception) {
             ERROR_HANDLER.handle_exception(_exception);
@@ -726,28 +931,39 @@ function ComplexSet(_unit) constructor {
     /// @param {String} component_name
     /// @param {Real} choice
     static check_component_overides = function(component_name, choice) {
-        if (struct_exists(overides, component_name)) {
-            var _overide_set = overides[$ component_name];
-            for (var i = 0; i < array_length(_overide_set); i++) {
-                var _spec_over = _overide_set[i];
-                if (_spec_over[0] <= choice && _spec_over[1] > choice) {
-                    var _override_data = _spec_over[2];
-                    if (struct_exists(_override_data, "overides")) {
-                        _override_areas = struct_get_names(_override_data.overides);
-                        var _overs = _override_data.overides;
-                        for (var j = 0; j < array_length(_override_areas); j++) {
-                            replace_area(_override_areas[j], _overs[$ _override_areas[j]]);
-                        }
+        if (!struct_exists(overides, component_name)) {
+            return false;
+        }
+
+        var _overide_set = overides[$ component_name];
+        for (var i = 0; i < array_length(_overide_set); i++) {
+            var _spec_over = _overide_set[i];
+            if (_spec_over[0] <= choice && _spec_over[1] > choice) {
+                var _override_data = _spec_over[2];
+                if (struct_exists(_override_data, "overides")) {
+                    _override_areas = struct_get_names(_override_data.overides);
+                    var _overs = _override_data.overides;
+                    for (var j = 0; j < array_length(_override_areas); j++) {
+                        var _area = _override_areas[j]
+                        var _override_packet = _overs[$ _area];
+                        _override_packet = is_struct(_override_packet) ? _override_packet : {sprite : _override_packet};
+                        assign_modulars([_override_packet], _area, true);
                     }
-                    if (struct_exists(_override_data, "offsets")) {
-                        var _offsets = _override_data.offsets;
-                        component_final_draw_x += _offsets[0];
-                        component_final_draw_y += _offsets[1];
-                    }
-                    break;
                 }
+                if (struct_exists(_override_data, "offsets")) {
+                    var _offsets = _override_data.offsets;
+                    component_final_draw_x += _offsets[0];
+                    component_final_draw_y += _offsets[1];
+                }
+                if (struct_exists(_override_data, "bans")){
+                    for (var i = 0; i < array_length(_override_data.bans); i++){
+                        array_push(banned, _override_data.bans[i]);
+                    }
+                }
+                break;
             }
         }
+  
     };
 
     /// @desc Resolves a global frame choice for an area into (source_sprite, local_frame)
@@ -819,36 +1035,39 @@ function ComplexSet(_unit) constructor {
                 if (_spec_shadow[0] <= choice && _spec_shadow[1] > choice) {
                     var _shadow_item = _spec_shadow[2];
                     var _final_shadow_index = choice - _spec_shadow[0];
-
-                    // Compute UV transform for this shadow texture
-                    if (!sprite_exists(resolved_sprite) || !sprite_exists(_shadow_item)) {
-                        exit;
-                    }
-
-                    var _shadow_transform_data = sprite_get_uvs_transformed(resolved_sprite, resolved_frame, _shadow_item, _final_shadow_index);
-
-                    if (valid_sprite_transform_data(_shadow_transform_data)) {
-                        shader_set_uniform_f_array(shadow_transform_uniform, _shadow_transform_data);
-
-                        shader_set_uniform_f_array(texture_shadow_transform_uniform, _shadow_transform_data);
-                    }
-
-                    // Bind shadow texture
-                    var _shadow_tex = sprite_get_texture(_shadow_item, _final_shadow_index);
-                    texture_set_stage(shadow_sampler, _shadow_tex);
-                    texture_set_stage(armour_shadow_sampler, _shadow_tex);
-
-                    // Trigger the draw to apply shadow (shader mixes it)
-                    //draw_sprite(_sprite, _choice ?? 0, component_final_draw_x, component_final_draw_y);
-
-                    shadow_enabled = 1;
-                    break;
+                    set_draw_shadows(resolved_sprite, resolved_frame, _shadow_item, _final_shadow_index);
+					break;
                 }
             }
         }
     };
 
-    /// @param {String} component_name
+    static set_draw_shadows = function(sprite, resolved_frame, _shadow_item, _final_shadow_index){
+        // Compute UV transform for this shadow texture
+        if (!sprite_exists(sprite) || !sprite_exists(_shadow_item)) {
+            exit;
+        }
+
+        var _shadow_transform_data = sprite_get_uvs_transformed(sprite, resolved_frame, _shadow_item, _final_shadow_index);
+
+        if (valid_sprite_transform_data(_shadow_transform_data)) {
+            shader_set_uniform_f_array(shadow_transform_uniform, _shadow_transform_data);
+
+            shader_set_uniform_f_array(texture_shadow_transform_uniform, _shadow_transform_data);
+        }
+
+        // Bind shadow texture
+        var _shadow_tex = sprite_get_texture(_shadow_item, _final_shadow_index);
+        texture_set_stage(shadow_sampler, _shadow_tex);
+        texture_set_stage(armour_shadow_sampler, _shadow_tex);
+
+        // Trigger the draw to apply shadow (shader mixes it)
+        //draw_sprite(_sprite, _choice ?? 0, component_final_draw_x, component_final_draw_y);
+
+        shadow_enabled = true;        
+    }
+
+/// @param {String} component_name
     /// @param {Real} choice
     static handle_component_subcomponents = function(component_name, choice, flip_x = false, component_map_choice = 3) {
         if (struct_exists(subcomponents, component_name)) {
@@ -862,33 +1081,45 @@ function ComplexSet(_unit) constructor {
                     _component_set = _spec_over[2];
                 }
             }
-
             if (_subcomponents_found) {
-                for (var i = 0; i < array_length(_component_set); i++) {
-                    var _subcomponents = _component_set[i];
-                    var _sub_choice = (component_map_choice * 1315423911) & $7FFFFFFF;
+                evaluate_sub_components(_component_set, component_map_choice, flip_x);
+            }
+        }
+    };
 
-                    var _total_options = 0;
-                    for (var s = 0; s < array_length(_subcomponents); s++) {
-                        _total_options += sprite_get_number(_subcomponents[s]);
-                    }
+    /// @param {Array<Array>} _component_set
+    /// @param {Real} component_map_choice
+    /// @param {Bool} flip_x
+    static evaluate_sub_components = function(_component_set, component_map_choice, flip_x) {
+        for (var i = 0; i < array_length(_component_set); i++) {
+            shadow_enabled = false;
+            var _subcomponents = _component_set[i];
 
-                    if (_total_options > 0) {
-                        var _sub_choice_final = _sub_choice % _total_options;
-
-                        var _choice_count = 0;
-                        for (var s = 0; s < array_length(_subcomponents); s++) {
-                            if (_sub_choice_final >= _choice_count && _sub_choice_final < _choice_count + sprite_get_number(_subcomponents[s])) {
-                                if (flip_x) {
-                                    draw_sprite_flipped(_subcomponents[s], _sub_choice_final - _choice_count ?? 0, component_final_draw_x, component_final_draw_y);
-                                } else {
-                                    draw_sprite(_subcomponents[s], _sub_choice_final - _choice_count ?? 0, component_final_draw_x, component_final_draw_y);
-                                }
-                                break;
-                            } else {
-                                _choice_count += sprite_get_number(_subcomponents[s]);
-                            }
+            var _sub_choice = (component_map_choice * 1315423911) & $7FFFFFFF;
+            var _total_options = 0;
+            for (var s = 0; s < array_length(_subcomponents); s++) {
+                _total_options += sprite_get_number(_subcomponents[s].sprite);
+            }
+            if (_total_options > 0) {
+                var _sub_choice_final = _sub_choice % _total_options;
+                var _choice_count = 0;
+                for (var s = 0; s < array_length(_subcomponents); s++) {
+                    var _final_component = _subcomponents[s];
+                    var _sprite = _final_component.sprite;
+                    if (_sub_choice_final >= _choice_count && _sub_choice_final < _choice_count + sprite_get_number(_sprite)) {
+                        var _final_index = _sub_choice_final - _choice_count ?? 0;
+                        if (struct_exists(_final_component, "shadows")) {
+                            set_draw_shadows(_sprite, _final_index, _final_component.shadows, _final_index);
                         }
+                        shader_set_uniform_i(use_shadow_uniform, shadow_enabled);
+                        if (flip_x) {
+                            draw_sprite_flipped(_sprite, _sub_choice_final - _choice_count ?? 0, component_final_draw_x, component_final_draw_y);
+                        } else {
+                            draw_sprite(_sprite, _sub_choice_final - _choice_count ?? 0, component_final_draw_x, component_final_draw_y);
+                        }
+                        break;
+                    } else {
+                        _choice_count += sprite_get_number(_sprite);
                     }
                 }
             }
@@ -966,7 +1197,9 @@ function ComplexSet(_unit) constructor {
         } else {
             draw_sprite(resolved_sprite, resolved_choice ?? 0, component_final_draw_x, component_final_draw_y);
         }
+        shader_reset();
         draw_surface(global.base_component_surface, 0, 0);
+        shader_set(full_livery_shader);
     };
 
     /// @desc Main function
@@ -979,7 +1212,7 @@ function ComplexSet(_unit) constructor {
             return;
         }
         if (struct_exists(self, component_name)) {
-            shadow_enabled = 0;
+            shadow_enabled = false;
             current_texture_draws = texture_draws;
 
             component_final_draw_x = x_surface_offset;
@@ -1039,7 +1272,7 @@ function ComplexSet(_unit) constructor {
                 }
 
                 var _arm_string = _right_left == 0 ? "right_arm" : "left_arm";
-                var _bionic_arm = unit.get_body_data("bionic", _arm_string);
+                var _bionic_arm = draw_unit.get_body_data("bionic", _arm_string);
                 var _bio = [];
                 if (eARMOUR_TYPE.TERMINATOR == armour_type) {
                     if (_variant == 2) {
@@ -1060,7 +1293,7 @@ function ComplexSet(_unit) constructor {
                 }
                 if (_bionic_arm && !array_length(_bio)) {
                     if (armour_type == eARMOUR_TYPE.NORMAL) {
-                        var _bio = [
+                        _bio = [
                             spr_bionic_right_arm,
                             spr_bionic_left_arm,
                         ];
@@ -1260,7 +1493,7 @@ function ComplexSet(_unit) constructor {
         var prep_surface = surface_create(600, 600);
         surface_set_target(prep_surface);
 
-        var _texture_draws = setup_complex_livery_shader(unit.role(), unit);
+        var _texture_draws = setup_complex_livery_shader(draw_unit.role(), draw_unit);
 
         draw_cloaks();
 
@@ -1281,7 +1514,7 @@ function ComplexSet(_unit) constructor {
         ];
         for (var i = 0; i <= 1; i++) {
             var _arm = arms_data[i];
-            var _wep = i == 0 ? unit.weapon_one() : unit.weapon_two();
+            var _wep = i == 0 ? draw_unit.weapon_one() : draw_unit.weapon_two();
             if (struct_exists(_arm, "display_type")) {
                 if (struct_exists(weapon_preset_data, _arm.display_type)) {
                     var _preset = weapon_preset_data[$ _arm.display_type];
@@ -1351,7 +1584,7 @@ function ComplexSet(_unit) constructor {
         }
         draw_unit_arms(_texture_draws);
         var _complex_helm = false;
-        var _unit_role = unit.role();
+        var _unit_role = draw_unit.role();
         var _role = active_roles();
         var _comp_helms = instance_exists(obj_creation) ? obj_creation.complex_livery_data : obj_ini.complex_livery_data;
         if (_unit_role == _role[eROLE.SERGEANT]) {
@@ -1360,7 +1593,7 @@ function ComplexSet(_unit) constructor {
             _complex_helm = _comp_helms.vet_sgt;
         } else if (_unit_role == _role[eROLE.CAPTAIN]) {
             _complex_helm = _comp_helms.captain;
-        } else if (_unit_role == _role[eROLE.VETERAN] || (_unit_role == _role[eROLE.TERMINATOR] && unit.company == 1)) {
+        } else if (_unit_role == _role[eROLE.VETERAN] || (_unit_role == _role[eROLE.TERMINATOR] && draw_unit.company == 1)) {
             _complex_helm = _comp_helms.veteran;
         } else if (struct_exists(_comp_helms, "all_others")) {
             // there's probably room to improve this but consecrators demand the stripe
@@ -1473,9 +1706,9 @@ function ComplexSet(_unit) constructor {
         //TODO imprvoe this logic to be more extendable
 
         if (armour_type == eARMOUR_TYPE.NORMAL || armour_type == eARMOUR_TYPE.TERMINATOR) {
-            var _body = unit.body;
+            var _body = draw_unit.body;
             var _torso_data = _body[$ "torso"];
-            var _exp = unit.experience;
+            var _exp = draw_unit.experience;
             var _x_offset = x_surface_offset + (armour_type == eARMOUR_TYPE.NORMAL ? 0 : -7);
             var _y_offset = y_surface_offset + (armour_type == eARMOUR_TYPE.NORMAL ? 0 : -38);
             if (struct_exists(_torso_data, "purity_seal")) {
@@ -1665,7 +1898,7 @@ function ComplexSet(_unit) constructor {
                 add_group(mk7_bits);
                 break;
         }
-        var type = unit.get_body_data("type", "cloak");
+        var type = draw_unit.get_body_data("type", "cloak");
         if (type != "none" && armour_type != eARMOUR_TYPE.SCOUT) {
             static _cloaks = {
                 "scale": spr_cloak_scale,
@@ -1679,17 +1912,19 @@ function ComplexSet(_unit) constructor {
             }
         }
         assign_modulars();
-        var wep_opts = format_weapon_visuals(unit.weapon_one());
+        var wep_opts = format_weapon_visuals(draw_unit.weapon_one());
         if (array_length(wep_opts)) {
             assign_modulars(wep_opts, "weapon");
         }
-        if (unit.weapon_one() != unit.weapon_two()) {
-            var wep_opts = format_weapon_visuals(unit.weapon_two());
+        if (draw_unit.weapon_one() != draw_unit.weapon_two()) {
+            wep_opts = format_weapon_visuals(draw_unit.weapon_two());
             if (array_length(wep_opts)) {
                 assign_modulars(wep_opts, "weapon");
             }
         }
     };
+
+    base_armour();
 
     static draw_cloaks = function() {
         var _shader_set_multiply_blend = function(_r, _g, _b) {
@@ -1715,64 +1950,63 @@ function ComplexSet(_unit) constructor {
     /// @param {Struct} sub_components Sub-component data for this sprite's frame range
     /// @param {Asset.GMSprite} shadow Shadow data for this sprite's frame range
     static add_to_area = function(area, add_sprite, overide_data = "none", sub_components = "none", shadow = "none") {
-        if (sprite_exists(add_sprite)) {
-            var _add_sprite_length = sprite_get_number(add_sprite);
-            if (!struct_exists(self, area)) {
-                self[$ area] = {
-                    sources: [add_sprite],
-                    offsets: [0],
-                    source_frames: [_add_sprite_length],
-                    total: _add_sprite_length,
-                };
-                var _overide_start = 0;
+        if (!sprite_exists(add_sprite)) {
+            return;
+        }
+        var _overide_start = 0;
+        var _add_sprite_length = sprite_get_number(add_sprite);
+        if (!struct_exists(self, area)) {
+            self[$ area] = {
+                sources: [add_sprite],
+                offsets: [0],
+                source_frames: [_add_sprite_length],
+                total: _add_sprite_length,
+            };
+        } else {
+            var _existing_data = self[$ area];
+            if (is_struct(_existing_data)) {
+                _overide_start = _existing_data.total;
+                array_push(_existing_data.sources, add_sprite);
+                array_push(_existing_data.offsets, _overide_start);
+                array_push(_existing_data.source_frames, _add_sprite_length);
+                _existing_data.total += _add_sprite_length;
             } else {
-                var _existing_data = self[$ area];
-                if (is_struct(_existing_data)) {
-                    var _overide_start = _existing_data.total;
-                    array_push(_existing_data.sources, add_sprite);
-                    array_push(_existing_data.offsets, _overide_start);
-                    array_push(_existing_data.source_frames, _add_sprite_length);
-                    _existing_data.total += _add_sprite_length;
+                if (sprite_exists(_existing_data)) {
+                    _overide_start = sprite_get_number(_existing_data);
+                    self[$ area] = {
+                        sources: [
+                            _existing_data,
+                            add_sprite,
+                        ],
+                        offsets: [
+                            0,
+                            _overide_start,
+                        ],
+                        source_frames: [
+                            sprite_get_number(_existing_data),
+                            _add_sprite_length,
+                        ],
+                        total: _overide_start + _add_sprite_length,
+                    };
                 } else {
-                    var _overide_start = 0;
-                    if (sprite_exists(_existing_data)) {
-                        _overide_start = sprite_get_number(_existing_data);
-                        self[$ area] = {
-                            sources: [
-                                _existing_data,
-                                add_sprite,
-                            ],
-                            offsets: [
-                                0,
-                                _overide_start,
-                            ],
-                            source_frames: [
-                                sprite_get_number(_existing_data),
-                                _add_sprite_length,
-                            ],
-                            total: _overide_start + _add_sprite_length,
-                        };
-                    } else {
-                        self[$ area] = {
-                            sources: [add_sprite],
-                            offsets: [0],
-                            source_frames: [_add_sprite_length],
-                            total: _add_sprite_length,
-                        };
-                        var _overide_start = 0;
-                    }
+                    self[$ area] = {
+                        sources: [add_sprite],
+                        offsets: [0],
+                        source_frames: [_add_sprite_length],
+                        total: _add_sprite_length,
+                    };
                 }
             }
+        }
 
-            if (overide_data != "none") {
-                add_overide(area, _overide_start, _add_sprite_length, overide_data);
-            }
-            if (sub_components != "none") {
-                add_sub_components(area, _overide_start, _add_sprite_length, sub_components);
-            }
-            if (shadow != "none" && sprite_exists(shadow)) {
-                add_shadow_set(area, _overide_start, _add_sprite_length, shadow);
-            }
+        if (overide_data != "none") {
+            add_overide(area, _overide_start, _add_sprite_length, overide_data);
+        }
+        if (sub_components != "none") {
+            add_sub_components(area, _overide_start, _add_sprite_length, sub_components);
+        }
+        if (shadow != "none" && sprite_exists(shadow)) {
+            add_shadow_set(area, _overide_start, _add_sprite_length, shadow);
         }
     };
 
@@ -1821,17 +2055,19 @@ function ComplexSet(_unit) constructor {
                 if (is_struct(_subby)) {
                     var _allow = base_modulars_checks(_subby);
                     if (_allow) {
-                        array_push(_sub_items, _subby.sprite);
+                        array_push(_sub_items, _subby);
                     }
                 } else {
-                    array_push(_sub_items, _subby);
-                }
+                    array_push(_sub_items, {sprite:_subby});
+                } 
             }
             if (array_length(_sub_items)) {
                 array_push(_accepted_subs, _sub_items);
             }
         }
-        array_push(subcomponents[$ area], [_overide_start, _overide_start + sprite_length, _accepted_subs]);
+        if (array_length(_accepted_subs)){
+            array_push(subcomponents[$ area], [_overide_start, _overide_start + sprite_length, _accepted_subs]);
+        }
     };
 
     /// @param {String} area
@@ -1841,7 +2077,7 @@ function ComplexSet(_unit) constructor {
     /// @param {Asset.GMSprite} shadow
     static replace_area = function(area, add_sprite, overide_data = "none", sub_components = "none", shadow = "none") {
         remove_area(area);
-        add_to_area(area, add_sprite, overide_data, sub_components);
+        add_to_area(area, add_sprite, overide_data, sub_components, shadow);
     };
 
     /// @param {String} area
@@ -1853,6 +2089,9 @@ function ComplexSet(_unit) constructor {
             }
             if (struct_exists(subcomponents, area)) {
                 struct_remove(subcomponents, area);
+            }
+            if (struct_exists(shadow_set, area)) {
+                struct_remove(shadow_set, area);
             }
         }
     };
@@ -1913,19 +2152,13 @@ function ComplexSet(_unit) constructor {
             x_surface_offset = 0;
             y_surface_offset = 0;
             set_complex_shader_area(["left_head", "right_head", "left_muzzle", "right_muzzle"], data.helm_primary);
-            if (instance_exists(obj_controller)) {
-                var _blend = [
-                    obj_controller.col_r[data.helm_secondary] / 255,
-                    obj_controller.col_g[data.helm_secondary] / 255,
-                    obj_controller.col_b[data.helm_secondary] / 255,
-                ];
-            } else {
-                var _blend = [
-                    obj_creation.col_r[data.helm_secondary] / 255,
-                    obj_creation.col_g[data.helm_secondary] / 255,
-                    obj_creation.col_b[data.helm_secondary] / 255,
-                ];
-            }
+
+            var _obj = instance_exists(obj_controller) ? obj_controller : obj_creation;
+            var _blend = [
+                _obj.col_r[data.helm_secondary] / 255,
+                _obj.col_g[data.helm_secondary] / 255,
+                _obj.col_b[data.helm_secondary] / 255,
+            ];
 
             draw_head({"head_stripe": {texture: spr_helm_stripe, areas: [[0, 0, 128 / 255], [0, 0, 255 / 255], [128 / 255, 64 / 255, 255 / 255], [64 / 255, 128 / 255, 255 / 255]], blend: _blend}});
             x_surface_offset = _temp[0];
