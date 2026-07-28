@@ -35,6 +35,15 @@ if (!variable_instance_exists(id, "pending_columns")) {
     pending_columns = grid_formation_columns();
 }
 
+// Region terrain, which decides what is standing on the field: urban, forest,
+// mountain, coastal or open, and whether this is the planet's capital.
+if (!variable_instance_exists(id, "pending_terrain")) {
+    pending_terrain = "open";
+}
+if (!variable_instance_exists(id, "pending_capital")) {
+    pending_capital = false;
+}
+
 // Campaign threat level (1 to 7). It sizes the enemy force, so it has to match
 // the number the after-battle pass spends against the planet.
 if (!variable_instance_exists(id, "pending_threat")) {

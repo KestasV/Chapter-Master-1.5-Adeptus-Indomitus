@@ -666,6 +666,18 @@ function drop_select_unit_selection() {
             if (grid_combat_enabled()) {
                 var _gfront = region_front_width(p_target, planet_number, region_focus_get(p_target, planet_number));
                 obj_ncombat.grid_width = clamp(round(_gfront / 200), 8, 32);
+                // Terrain decides what is standing on the battlefield. Read here
+                // because this path knows which region is being assaulted; every
+                // other spawner falls back to open ground.
+                var _greg = region_get(p_target, planet_number, region_focus_get(p_target, planet_number));
+                if (is_struct(_greg)) {
+                    if (variable_struct_exists(_greg, "name")) {
+                        obj_ncombat.grid_terrain = grid_terrain_from_region_name(_greg.name);
+                    }
+                    if (variable_struct_exists(_greg, "is_capital")) {
+                        obj_ncombat.grid_capital = _greg.is_capital;
+                    }
+                }
             }
         } else if (purge > 1) {
             draw_set_alpha(0.2);

@@ -80,6 +80,34 @@ if (_tp >= 14) {
     draw_set_font(fnt_tiny);
     for (var _cc = _c0; _cc < _c1; _cc++) {
         for (var _cr = _r0; _cr < _r1; _cr++) {
+            // Structures first: a wall is a solid block, a barrier is half a
+            // block, which is what tells you at a glance whether you can shoot
+            // through it.
+            var _bk = blk[_cc][_cr];
+            if (_bk != GRIDT_OPEN) {
+                var _bx = grid_sx(id, _cc);
+                var _by2 = grid_sy(id, _cr);
+                if (_bk == GRIDT_LIGHT) {
+                    // Trees and wreckage: a scatter, not a block, so it reads as
+                    // ground you can walk into rather than a wall.
+                    draw_set_color(make_color_rgb(96, 140, 96));
+                    draw_set_alpha(0.40);
+                    draw_rectangle(_bx + 4, _by2 + 4, _bx + _tp - 4, _by2 + _tp - 4, false);
+                    draw_set_alpha(0.55);
+                    continue;
+                }
+                draw_set_color(make_color_rgb(128, 132, 128));
+                draw_set_alpha((_bk == GRIDT_WALL) ? 0.85 : 0.45);
+                if (_bk == GRIDT_WALL) {
+                    draw_rectangle(_bx + 1, _by2 + 1, _bx + _tp - 1, _by2 + _tp - 1, false);
+                } else {
+                    draw_rectangle(_bx + 1, _by2 + (_tp / 2), _bx + _tp - 1, _by2 + _tp - 1, false);
+                }
+                draw_set_alpha(0.9);
+                draw_rectangle(_bx + 1, _by2 + 1, _bx + _tp - 1, _by2 + _tp - 1, true);
+                draw_set_alpha(0.55);
+                continue;
+            }
             var _cv = cov[_cc][_cr];
             if (_cv == 0) {
                 continue;

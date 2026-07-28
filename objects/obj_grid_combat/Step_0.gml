@@ -9,6 +9,7 @@ if (!boot_done) {
     instance_activate_object(obj_cursor);
 
     grid_setup_field(id, pending_width);
+    grid_gen_structures(id);
     grid_gen_cover(id);
     // A bigger fight keeps coming for longer, so the wave count follows threat
     // rather than sitting at the prototype's flat one.

@@ -51,6 +51,28 @@
 #macro GRIDC_COVER_GOOD 0.70
 #macro GRIDC_COVER_BAD 1.25
 #macro GRIDC_COVER_HULL 0.62
+
+// Structure layer. Walls stop movement and fire; barriers stop movement but not
+// fire, and shelter whoever is behind them. Both are drawn as filled tiles, a
+// barrier only half filled.
+// Two kinds of cover, and the difference matters:
+//   POSITION cover is the tile you stand in (trench, crater, rubble). It is
+//   omnidirectional and cannot be flanked, because a hole in the ground does not
+//   care where the shot came from. That is the cov array.
+//   INTERVENING cover is what the shot has to cross. It is fully directional and
+//   is negated by flanking, because it only counts if it is actually on the line
+//   between the two squads. That is the blk array, below.
+#macro GRIDT_OPEN 0
+#macro GRIDT_WALL 1
+#macro GRIDT_BARRIER 2
+// Trees, scrub, wreckage. Light cover, and unlike a barrier you can walk through
+// it: a wood is crossable ground, a sandbag line is not.
+#macro GRIDT_LIGHT 3
+// How much of a shot a barrier turns, before race is applied. Stacks per barrier
+// crossed, floored so a firing line behind three windows is not invulnerable.
+#macro GRIDC_BARRIER_SOAK 0.45
+#macro GRIDC_LIGHT_SOAK 0.18
+#macro GRIDC_BARRIER_FLOOR 0.30
 #macro GRIDC_FALLOFF_MIN 0.55
 #macro GRIDC_HQ_AURA 1.10
 #macro GRIDC_HQ_RANGE 3
@@ -565,9 +587,13 @@ function grid_setup_field(ctrl, _width) {
     ctrl.band_r2 = ctrl.band_r1 + ctrl.combat_width - 1;
     ctrl.occ = array_create(ctrl.cols);
     ctrl.cov = array_create(ctrl.cols);
+    // Structure layer: walls and barriers, separate from cover because a wall is
+    // terrain a body cannot enter, not just ground that shelters it.
+    ctrl.blk = array_create(ctrl.cols);
     for (var _c = 0; _c < ctrl.cols; _c++) {
         ctrl.occ[_c] = array_create(ctrl.rows, -1);
         ctrl.cov[_c] = array_create(ctrl.rows, 0);
+        ctrl.blk[_c] = array_create(ctrl.rows, GRIDT_OPEN);
     }
 }
 
@@ -657,14 +683,350 @@ function grid_apply_range_class(ctrl, _sq) {
     _sq.rng += grid_range_bonus(_sq.type);
 }
 
-/// @function grid_gen_cover
+/// @function grid_cover_skill
+/// @description How well a race uses cover, as a share of a barrier's protection
+/// actually taken. A Guardsman lives behind walls; an Ork barely notices one and
+/// a Tyranid does not use them at all.
+function grid_cover_skill(_key) {
+    var _p = string_copy(_key, 1, 3);
+    if ((_p == "tau")) {
+        return 1.20;
+    }
+    if ((_p == "ig_") || (_p == "he_") || (_p == "gs_") || (_p == "ec_") || (_p == "ad_")
+        || (_key == "guardsmen") || (_key == "heavy_weapons")) {
+        return 1.00;
+    }
+    if (_p == "el_") {
+        return 0.95;
+    }
+    if (_p == "ne_") {
+        return 0.60;
+    }
+    if (_p == "ork") {
+        return 0.45;
+    }
+    if (_p == "ty_") {
+        return 0.10;
+    }
+    // Astartes, ours and theirs. Trained to advance, not to hug a wall.
+    return 0.70;
+}
+
+/// @function grid_cover_urge
+/// @description Chance per tick that a squad will step into cover rather than
+/// stand in the open. Aggression read as its inverse: the Tau reposition
+/// constantly, Orks rarely bother and Tyranids never do.
+function grid_cover_urge(_key) {
+    var _p = string_copy(_key, 1, 3);
+    if (_p == "tau") {
+        return 0.85;
+    }
+    if ((_p == "ig_") || (_p == "he_") || (_p == "gs_") || (_p == "ec_") || (_p == "el_")
+        || (_p == "ad_") || (_key == "guardsmen") || (_key == "heavy_weapons")) {
+        return 0.55;
+    }
+    if (_p == "ne_") {
+        return 0.30;
+    }
+    if (_p == "ork") {
+        return 0.12;
+    }
+    if (_p == "ty_") {
+        return 0.00;
+    }
+    return 0.35;
+}
+
+/// @function grid_seek_cover
+/// @description Sidesteps into an adjacent tile that puts a barrier between the
+/// squad and what is shooting at it, without giving ground. Returns true if it
+/// moved, so the caller knows the tick was spent.
+function grid_seek_cover(ctrl, _si, _ti) {
+    var _s = ctrl.squads[_si];
+    if (_s.is_vehicle || (random(1) >= grid_cover_urge(_s.type))) {
+        return false;
+    }
+    var _t = ctrl.squads[_ti];
+    var _here = grid_line_block(ctrl, _t.col, _t.row, _s.col, _s.row);
+    var _best = (_here[1] * 2) + _here[2];
+    if (_best > 0) {
+        // Already behind something. Staying put is the right move.
+        return false;
+    }
+    for (var _dx = -1; _dx <= 1; _dx++) {
+        for (var _dy = -1; _dy <= 1; _dy++) {
+            if ((_dx == 0) && (_dy == 0)) {
+                continue;
+            }
+            var _nc = _s.col + _dx;
+            var _nr = _s.row + _dy;
+            if (!grid_passable(ctrl, _nc, _nr)) {
+                continue;
+            }
+            if (grid_dist(_nc, _nr, _t.col, _t.row) > _s.rng) {
+                continue;
+            }
+            var _cand = grid_line_block(ctrl, _t.col, _t.row, _nc, _nr);
+            if (_cand[0]) {
+                continue;
+            }
+            // Heavy cover is worth twice light, so a squad steps behind sandbags
+            // in preference to a treeline when both are available.
+            if (((_cand[1] * 2) + _cand[2]) <= _best) {
+                continue;
+            }
+            ctrl.occ[_s.col][_s.row] = -1;
+            _s.col = _nc;
+            _s.row = _nr;
+            ctrl.occ[_nc][_nr] = _si;
+            return true;
+        }
+    }
+    return false;
+}
+
+/// @function grid_passable
+/// @description One test for "can a body stand here". Walls and barriers are
+/// terrain, not units, so occupancy alone was never enough once buildings
+/// existed.
+function grid_passable(ctrl, _c, _r) {
+    if (!grid_in_bounds(ctrl, _c, _r)) {
+        return false;
+    }
+    if (ctrl.occ[_c][_r] != -1) {
+        return false;
+    }
+    var _t = ctrl.blk[_c][_r];
+    return ((_t == GRIDT_OPEN) || (_t == GRIDT_LIGHT));
+}
+
+/// @function grid_line_block
+/// @description Walks the tiles between two points and reports what the shot has
+/// to get through. Returns [blocked by a wall, heavy cover crossed, light cover
+/// crossed]. Endpoints are excluded: standing in a doorway does not shield you
+/// from the man in it. Because this is measured from the shooter's actual
+/// position, moving around a squad takes its cover away. Flanking works, and
+/// works for free.
+function grid_line_block(ctrl, _c0, _r0, _c1, _r1) {
+    var _dx = abs(_c1 - _c0);
+    var _dy = abs(_r1 - _r0);
+    var _sx = (_c0 < _c1) ? 1 : -1;
+    var _sy = (_r0 < _r1) ? 1 : -1;
+    var _err = _dx - _dy;
+    var _c = _c0;
+    var _r = _r0;
+    var _bars = 0;
+    var _light = 0;
+    var _guard = 0;
+    while (((_c != _c1) || (_r != _r1)) && (_guard < 512)) {
+        _guard += 1;
+        var _e2 = _err * 2;
+        if (_e2 > -_dy) {
+            _err -= _dy;
+            _c += _sx;
+        }
+        if (_e2 < _dx) {
+            _err += _dx;
+            _r += _sy;
+        }
+        if ((_c == _c1) && (_r == _r1)) {
+            break;
+        }
+        if (!grid_in_bounds(ctrl, _c, _r)) {
+            continue;
+        }
+        var _t = ctrl.blk[_c][_r];
+        if (_t == GRIDT_WALL) {
+            return [true, _bars, _light];
+        }
+        if (_t == GRIDT_BARRIER) {
+            _bars += 1;
+        } else if (_t == GRIDT_LIGHT) {
+            _light += 1;
+        }
+    }
+    return [false, _bars, _light];
+}
+
+/// @function grid_build_rect
+/// @description Lays one structure: a wall perimeter with door gaps, barriers
+/// along the face the enemy will come from, and an open interior to fight in.
+function grid_build_rect(ctrl, _c0, _r0, _w, _h) {
+    var _c1 = _c0 + _w - 1;
+    var _r1 = _r0 + _h - 1;
+    for (var _c = _c0; _c <= _c1; _c++) {
+        for (var _r = _r0; _r <= _r1; _r++) {
+            if (!grid_in_bounds(ctrl, _c, _r)) {
+                continue;
+            }
+            var _edge = ((_c == _c0) || (_c == _c1) || (_r == _r0) || (_r == _r1));
+            if (!_edge) {
+                // Interior: open floor, and good cover to fight from.
+                ctrl.blk[_c][_r] = GRIDT_OPEN;
+                ctrl.cov[_c][_r] = 1;
+                continue;
+            }
+            // The western face is what the Chapter sees first, so that is where
+            // the windows and firing slits go.
+            if ((_c == _c0) && ((_r mod 2) == 0)) {
+                ctrl.blk[_c][_r] = GRIDT_BARRIER;
+            } else {
+                ctrl.blk[_c][_r] = GRIDT_WALL;
+            }
+        }
+    }
+    // Doors: one on each long face, so a building can be stormed rather than
+    // just shot at.
+    var _dr = _r0 + 1 + irandom(max(0, _h - 3));
+    if (grid_in_bounds(ctrl, _c0, _dr)) {
+        ctrl.blk[_c0][_dr] = GRIDT_OPEN;
+    }
+    if (grid_in_bounds(ctrl, _c1, _dr)) {
+        ctrl.blk[_c1][_dr] = GRIDT_OPEN;
+    }
+}
+
+/// @function grid_terrain_from_region_name
+/// @description Recovers a region's terrain from its name. Region does not store
+/// terrain: worldgen uses it to pick a name from that terrain's pool and then
+/// discards it, so the name is the only record and is read back the same way it
+/// was written. Anything unrecognised is open ground.
+function grid_terrain_from_region_name(_name) {
+    var _kinds = ["urban", "forest", "mountain", "coastal", "open"];
+    for (var _i = 0; _i < array_length(_kinds); _i++) {
+        if (array_contains(region_terrain_name_pool(_kinds[_i]), _name)) {
+            return _kinds[_i];
+        }
+    }
+    return "open";
+}
+
+/// @function grid_gen_structures
+/// @description Puts the region on the board. Urban ground gets hab blocks with
+/// windows to fight from, a capital gets one heavy fort with an outer wall and a
+/// firing gallery, mountains get impassable rock, forest gets thick cover and
+/// coast gets open ground that hurts to cross.
+function grid_gen_structures(ctrl) {
+    var _t = string_lower(string(ctrl.pending_terrain));
+    var _west = GRIDC_DEPLOY_COLS + 2;
+    var _east = ctrl.cols - 2;
+    var _span = max(4, _east - _west);
+
+    if (ctrl.pending_capital) {
+        // The fort: one large works, thick walled, with a gallery inside.
+        var _fw = clamp(round(_span * 0.30), 7, 16);
+        var _fh = clamp(round(ctrl.rows * 0.55), 7, 20);
+        var _fc = clamp(round(_east - _fw - 2), _west, _east - _fw);
+        var _fr = clamp(round((ctrl.rows - _fh) / 2), 0, max(0, ctrl.rows - _fh));
+        grid_build_rect(ctrl, _fc, _fr, _fw, _fh);
+        // Outworks: a barrier line the attackers have to cross first.
+        var _ow = max(_west, _fc - 4);
+        for (var _r = _fr; _r < (_fr + _fh); _r++) {
+            if (grid_in_bounds(ctrl, _ow, _r) && ((_r mod 3) != 0)) {
+                ctrl.blk[_ow][_r] = GRIDT_BARRIER;
+            }
+        }
+    }
+
+    if ((_t == "urban") || ctrl.pending_capital) {
+        var _blocks = ctrl.pending_capital ? 2 : (3 + irandom(3));
+        for (var _b = 0; _b < _blocks; _b++) {
+            var _bw = 4 + irandom(4);
+            var _bh = 3 + irandom(4);
+            var _bc = _west + irandom(max(1, _span - _bw));
+            var _br = irandom(max(0, ctrl.rows - _bh - 1));
+            // Never build over anything already standing.
+            var _clear = true;
+            for (var _cc = _bc - 1; _cc <= (_bc + _bw); _cc++) {
+                for (var _rr = _br - 1; _rr <= (_br + _bh); _rr++) {
+                    if (grid_in_bounds(ctrl, _cc, _rr) && (ctrl.blk[_cc][_rr] != GRIDT_OPEN)) {
+                        _clear = false;
+                    }
+                }
+            }
+            if (_clear) {
+                grid_build_rect(ctrl, _bc, _br, _bw, _bh);
+            }
+        }
+        // Rubble and burnt-out wreckage between the blocks: light cover in the
+        // streets, so the ground between buildings is not bare killing floor.
+        for (var _c4 = _west; _c4 <= _east; _c4++) {
+            for (var _r4 = 0; _r4 < ctrl.rows; _r4++) {
+                if ((ctrl.blk[_c4][_r4] == GRIDT_OPEN) && (random(1) < 0.07)) {
+                    ctrl.blk[_c4][_r4] = GRIDT_LIGHT;
+                }
+            }
+        }
+        return;
+    }
+
+    if (_t == "mountain") {
+        // Rock: impassable, no firing positions, forces the fight into the gaps.
+        var _rocks = 6 + irandom(6);
+        for (var _k = 0; _k < _rocks; _k++) {
+            var _rc = _west + irandom(max(1, _span));
+            var _rr2 = irandom(max(0, ctrl.rows - 1));
+            var _size = 1 + irandom(2);
+            for (var _c2 = _rc; _c2 < (_rc + _size); _c2++) {
+                for (var _r2 = _rr2; _r2 < (_rr2 + _size); _r2++) {
+                    if (grid_in_bounds(ctrl, _c2, _r2)) {
+                        ctrl.blk[_c2][_r2] = GRIDT_WALL;
+                    }
+                }
+            }
+        }
+        return;
+    }
+
+    if (_t == "forest") {
+        // Treeline: light cover you can walk through, thickly scattered, so a
+        // wood degrades fire from every angle without ever stopping a charge.
+        for (var _c3 = _west; _c3 <= _east; _c3++) {
+            for (var _r3 = 0; _r3 < ctrl.rows; _r3++) {
+                if (random(1) < 0.16) {
+                    ctrl.blk[_c3][_r3] = GRIDT_LIGHT;
+                }
+            }
+        }
+    }
+}
+
+/// @function grid_gen_cover/// @function grid_gen_cover
 function grid_gen_cover(ctrl) {
+    var _t = string_lower(string(ctrl.pending_terrain));
+    var _good = 0.08;
+    var _bad = 0.04;
+    switch (_t) {
+        case "forest":
+            _good = 0.22;
+            _bad = 0.02;
+            break;
+        case "urban":
+            _good = 0.14;
+            _bad = 0.03;
+            break;
+        case "mountain":
+            _good = 0.16;
+            _bad = 0.08;
+            break;
+        case "coastal":
+            _good = 0.05;
+            _bad = 0.14;
+            break;
+        case "open":
+            _good = 0.05;
+            _bad = 0.10;
+            break;
+    }
     for (var _c = 0; _c < ctrl.cols; _c++) {
         for (var _r = 0; _r < ctrl.rows; _r++) {
+            if (ctrl.blk[_c][_r] != GRIDT_OPEN) {
+                continue;
+            }
             var _roll = random(1);
-            if (_roll < 0.08) {
+            if (_roll < _good) {
                 ctrl.cov[_c][_r] = 1;
-            } else if (_roll < 0.12) {
+            } else if (_roll < (_good + _bad)) {
                 ctrl.cov[_c][_r] = -1;
             }
         }
@@ -1275,7 +1637,7 @@ function grid_column_slots(ctrl, _col, _n) {
             if (!grid_in_bounds(ctrl, _c, _r)) {
                 continue;
             }
-            if (ctrl.occ[_c][_r] != -1) {
+            if (!grid_passable(ctrl, _c, _r)) {
                 continue;
             }
             if (!grid_in_deploy_zone(ctrl, _c, _r)) {
@@ -1544,6 +1906,15 @@ function grid_attack(ctrl, _ai, _di, _melee) {
     if (!_melee && (_a.fire_cd > 0)) {
         return 0;
     }
+    // Nothing shoots through a wall. No tracer, no reload spent: the shot was
+    // never taken, and the absence of fire through a building reads correctly.
+    var _los = [false, 0];
+    if (!_melee) {
+        _los = grid_line_block(ctrl, _a.col, _a.row, _d.col, _d.row);
+        if (_los[0]) {
+            return 0;
+        }
+    }
     var _eff = max(1, _a.men);
     var _raw = _stat * _eff * random_range(0.8, 1.2);
     if (_a.sgt_hp == 0) {
@@ -1600,6 +1971,22 @@ function grid_attack(ctrl, _ai, _di, _melee) {
                 // Open ground has nothing to roll: it simply hurts more.
                 _raw *= GRIDC_COVER_BAD;
             }
+        }
+        // Barriers: windows, low walls, firing slits. Each one crossed turns
+        // part of the shot, scaled by how well that race actually uses cover, and
+        // the roll is weighted half again toward an outright dodge so the DODGED
+        // marker shows what the position is doing for them.
+        if ((_los[1] > 0) || (_los[2] > 0)) {
+            var _skill = grid_cover_skill(_d.type);
+            var _soak = max(GRIDC_BARRIER_FLOOR,
+                power(1 - (GRIDC_BARRIER_SOAK * _skill), _los[1])
+                    * power(1 - (GRIDC_LIGHT_SOAK * _skill), _los[2]));
+            _ev = grid_roll_event(_soak, min(0.95, GRIDC_EVENT_SHARE * 1.5));
+            if (_ev[0]) {
+                grid_mark_outcome(ctrl, _di, GRIDHIT_DODGE);
+                return 0;
+            }
+            _raw *= _ev[1];
         }
         // Armour as terrain: infantry sheltering against a friendly hull get a
         // save, so parking a Rhino in front of a squad is a real tactic.
@@ -1959,7 +2346,7 @@ function grid_free_tile_near(ctrl, _tc, _tr) {
             }
             var _c = _tc + _dx;
             var _r = _tr + _dy;
-            if (grid_in_bounds(ctrl, _c, _r) && (ctrl.occ[_c][_r] == -1)) {
+            if (grid_passable(ctrl, _c, _r)) {
                 return [_c, _r];
             }
         }
@@ -2023,7 +2410,7 @@ function grid_step_toward(ctrl, _si, _tc, _tr) {
         if (!grid_in_bounds(ctrl, _nc, _nr)) {
             continue;
         }
-        if (ctrl.occ[_nc][_nr] != -1) {
+        if (!grid_passable(ctrl, _nc, _nr)) {
             continue;
         }
         if (grid_dist(_nc, _nr, _tc, _tr) > _cd) {
@@ -2236,7 +2623,9 @@ function grid_act_player(ctrl, _si) {
         }
         grid_attack(ctrl, _si, _ti, true);
     } else if ((_dd <= _s.rng) && (_s.bal > 0) && !_seek) {
-        grid_attack(ctrl, _si, _ti, false);
+        if (!grid_seek_cover(ctrl, _si, _ti)) {
+            grid_attack(ctrl, _si, _ti, false);
+        }
     } else if (_ord != GRIDORD_HOLD) {
         for (var _m3 = 0; _m3 < _steps; _m3++) {
             if (!grid_step_toward(ctrl, _si, _t.col, _t.row)) {
@@ -2306,7 +2695,9 @@ function grid_act_enemy(ctrl, _si) {
         }
         grid_attack(ctrl, _si, _ti, true);
     } else if ((_dd <= _s.rng) && (_s.bal > 0) && !grid_wants_melee(_s)) {
-        grid_attack(ctrl, _si, _ti, false);
+        if (!grid_seek_cover(ctrl, _si, _ti)) {
+            grid_attack(ctrl, _si, _ti, false);
+        }
     } else {
         for (var _m = 0; _m < _steps; _m++) {
             if (!grid_step_toward(ctrl, _si, _t.col, _t.row)) {
@@ -3015,6 +3406,12 @@ function grid_take_over(_nc) {
     _gc.pending_threat = _threat;
     _gc.pending_loc = _loc;
     _gc.pending_columns = grid_formation_columns();
+    if (variable_instance_exists(_nc, "grid_terrain")) {
+        _gc.pending_terrain = _nc.grid_terrain;
+    }
+    if (variable_instance_exists(_nc, "grid_capital")) {
+        _gc.pending_capital = _nc.grid_capital;
+    }
     _gc.pending_live = true;
     return true;
 }
