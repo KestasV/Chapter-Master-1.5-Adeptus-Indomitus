@@ -34,7 +34,14 @@ function scr_wipe_unit(company, unit_slot) {
     array_set(obj_ini.god[company], unit_slot, 0);
     array_set(obj_ini.age[company], unit_slot, 0);
     array_set(obj_ini.mobi[company], unit_slot, "");
-    array_set(obj_ini.TTRPG[company], unit_slot, undefined);
+    // A wiped slot must hold a blank unit, not undefined. Three separate readers
+    // (scr_company_view, SearchConditions.evaluate and the garrison log) call
+    // unit.name() on every slot in a company with no guard, so one undefined
+    // entry makes that whole company unopenable until the next save and load,
+    // which is when obj_ini rebuilds every slot as a real struct and quietly
+    // hides the problem. This is the same blank scr_move_unit_info already
+    // writes in its own guarded branch.
+    array_set(obj_ini.TTRPG[company], unit_slot, new TTRPG_stats("chapter", company, unit_slot, "blank"));
 }
 
 function kill_and_recover(company, unit_slot, equipment = true, gene_seed_collect = true) {

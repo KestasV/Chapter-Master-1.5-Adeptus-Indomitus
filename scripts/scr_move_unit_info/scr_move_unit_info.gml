@@ -74,9 +74,17 @@ function scr_move_unit_info(start_company, end_company, start_slot, end_slot, ev
 
     obj_ini.TTRPG[end_company][end_slot] = obj_ini.TTRPG[start_company][start_slot];
 
-    obj_ini.TTRPG[start_company][start_slot] = _temp_struct;
-    _temp_struct.company = start_company;
-    _temp_struct.marine_number = start_slot;
+    // Whatever was standing in the destination slot goes back to the start slot.
+    // It may not be a unit at all: an empty slot holds a blank, and before the
+    // fix in scr_wipe_unit it could hold undefined. Guarded the same way the
+    // mirror case below already is, rather than writing members onto it blind.
+    if (is_struct(_temp_struct)) {
+        obj_ini.TTRPG[start_company][start_slot] = _temp_struct;
+        _temp_struct.company = start_company;
+        _temp_struct.marine_number = start_slot;
+    } else {
+        obj_ini.TTRPG[start_company][start_slot] = new TTRPG_stats("chapter", start_company, start_slot, "blank");
+    }
 
     _temp_struct = fetch_unit([end_company, end_slot]);
     if (is_struct(_temp_struct)) {
