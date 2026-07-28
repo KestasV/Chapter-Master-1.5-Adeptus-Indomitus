@@ -172,7 +172,7 @@ function grid_unit_def(_key) {
     var _t = {
         tactical:      { disp: "Tacticals",       men: 10, hp_man: 12, armour: 12, mel: 10, bal: 13, rng: 6, spd: 1.0, cost: 2, glyph: "infantry",  ascii: "T",  vehicle: false, melee: false, tele: false, jump: false, sprite: -1 },
         assault:       { disp: "Assaults",        men: 10, hp_man: 12, armour: 11, mel: 15, bal: 7,  rng: 3, spd: 1.0, cost: 2, glyph: "jump",      ascii: "A",  vehicle: false, melee: true,  tele: false, jump: true,  sprite: -1 },
-        devastator:    { disp: "Devastators",     men: 10, hp_man: 12, armour: 12, mel: 8,  bal: 18, rng: 9, spd: 0.5, cost: 3, glyph: "heavy",     ascii: "D",  vehicle: false, melee: false, tele: false, jump: false, sprite: -1 },
+        devastator:    { disp: "Devastators",     men: 10, hp_man: 12, armour: 12, mel: 8,  bal: 18, rng: 9, spd: 1.0, cost: 3, glyph: "heavy",     ascii: "D",  vehicle: false, melee: false, tele: false, jump: false, sprite: -1 },
         veteran:       { disp: "Veterans",        men: 10, hp_man: 14, armour: 13, mel: 14, bal: 15, rng: 6, spd: 1.0, cost: 3, glyph: "infantry",  ascii: "V",  vehicle: false, melee: false, tele: false, jump: false, sprite: -1 },
         terminator:    { disp: "Terminators",     men: 5,  hp_man: 26, armour: 20, mel: 16, bal: 16, rng: 5, spd: 0.5, cost: 4, glyph: "term",      ascii: "TR", vehicle: false, melee: false, tele: true,  jump: false, sprite: -1 },
         assault_term:  { disp: "Asslt Terms",     men: 5,  hp_man: 26, armour: 20, mel: 22, bal: 5,  rng: 2, spd: 0.5, cost: 4, glyph: "term",      ascii: "AT", vehicle: false, melee: true,  tele: true,  jump: false, sprite: -1 },
@@ -218,6 +218,7 @@ function grid_unit_def(_key) {
         ig_chimera:     { disp: "Chimeras",            men: 1  , hp_man: 120 , armour: 21 , mel: 2  , bal: 10 , rng: 8 , spd: 2.0, cost: 0, glyph: "transport",  ascii: "CM",  vehicle: true  , melee: false , tele: false , jump: false , sprite: -1 },
         ig_basilisk:    { disp: "Basilisks",           men: 1  , hp_man: 90  , armour: 21 , mel: 2  , bal: 21 , rng: 7 , spd: 0.5, cost: 0, glyph: "tank",       ascii: "BA",  vehicle: true  , melee: false , tele: false , jump: false , sprite: -1 },
         ad_thallax:     { disp: "Thallax",             men: 10 , hp_man: 8   , armour: 16 , mel: 8  , bal: 7  , rng: 5 , spd: 1.0, cost: 0, glyph: "term",       ascii: "TX",  vehicle: false , melee: false , tele: false , jump: false , sprite: -1 },
+        ig_sentinel:    { disp: "Sentinels",          men: 1  , hp_man: 60  , armour: 14 , mel: 8  , bal: 10 , rng: 5 , spd: 2.0, cost: 0, glyph: "walker",    ascii: "SE", vehicle: true , melee: false , tele: false , jump: false , sprite: -1 },
         ad_servitor:    { disp: "Praetorians",         men: 8  , hp_man: 12  , armour: 9  , mel: 2  , bal: 7  , rng: 5 , spd: 0.5, cost: 0, glyph: "heavy",      ascii: "PS",  vehicle: false , melee: false , tele: false , jump: false , sprite: -1 },
         ec_sister:      { disp: "Battle Sisters",      men: 10 , hp_man: 5   , armour: 9  , mel: 6  , bal: 10 , rng: 7 , spd: 1.0, cost: 0, glyph: "infantry",   ascii: "SI",  vehicle: false , melee: false , tele: false , jump: false , sprite: -1 },
         ec_repentia:    { disp: "Repentia",            men: 10 , hp_man: 6   , armour: 3  , mel: 20 , bal: 1  , rng: 1 , spd: 1.0, cost: 0, glyph: "infantry",   ascii: "RP",  vehicle: false , melee: true  , tele: false , jump: false , sprite: -1 },
@@ -295,8 +296,46 @@ function grid_head_art(_key) {
             return { spr: spr_scout_heads, sub: 0, x1: 73, y1: 28, x2: 97, y2: 62 };
         case "guardsmen":
             return grid_guardsman_head();
+        // Runtime art, loaded from images\units and cropped to the drawn pixels.
+        case "ig_guardsman":
+            return grid_runtime_art("grid_guardsman", 8, 6, 40, 38);
+        case "ig_russ":
+        case "he_russ":
+            return grid_runtime_art("grid_leman_russ", 7, 18, 44, 38);
+        case "chimera":
+        case "ig_chimera":
+            return grid_runtime_art("grid_chimera", 6, 11, 43, 31);
+        case "ig_basilisk":
+            return grid_runtime_art("grid_basilisk", 7, 9, 44, 37);
+        case "whirlwind":
+            return grid_runtime_art("grid_whirlwind", 5, 4, 36, 34);
+        case "ig_sentinel":
+            return grid_runtime_art("grid_sentinel", 10, 9, 40, 40);
     }
     return undefined;
+}
+
+/// @function grid_runtime_art
+/// @description Loads a unit icon from images\units once and caches it by name.
+/// These have no compiled sprite asset, the same as the Guard head, and the crop
+/// box is the drawn pixels rather than the whole canvas. Returns undefined if the
+/// file is missing, which falls back to the glyph rather than drawing nothing.
+function grid_runtime_art(_file, _x1, _y1, _x2, _y2) {
+    if (!variable_global_exists("grid_art_cache")) {
+        global.grid_art_cache = {};
+    }
+    var _spr = -1;
+    if (variable_struct_exists(global.grid_art_cache, _file)) {
+        _spr = global.grid_art_cache[$ _file];
+    }
+    if (!sprite_exists(_spr)) {
+        _spr = sprite_add(working_directory + "/images/units/" + _file + ".png", 1, false, false, 0, 0);
+        global.grid_art_cache[$ _file] = _spr;
+    }
+    if (!sprite_exists(_spr)) {
+        return undefined;
+    }
+    return { spr: _spr, sub: 0, x1: _x1, y1: _y1, x2: _x2, y2: _y2 };
 }
 
 /// @function grid_guardsman_head
@@ -1023,6 +1062,11 @@ function grid_gen_cover(ctrl) {
             if (ctrl.blk[_c][_r] != GRIDT_OPEN) {
                 continue;
             }
+            if (ctrl.cov[_c][_r] != 0) {
+                // Already set by a structure. A building's floor is not open
+                // ground to be re-rolled into a mudflat.
+                continue;
+            }
             var _roll = random(1);
             if (_roll < _good) {
                 ctrl.cov[_c][_r] = 1;
@@ -1086,7 +1130,7 @@ function grid_spawn_enemy_squad(ctrl, _key, _idx, _pc = -1, _pr = -1) {
     // in beside it rather than being flung to the far side of the field, so a
     // crescent stays a crescent even where two slots round onto one tile.
     if (grid_in_bounds(ctrl, _pc, _pr)) {
-        if (ctrl.occ[_pc][_pr] == -1) {
+        if (grid_passable(ctrl, _pc, _pr)) {
             _sq.col = _pc;
             _sq.row = _pr;
             _placed = true;
@@ -1102,7 +1146,7 @@ function grid_spawn_enemy_squad(ctrl, _key, _idx, _pc = -1, _pr = -1) {
     for (var _try = 0; (_try < 200) && !_placed; _try++) {
         var _c = ctrl.cols - 1 - irandom(GRIDC_ENEMY_COLS - 1);
         var _r = irandom(ctrl.rows - 1);
-        if (ctrl.occ[_c][_r] == -1) {
+        if (grid_passable(ctrl, _c, _r)) {
             _sq.col = _c;
             _sq.row = _r;
             _placed = true;
@@ -1112,7 +1156,7 @@ function grid_spawn_enemy_squad(ctrl, _key, _idx, _pc = -1, _pr = -1) {
     if (!_placed) {
         for (var _c2 = ctrl.cols - 1; _c2 >= 0; _c2--) {
             for (var _r2 = 0; _r2 < ctrl.rows; _r2++) {
-                if (ctrl.occ[_c2][_r2] == -1) {
+                if (grid_passable(ctrl, _c2, _r2)) {
                     _sq.col = _c2;
                     _sq.row = _r2;
                     _placed = true;
@@ -1344,7 +1388,7 @@ function grid_placement_valid(ctrl, _list, _ac, _ar) {
             if (!grid_in_bounds(ctrl, _c, _r)) {
                 return false;
             }
-            if (ctrl.occ[_c][_r] != -1) {
+            if (!grid_passable(ctrl, _c, _r)) {
                 return false;
             }
             if (!_all_tele && !grid_in_deploy_zone(ctrl, _c, _r)) {
@@ -1472,7 +1516,7 @@ function grid_slots_valid(ctrl, _list, _slots) {
         if (!grid_in_bounds(ctrl, _c, _r)) {
             return false;
         }
-        if (ctrl.occ[_c][_r] != -1) {
+        if (!grid_passable(ctrl, _c, _r)) {
             return false;
         }
         if (!_all_tele && !grid_in_deploy_zone(ctrl, _c, _r)) {
@@ -2400,6 +2444,16 @@ function grid_step_toward(ctrl, _si, _tc, _tr) {
         [_dc, -_dr],
         [-_dc, _dr],
     ];
+    // Buildings exist now, so the five direct options can all be blocked while
+    // the way round is one tile to the side. Those sidesteps are appended last,
+    // and are allowed not to close the distance, which is what lets a squad walk
+    // along a wall to reach the door instead of grinding against it.
+    if (_dc != 0) {
+        array_push(_opts, [0, 1], [0, -1]);
+    }
+    if (_dr != 0) {
+        array_push(_opts, [1, 0], [-1, 0]);
+    }
     var _cd = grid_dist(_s.col, _s.row, _tc, _tr);
     for (var _k = 0; _k < array_length(_opts); _k++) {
         var _nc = _s.col + _opts[_k][0];
@@ -2413,7 +2467,12 @@ function grid_step_toward(ctrl, _si, _tc, _tr) {
         if (!grid_passable(ctrl, _nc, _nr)) {
             continue;
         }
-        if (grid_dist(_nc, _nr, _tc, _tr) > _cd) {
+        // The first five must close the distance; the sidesteps after them are
+        // the way around an obstacle and may not.
+        if ((_k < 5) && (grid_dist(_nc, _nr, _tc, _tr) > _cd)) {
+            continue;
+        }
+        if ((_k >= 5) && (grid_dist(_nc, _nr, _tc, _tr) > (_cd + 1))) {
             continue;
         }
         ctrl.occ[_s.col][_s.row] = -1;
@@ -2444,7 +2503,7 @@ function grid_step_away(ctrl, _si, _fc, _fr) {
         if (!grid_in_bounds(ctrl, _nc, _nr)) {
             continue;
         }
-        if (ctrl.occ[_nc][_nr] != -1) {
+        if (!grid_passable(ctrl, _nc, _nr)) {
             continue;
         }
         if (grid_dist(_nc, _nr, _fc, _fr) <= _cd) {
@@ -3924,7 +3983,7 @@ function grid_enemy_set(_faction) {
         case eFACTION.MECHANICUS:
             // The Mechanicus borrows the Guard's armour, which is what the
             // vanilla rosters do too.
-            return ["ad_thallax", "ig_ogryn", "ad_servitor", "ig_russ", "ig_chimera", "ig_basilisk"];
+            return ["ad_thallax", "ig_ogryn", "ad_servitor", "ig_sentinel", "ig_chimera", "ig_basilisk"];
         case eFACTION.ECCLESIARCHY:
             return ["ec_sister", "ec_repentia", "ec_celestian", "ec_penitent", "ec_immolator", "ec_arco"];
         case eFACTION.ELDAR:
@@ -3971,7 +4030,7 @@ function grid_reinforce(ctrl) {
         var _spot = [-1, -1];
         for (var _c = 0; (_c < GRIDC_DEPLOY_COLS) && (_spot[0] < 0); _c++) {
             for (var _r = ctrl.band_r1; (_r <= ctrl.band_r2) && (_spot[0] < 0); _r++) {
-                if (ctrl.occ[_c][_r] == -1) {
+                if (grid_passable(ctrl, _c, _r)) {
                     _spot = [_c, _r];
                 }
             }
