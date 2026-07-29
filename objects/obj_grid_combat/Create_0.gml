@@ -55,7 +55,9 @@ result = 0;
 ticks = 0;
 frame_ctr = 0;
 paused = false;
-speed_mult = 1;
+// Battles start at the slowest tier. Testers were consistently overrun before
+// they could give an order at the old default.
+speed_mult = 0.25;
 exit_arm = 0;
 waves_left = GRIDC_WAVES;
 
@@ -99,6 +101,14 @@ live1 = [];
 // Mean anchor column of each side's formations: where its line currently is.
 line0 = -1;
 line1 = -1;
+
+// Auto battle: the player's blocks take their own orders.
+auto_battle = false;
+// Marker legend overlay.
+show_legend = false;
+// How many squads the player chose to put on the line. Reserves replace losses
+// against this number rather than filling every free tile.
+deployed_at_start = 0;
 
 agg_ekills = 0;
 agg_pkills = 0;

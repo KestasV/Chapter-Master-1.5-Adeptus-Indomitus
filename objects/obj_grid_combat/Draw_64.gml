@@ -120,6 +120,43 @@ if (_tp >= 14) {
     draw_set_alpha(1);
 }
 
+// legend: what every mark on the field means
+if (show_legend) {
+    var _lgx = GRIDC_BF_X1 + 20;
+    var _lgy = GRIDC_BF_Y1 + 20;
+    var _rows = [
+        ["Solid grey", "Wall. Impassable, and stops shots dead."],
+        ["Half grey", "Barrier: window, sandbags, low wall. Impassable, shots pass, heavy cover."],
+        ["Green box", "Trees, scrub, wreckage. Walk through it, light cover."],
+        ["Green ~~", "Good ground: trench, crater, rubble. Cover from every side."],
+        ["Red xx", "Open ground. You take more fire standing here."],
+        ["", ""],
+        ["MISS / DEFLECTED", "Grey. Went wide, or armour turned it."],
+        ["DODGED", "Yellow. Cover took the shot."],
+        ["GRAZED / WOUNDED", "Red on yours, green on theirs. Bright is a graze, dark a kill."],
+        ["", ""],
+        ["Left click", "Select a formation. Drag a box for several."],
+        ["Right click", "Move there, or right click an enemy to focus fire."],
+        ["Ctrl + 1..9", "Bind a control group. Number alone recalls it."],
+        ["Space", "Pause. Speed cycles Crawl to Very Fast."],
+        ["Cover is directional", "Flank a squad and whatever it hid behind stops counting."],
+    ];
+    draw_set_color(c_black);
+    draw_set_alpha(0.86);
+    draw_rectangle(_lgx - 12, _lgy - 12, _lgx + 660, _lgy + (array_length(_rows) * 20) + 10, false);
+    draw_set_alpha(1);
+    draw_set_color(GRIDC_GREEN);
+    draw_rectangle(_lgx - 12, _lgy - 12, _lgx + 660, _lgy + (array_length(_rows) * 20) + 10, true);
+    draw_set_font(fnt_40k_12);
+    for (var _lg = 0; _lg < array_length(_rows); _lg++) {
+        draw_set_color(GRIDC_GREEN);
+        draw_text(_lgx, _lgy + (_lg * 20), _rows[_lg][0]);
+        draw_set_color(c_white);
+        draw_text(_lgx + 180, _lgy + (_lg * 20), _rows[_lg][1]);
+    }
+    draw_set_color(c_white);
+}
+
 // hover
 if ((hover_c >= 0) && (phase != GRIDPH_END)) {
     draw_set_alpha(0.20);

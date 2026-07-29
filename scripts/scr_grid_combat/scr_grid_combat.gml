@@ -2648,7 +2648,11 @@ function grid_act_player(ctrl, _si) {
     }
 
     var _dd = grid_dist(_s.col, _s.row, _t.col, _t.row);
-    var _seek = (_stance == 1) || ((_stance == 0) && grid_wants_melee(_s));
+    // Hold is Hold Position, not Hold Fire. A melee squad ordered to hold cannot
+    // charge, so it must be allowed to shoot instead; without this exemption it
+    // seeks a charge it is forbidden to make and spends the whole battle idle.
+    var _seek = (_ord != GRIDORD_HOLD)
+        && ((_stance == 1) || ((_stance == 0) && grid_wants_melee(_s)));
 
     if (_stance == 2) {
         if (_dd <= 1) {
@@ -2766,12 +2770,37 @@ function grid_act_enemy(ctrl, _si) {
     }
 }
 
+/// @function grid_auto_orders
+/// @description Auto battle. The player's formations are given the orders a
+/// competent commander would give and then fight under the same rules the enemy
+/// does: advance until contact, then let doctrine decide whether each squad
+/// closes or holds off and shoots. It issues orders rather than bypassing them,
+/// so the player can take back any formation at any time by giving it one.
+function grid_auto_orders(ctrl) {
+    for (var _i = 0; _i < array_length(ctrl.formations); _i++) {
+        var _f = ctrl.formations[_i];
+        if ((_f.side != 0) || !_f.alive) {
+            continue;
+        }
+        if (_f.order == GRIDORD_MOVE) {
+            continue;
+        }
+        if (_f.order != GRIDORD_ADVANCE) {
+            _f.order = GRIDORD_ADVANCE;
+            _f.order_target = -1;
+        }
+    }
+}
+
 /// @function grid_battle_tick
 function grid_battle_tick(ctrl) {
     ctrl.ticks += 1;
     ctrl.agg_ekills = 0;
     ctrl.agg_pkills = 0;
     grid_refresh_live(ctrl);
+    if (ctrl.auto_battle) {
+        grid_auto_orders(ctrl);
+    }
     for (var _rl = 0; _rl < array_length(ctrl.squads); _rl++) {
         if (ctrl.squads[_rl].fire_cd > 0) {
             ctrl.squads[_rl].fire_cd -= 1;
@@ -3205,16 +3234,6 @@ function grid_buttons(ctrl) {
     }
     array_push(_b, { bx: GRIDC_LP_X1 + 8, by: GRIDC_PANEL_Y2 - 46, bw: 240, bh: 34, bid: "deployall", blabel: "Deploy All", benabled: _field });
 
-    var _spd = "Normal";
-    if (ctrl.speed_mult == 0.5) {
-        _spd = "Slow";
-    }
-    if (ctrl.speed_mult == 2) {
-        _spd = "Fast";
-    }
-    if (ctrl.speed_mult == 4) {
-        _spd = "Very Fast";
-    }
     var _zl = (ctrl.zoom_mode == 0) ? "Zoom: Battle" : "Zoom: Overview";
 
     if (_battle && (array_length(ctrl.selected) > 0)) {
@@ -3226,12 +3245,26 @@ function grid_buttons(ctrl) {
     }
     array_push(_b, { bx: 1336, by: 646, bw: 248, bh: 34, bid: "zoom", blabel: _zl, benabled: true });
     array_push(_b, { bx: 1336, by: 686, bw: 122, bh: 34, bid: "pause", blabel: ctrl.paused ? "Resume" : "Pause", benabled: _battle });
-    array_push(_b, { bx: 1464, by: 686, bw: 120, bh: 34, bid: "speed", blabel: _spd, benabled: _battle });
+    var _spd_label = "Speed: Normal";
+    if (ctrl.speed_mult <= 0.25) {
+        _spd_label = "Speed: Crawl";
+    } else if (ctrl.speed_mult <= 0.5) {
+        _spd_label = "Speed: Slow";
+    } else if (ctrl.speed_mult >= 4) {
+        _spd_label = "Speed: Very Fast";
+    } else if (ctrl.speed_mult >= 2) {
+        _spd_label = "Speed: Fast";
+    }
+    array_push(_b, { bx: 1464, by: 686, bw: 120, bh: 34, bid: "speed", blabel: _spd_label, benabled: _battle });
     if (_deploy) {
         array_push(_b, { bx: 1336, by: 726, bw: 248, bh: 40, bid: "start", blabel: "Begin Battle", benabled: grid_any_deployed(ctrl) });
     }
     // In a live battle leaving early is a withdrawal, and a withdrawal is a
     // defeat, so the button says so rather than reading like a way out.
+    array_push(_b, { bx: 1464, by: 646, bw: 120, bh: 36, bid: "auto",
+        blabel: ctrl.auto_battle ? "Auto: ON" : "Auto: OFF", benabled: _battle });
+    array_push(_b, { bx: 1336, by: 812, bw: 248, bh: 30, bid: "legend",
+        blabel: ctrl.show_legend ? "Hide Legend (L)" : "Legend (L)", benabled: true });
     var _exit_label = (ctrl.exit_arm > 0) ? "Confirm Exit" : "Exit Battle";
     if (ctrl.pending_live) {
         _exit_label = (ctrl.exit_arm > 0) ? "Confirm Withdrawal" : "Withdraw";
@@ -4013,7 +4046,10 @@ function grid_enemy_set(_faction) {
 /// This is what stops a huge chapter from swamping a narrow front: everyone
 /// still fights, just in sequence rather than all at once.
 function grid_reinforce(ctrl) {
-    var _free = GRIDC_PLAYER_DEPLOY_CAP - grid_deployed_count(ctrl);
+    // Reserves replace casualties; they do not thicken the line. Feeding
+    // everything in the moment the deployment cap allowed it turned a chosen
+    // thirty squad line into everything the Chapter owns, in one long queue.
+    var _free = ctrl.deployed_at_start - grid_deployed_count(ctrl);
     if (_free <= 0) {
         return 0;
     }

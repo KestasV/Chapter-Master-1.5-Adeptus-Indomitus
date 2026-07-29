@@ -219,12 +219,33 @@ if (_lc) {
         } else if (_bid == "deployall") {
             grid_deploy_all(id);
         } else if (_bid == "start") {
+            deployed_at_start = grid_deployed_count(id);
             phase = GRIDPH_BATTLE;
             grid_log(id, "Battle begins. The greenskins advance!", eMSG_COLOR.YELLOW);
         } else if (_bid == "pause") {
             paused = !paused;
+        } else if (_bid == "auto") {
+            auto_battle = !auto_battle;
+            grid_log(id, auto_battle
+                ? "Auto battle on: your formations will advance and fight on their own."
+                : "Auto battle off: your formations hold their current orders.", eMSG_COLOR.AQUA);
+        } else if (_bid == "legend") {
+            show_legend = !show_legend;
         } else if (_bid == "speed") {
-            speed_mult = (speed_mult == 0.5) ? 1 : ((speed_mult == 1) ? 2 : ((speed_mult == 2) ? 4 : 0.5));
+            // Crawl, Slow, Normal, Fast, Very Fast. The crawl tier exists
+            // because the first thing every tester said was that the battle was
+            // decided before they could give an order.
+            if (speed_mult == 0.25) {
+                speed_mult = 0.5;
+            } else if (speed_mult == 0.5) {
+                speed_mult = 1;
+            } else if (speed_mult == 1) {
+                speed_mult = 2;
+            } else if (speed_mult == 2) {
+                speed_mult = 4;
+            } else {
+                speed_mult = 0.25;
+            }
         } else if (_bid == "zoom") {
             var _kc = (hover_c >= 0) ? hover_c : floor(cols / 2);
             var _kr = (hover_r >= 0) ? hover_r : floor(rows / 2);
@@ -356,6 +377,10 @@ for (var _gk = 0; _gk <= 9; _gk++) {
             grid_log(id, $"Group {_gk} selected: {_gn} formations.", eMSG_COLOR.AQUA);
         }
     }
+}
+
+if (keyboard_check_pressed(ord("L"))) {
+    show_legend = !show_legend;
 }
 
 if (keyboard_check_pressed(vk_tab)) {
