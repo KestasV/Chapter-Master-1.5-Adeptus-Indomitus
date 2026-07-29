@@ -1337,6 +1337,19 @@ function faction_force_total(_faction, _level, _infra_turns = 32) {
 /// @param {Real} _faction  eFACTION value
 /// @returns {Real} 0-6 (0 if unmapped / no presence)
 function faction_planet_level(_star, _planet, _faction) {
+    // A cult that has not revolted holds no regions: planet_faction_composition
+    // returns an empty list for it. Its planet strength has to agree, or the
+    // player is shown an enemy on the world with nowhere to attack it. That is
+    // exactly what happens on the turn a cult appears, because whatever raised
+    // p_traitors ran after heretic_concealment_tick had already zeroed it for
+    // the turn, and it only looks self-correcting because the next tick either
+    // zeroes it again or reveals them. Concealed means concealed on both counts.
+    if ((_faction == eFACTION.HERETICS) && heretic_is_hidden(_star, _planet)) {
+        return 0;
+    }
+    if ((_faction == eFACTION.GENESTEALER) && genestealer_is_hidden(_star, _planet)) {
+        return 0;
+    }
     switch (_faction) {
         case eFACTION.ORK:          return _star.p_orks[_planet];
         case eFACTION.TAU:          return _star.p_tau[_planet];
