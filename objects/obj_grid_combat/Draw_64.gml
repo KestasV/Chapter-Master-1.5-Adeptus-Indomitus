@@ -138,7 +138,15 @@ if (show_legend) {
         ["Left click", "Select a formation. Drag a box for several."],
         ["Right click", "Move there, or right click an enemy to focus fire."],
         ["Ctrl + 1..9", "Bind a control group. Number alone recalls it."],
-        ["Space", "Pause. Speed cycles Crawl to Very Fast."],
+        ["Space", "Pause. Speed cycles Glacial to Very Fast."],
+        ["", ""],
+        ["Chapter orders", "One key, every formation. Micromanage the exceptions after."],
+        ["F1 Hold Position", "Stand and fight where you are."],
+        ["F2 Form Fire Line", "Nobody advances, nobody charges, everything shoots."],
+        ["F3 Advance", "Close on the enemy."],
+        ["F4 Advance and Hold", "Take the ground, then hold it instead of chasing."],
+        ["F5 Full Assault", "Everything charges."],
+        ["F6 Fall Back", "Withdraw west at the pace of the slowest block."],
         ["Cover is directional", "Flank a squad and whatever it hid behind stops counting."],
     ];
     draw_set_color(c_black);

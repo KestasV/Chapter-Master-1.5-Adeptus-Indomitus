@@ -487,6 +487,9 @@ function GridFormation(_side, _name, _colr) constructor {
     // Shared marching pace for formations ordered together, so a group moves at
     // the speed of its slowest block. -1 means each block uses its own.
     pace = -1;
+    // Set by the Advance and Hold plan: the block advances, and the moment it
+    // reaches the enemy it stops and fights where it stands instead of chasing.
+    hold_on_contact = false;
 }
 
 /// @function grid_log
@@ -2196,6 +2199,11 @@ function grid_form_advance(ctrl, _fi) {
     if (!_was || ((ctrl.ticks mod 3) == 0)) {
         _f.engaged = grid_form_contact(ctrl, _f);
     }
+    if (!_was && _f.engaged && _f.hold_on_contact) {
+        _f.order = GRIDORD_HOLD;
+        _f.order_target = -1;
+        _f.hold_on_contact = false;
+    }
     if (_was && !_f.engaged) {
         // The fight has moved on. Re-seat the anchor on the survivors and close
         // ranks before doing anything else; an attack order is stale by now.
@@ -2770,6 +2778,80 @@ function grid_act_enemy(ctrl, _si) {
     }
 }
 
+/// @function grid_battle_plan
+/// @description Battlefield wide orders. One key sets the shape of the whole
+/// engagement so the player can then spend attention on the two or three
+/// formations that actually need it, rather than issuing the same order fifteen
+/// times before the lines meet. Every plan is ordinary orders applied in bulk,
+/// so any formation can be taken back individually straight afterwards.
+function grid_battle_plan(ctrl, _plan) {
+    var _n = 0;
+    var _pace = 99;
+    for (var _p = 0; _p < array_length(ctrl.formations); _p++) {
+        var _pf = ctrl.formations[_p];
+        if ((_pf.side == 0) && _pf.alive) {
+            _pace = min(_pace, grid_form_speed(ctrl, _pf));
+        }
+    }
+    for (var _i = 0; _i < array_length(ctrl.formations); _i++) {
+        var _f = ctrl.formations[_i];
+        if ((_f.side != 0) || !_f.alive) {
+            continue;
+        }
+        _f.order_target = -1;
+        _f.hold_on_contact = false;
+        _f.reforming = false;
+        _f.pace = -1;
+        switch (_plan) {
+            case "hold":
+                // Stand and fight where you are, each squad using its own
+                // judgement about closing.
+                _f.order = GRIDORD_HOLD;
+                _f.stance = 0;
+                break;
+            case "line":
+                // Fire line: nobody advances, nobody charges, everything shoots.
+                _f.order = GRIDORD_HOLD;
+                _f.stance = 2;
+                break;
+            case "advance":
+                _f.order = GRIDORD_ADVANCE;
+                _f.stance = 0;
+                break;
+            case "advhold":
+                // Advance to contact, then hold the ground you took.
+                _f.order = GRIDORD_ADVANCE;
+                _f.stance = 0;
+                _f.hold_on_contact = true;
+                break;
+            case "charge":
+                _f.order = GRIDORD_ADVANCE;
+                _f.stance = 1;
+                break;
+            case "fallback":
+                // Withdraw west at the pace of the slowest block, so the line
+                // comes back intact rather than in pieces.
+                _f.order = GRIDORD_MOVE;
+                _f.stance = 2;
+                _f.dest_col = clamp(GRIDC_DEPLOY_COLS - 2, 0, ctrl.cols - 1);
+                _f.dest_row = clamp(_f.anchor_row, 0, ctrl.rows - 1);
+                _f.pace = _pace;
+                break;
+        }
+        _n += 1;
+    }
+    var _name = "Advance";
+    switch (_plan) {
+        case "hold": _name = "Hold Position"; break;
+        case "line": _name = "Form Fire Line"; break;
+        case "advhold": _name = "Advance and Hold"; break;
+        case "charge": _name = "Full Assault"; break;
+        case "fallback": _name = "Fall Back"; break;
+    }
+    grid_log(ctrl, $"Chapter order: {_name}. {_n} formations acknowledge.", eMSG_COLOR.AQUA);
+    return _n;
+}
+
 /// @function grid_auto_orders
 /// @description Auto battle. The player's formations are given the orders a
 /// competent commander would give and then fight under the same rules the enemy
@@ -3246,7 +3328,9 @@ function grid_buttons(ctrl) {
     array_push(_b, { bx: 1336, by: 646, bw: 248, bh: 34, bid: "zoom", blabel: _zl, benabled: true });
     array_push(_b, { bx: 1336, by: 686, bw: 122, bh: 34, bid: "pause", blabel: ctrl.paused ? "Resume" : "Pause", benabled: _battle });
     var _spd_label = "Speed: Normal";
-    if (ctrl.speed_mult <= 0.25) {
+    if (ctrl.speed_mult <= 0.125) {
+        _spd_label = "Speed: Glacial";
+    } else if (ctrl.speed_mult <= 0.25) {
         _spd_label = "Speed: Crawl";
     } else if (ctrl.speed_mult <= 0.5) {
         _spd_label = "Speed: Slow";

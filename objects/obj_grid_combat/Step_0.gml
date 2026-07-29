@@ -31,6 +31,7 @@ if (!boot_done) {
     grid_log(id, "Left click selects, drag a box to select several, right click orders.", eMSG_COLOR.AQUA);
     grid_log(id, "Deploying: drag out the front rank and the block forms along it.", eMSG_COLOR.AQUA);
     grid_log(id, "Ctrl and a number binds a control group, the number recalls it.", eMSG_COLOR.AQUA);
+    grid_log(id, "Chapter orders: F1 hold, F2 fire line, F3 advance, F4 advance and hold, F5 assault, F6 fall back.", eMSG_COLOR.AQUA);
     grid_log(id, "WASD pans the field. Tab toggles the overview.", eMSG_COLOR.AQUA);
 }
 
@@ -235,7 +236,9 @@ if (_lc) {
             // Crawl, Slow, Normal, Fast, Very Fast. The crawl tier exists
             // because the first thing every tester said was that the battle was
             // decided before they could give an order.
-            if (speed_mult == 0.25) {
+            if (speed_mult == 0.125) {
+                speed_mult = 0.25;
+            } else if (speed_mult == 0.25) {
                 speed_mult = 0.5;
             } else if (speed_mult == 0.5) {
                 speed_mult = 1;
@@ -244,7 +247,7 @@ if (_lc) {
             } else if (speed_mult == 2) {
                 speed_mult = 4;
             } else {
-                speed_mult = 0.25;
+                speed_mult = 0.125;
             }
         } else if (_bid == "zoom") {
             var _kc = (hover_c >= 0) ? hover_c : floor(cols / 2);
@@ -376,6 +379,31 @@ for (var _gk = 0; _gk <= 9; _gk++) {
         if (_gn > 0) {
             grid_log(id, $"Group {_gk} selected: {_gn} formations.", eMSG_COLOR.AQUA);
         }
+    }
+}
+
+// Battlefield wide orders on the function keys. Deliberately keyboard only: the
+// letter keys are taken by panning, the number keys by control groups, and I
+// cannot verify new button placement against a live screen. They are listed in
+// the legend and in the opening log.
+if (phase == GRIDPH_BATTLE) {
+    if (keyboard_check_pressed(vk_f1)) {
+        grid_battle_plan(id, "hold");
+    }
+    if (keyboard_check_pressed(vk_f2)) {
+        grid_battle_plan(id, "line");
+    }
+    if (keyboard_check_pressed(vk_f3)) {
+        grid_battle_plan(id, "advance");
+    }
+    if (keyboard_check_pressed(vk_f4)) {
+        grid_battle_plan(id, "advhold");
+    }
+    if (keyboard_check_pressed(vk_f5)) {
+        grid_battle_plan(id, "charge");
+    }
+    if (keyboard_check_pressed(vk_f6)) {
+        grid_battle_plan(id, "fallback");
     }
 }
 
