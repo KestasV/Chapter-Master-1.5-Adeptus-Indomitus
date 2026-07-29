@@ -44,6 +44,42 @@ if (exit_arm > 0) {
 // own wheel scrolling.
 log.update_scroll(GRIDC_BF_X1 + 4, GRIDC_LOG_Y1, GRIDC_BF_X2 - GRIDC_BF_X1, GRIDC_LOG_Y2 - GRIDC_LOG_Y1);
 
+// ---------------------------------------------------------------------------
+// Camera and view keys. These run before the deployment popup and the placing
+// handler, both of which exit the event early. Sitting after them meant the
+// camera was frozen for the whole of deployment: you could not look at the
+// ground you were being asked to deploy onto. Nothing here touches game state,
+// so it is safe at the top.
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// Camera and hotkeys.
+// ---------------------------------------------------------------------------
+if (keyboard_check(ord("A")) || keyboard_check(vk_left)) {
+    view_x -= GRIDC_SCROLL_SPEED;
+}
+if (keyboard_check(ord("D")) || keyboard_check(vk_right)) {
+    view_x += GRIDC_SCROLL_SPEED;
+}
+if (keyboard_check(ord("W")) || keyboard_check(vk_up)) {
+    view_y -= GRIDC_SCROLL_SPEED;
+}
+if (keyboard_check(ord("S")) || keyboard_check(vk_down)) {
+    view_y += GRIDC_SCROLL_SPEED;
+}
+grid_clamp_view(id);
+
+if (keyboard_check_pressed(vk_tab)) {
+    var _tc = (hover_c >= 0) ? hover_c : floor(cols / 2);
+    var _tr = (hover_r >= 0) ? hover_r : floor(rows / 2);
+    zoom_mode = (zoom_mode == 0) ? 1 : 0;
+    grid_centre_view(id, _tc, _tr);
+}
+
+if (keyboard_check_pressed(ord("L"))) {
+    show_legend = !show_legend;
+}
+
+
 var _mgx = device_mouse_x_to_gui(0);
 var _mgy = device_mouse_y_to_gui(0);
 var _lc = mouse_check_button_pressed(mb_left);
@@ -348,22 +384,6 @@ if (drag_active && !_lheld) {
 
 grid_sel_prune(id);
 
-// ---------------------------------------------------------------------------
-// Camera and hotkeys.
-// ---------------------------------------------------------------------------
-if (keyboard_check(ord("A")) || keyboard_check(vk_left)) {
-    view_x -= GRIDC_SCROLL_SPEED;
-}
-if (keyboard_check(ord("D")) || keyboard_check(vk_right)) {
-    view_x += GRIDC_SCROLL_SPEED;
-}
-if (keyboard_check(ord("W")) || keyboard_check(vk_up)) {
-    view_y -= GRIDC_SCROLL_SPEED;
-}
-if (keyboard_check(ord("S")) || keyboard_check(vk_down)) {
-    view_y += GRIDC_SCROLL_SPEED;
-}
-grid_clamp_view(id);
 
 // Control groups. Ctrl and a number binds the current selection, the number on
 // its own recalls it, which is what every RTS has trained hands to expect.
@@ -407,16 +427,6 @@ if (phase == GRIDPH_BATTLE) {
     }
 }
 
-if (keyboard_check_pressed(ord("L"))) {
-    show_legend = !show_legend;
-}
-
-if (keyboard_check_pressed(vk_tab)) {
-    var _tc = (hover_c >= 0) ? hover_c : floor(cols / 2);
-    var _tr = (hover_r >= 0) ? hover_r : floor(rows / 2);
-    zoom_mode = (zoom_mode == 0) ? 1 : 0;
-    grid_centre_view(id, _tc, _tr);
-}
 if ((phase == GRIDPH_BATTLE) && keyboard_check_pressed(vk_space)) {
     paused = !paused;
 }
