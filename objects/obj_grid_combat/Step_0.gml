@@ -31,6 +31,7 @@ if (!boot_done) {
     grid_log(id, "Left click selects, drag a box to select several, right click orders.", eMSG_COLOR.AQUA);
     grid_log(id, "Deploying: drag out the front rank and the block forms along it.", eMSG_COLOR.AQUA);
     grid_log(id, "Ctrl and a number binds a control group, the number recalls it.", eMSG_COLOR.AQUA);
+    grid_log(id, "Right click drag places the selection in a shape. R sets ranks, X breaks a block up.", eMSG_COLOR.AQUA);
     grid_log(id, "Chapter orders: F1 hold, F2 fire line, F3 advance, F4 advance and hold, F5 assault, F6 fall back.", eMSG_COLOR.AQUA);
     grid_log(id, "WASD pans the field. Tab toggles the overview.", eMSG_COLOR.AQUA);
 }
@@ -86,6 +87,8 @@ var _lc = mouse_check_button_pressed(mb_left);
 var _rc = mouse_check_button_pressed(mb_right);
 var _lheld = mouse_check_button(mb_left);
 var _lrel = mouse_check_button_released(mb_left);
+var _rheld = mouse_check_button(mb_right);
+var _rrel = mouse_check_button_released(mb_right);
 
 // Floating combat text drifts and fades every frame, independent of sim speed,
 // pause, popups, and the end screen; hit flashes decay alongside it.
@@ -336,23 +339,58 @@ if (!_consumed && grid_in_viewport(_mgx, _mgy)) {
         drag_x0 = _mgx;
         drag_y0 = _mgy;
     }
-    if (_rc) {
-        var _hit = grid_squad_at(id, hover_c, hover_r);
+    // Right press arms a shape drag. Released on the spot it is the old point
+    // order; dragged out it lays the selection down in the shape drawn, exactly
+    // the deployment gesture. Nothing is decided until release, so the previous
+    // right-click behaviour is untouched for anyone who never drags.
+    if (_rc && (hover_c >= 0)) {
+        ord_drag = true;
+        ord_c0 = hover_c;
+        ord_r0 = hover_r;
+    }
+}
+
+if (ord_drag && _rrel) {
+    ord_drag = false;
+    var _sqn = array_length(grid_selected_squads(id));
+    var _dragged = (hover_c >= 0) && ((hover_c != ord_c0) || (hover_r != ord_r0));
+    if (_dragged && (_sqn > 1)) {
+        var _osl = grid_drag_slots(id, ord_c0, ord_r0, hover_c, hover_r, _sqn, ord_depth);
+        grid_order_shape(id, _osl);
+    } else if (ord_c0 >= 0) {
+        // Point order, as before.
+        var _hit = grid_squad_at(id, ord_c0, ord_r0);
         if ((_hit >= 0) && (squads[_hit].side == 1) && (array_length(selected) > 0)) {
             grid_order_attack(id, _hit);
             grid_log(id, $"Concentrate fire on {squads[_hit].name}!", eMSG_COLOR.AQUA);
         } else if ((_hit >= 0) && (squads[_hit].side == 0) && (phase == GRIDPH_DEPLOY)) {
             grid_undeploy_formation(id, squads[_hit].formation);
             grid_sel_prune(id);
-        } else if ((hover_c >= 0) && (array_length(selected) > 0)) {
-            grid_order_move(id, hover_c, hover_r);
+        } else if (array_length(selected) > 0) {
+            grid_order_move(id, ord_c0, ord_r0);
             if (array_length(selected) > 1) {
-                grid_log(id, $"{array_length(selected)} formations advance on {hover_c}, {hover_r} in formation.", eMSG_COLOR.AQUA);
+                grid_log(id, $"{array_length(selected)} formations advance on {ord_c0}, {ord_r0} in formation.", eMSG_COLOR.AQUA);
             } else {
-                grid_log(id, $"Move to {hover_c}, {hover_r}.", eMSG_COLOR.AQUA);
+                grid_log(id, $"Move to {ord_c0}, {ord_r0}.", eMSG_COLOR.AQUA);
             }
         }
     }
+    ord_c0 = -1;
+    ord_r0 = -1;
+}
+if (ord_drag && !_rheld) {
+    ord_drag = false;
+    ord_c0 = -1;
+    ord_r0 = -1;
+}
+
+// R reshapes the drag in flight, the same key deployment uses. X breaks the
+// selection into individually commandable squads.
+if (ord_drag && keyboard_check_pressed(ord("R"))) {
+    ord_depth = (ord_depth >= 4) ? 1 : (ord_depth + 1);
+}
+if (keyboard_check_pressed(ord("X")) && (phase != GRIDPH_END)) {
+    grid_split_selection(id);
 }
 
 if (drag_active && _lrel) {
@@ -368,7 +406,14 @@ if (drag_active && _lrel) {
         }
     } else {
         var _pick = grid_squad_at(id, hover_c, hover_r);
-        if ((_pick >= 0) && (squads[_pick].side == 0) && (squads[_pick].formation >= 0)) {
+        if ((_pick >= 0) && (squads[_pick].side == 0) && (squads[_pick].formation >= 0)
+            && keyboard_check(vk_alt)) {
+            // Alt click takes one squad out of its block and selects only it.
+            var _one = grid_split_squad(id, _pick);
+            grid_sel_clear(id);
+            grid_sel_add(id, _one);
+            grid_log(id, $"{squads[_pick].name} detached.", eMSG_COLOR.AQUA);
+        } else if ((_pick >= 0) && (squads[_pick].side == 0) && (squads[_pick].formation >= 0)) {
             grid_sel_clear(id);
             grid_sel_add(id, squads[_pick].formation);
             grid_log(id, $"{formations[squads[_pick].formation].name} selected.", eMSG_COLOR.AQUA);

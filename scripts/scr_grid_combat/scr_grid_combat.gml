@@ -1466,11 +1466,16 @@ function grid_place_formation(ctrl, _ac, _ar) {
 /// drag gives a thin firing line and a short one gives a deep column. Later
 /// ranks stack behind the first, away from the enemy. Returns the tile list in
 /// rank order, first slot first, which is the anchor the block then marches on.
-function grid_drag_slots(ctrl, _c0, _r0, _c1, _r1, _n) {
+function grid_drag_slots(ctrl, _c0, _r0, _c1, _r1, _n, _depth = 1) {
     var _dc = _c1 - _c0;
     var _dr = _r1 - _r0;
     var _span = max(abs(_dc), abs(_dr));
     var _front = clamp(_span + 1, 1, max(1, _n));
+    // R forces a rank count: depth 1 is a single line, 2 is two ranks, and so on.
+    // The drag still sets the facing; only the frontage is divided up.
+    if (_depth > 1) {
+        _front = clamp(ceil(_n / _depth), 1, _front);
+    }
     var _sx = (_span <= 0) ? 0 : (_dc / _span);
     var _sy = (_span <= 0) ? 0 : (_dr / _span);
     // "Behind" is away from the enemy, who hold the eastern edge. A line drawn
@@ -3128,6 +3133,144 @@ function grid_order_move(ctrl, _c, _r) {
         _f.reforming = false;
         _f.pace = (_n > 1) ? _pace : -1;
     }
+}
+
+/// @function grid_split_squad
+/// @description Detaches one squad into a formation of its own, so it can be
+/// selected and ordered by itself. Orders act on formations, so a formation of
+/// one is the whole of individual control with none of the rewiring.
+function grid_split_squad(ctrl, _si) {
+    var _s = ctrl.squads[_si];
+    if (!_s.alive || !_s.deployed) {
+        return -1;
+    }
+    var _old = (_s.formation >= 0) ? ctrl.formations[_s.formation] : undefined;
+    if (_old != undefined) {
+        if (array_length(_old.members) <= 1) {
+            // Already alone. Nothing to detach it from.
+            return _s.formation;
+        }
+        var _keep = [];
+        for (var _i = 0; _i < array_length(_old.members); _i++) {
+            if (_old.members[_i] != _si) {
+                array_push(_keep, _old.members[_i]);
+            }
+        }
+        _old.members = _keep;
+    }
+    var _fi = grid_new_formation(ctrl, _s.type);
+    var _f = ctrl.formations[_fi];
+    _f.anchor_col = _s.col;
+    _f.anchor_row = _s.row;
+    _f.dest_col = _s.col;
+    _f.dest_row = _s.row;
+    if (_old != undefined) {
+        _f.order = _old.order;
+        _f.stance = _old.stance;
+    }
+    _s.formation = _fi;
+    _s.off_c = 0;
+    _s.off_r = 0;
+    array_push(_f.members, _si);
+    return _fi;
+}
+
+/// @function grid_split_selection
+/// @description Breaks every selected formation into single squads and selects
+/// all of them, which is the fast way out of "I deployed twenty as one block and
+/// now I cannot order any of them separately".
+function grid_split_selection(ctrl) {
+    var _all = [];
+    for (var _i = 0; _i < array_length(ctrl.selected); _i++) {
+        var _f = ctrl.formations[ctrl.selected[_i]];
+        for (var _m = 0; _m < array_length(_f.members); _m++) {
+            array_push(_all, _f.members[_m]);
+        }
+    }
+    if (array_length(_all) <= 1) {
+        return 0;
+    }
+    var _made = [];
+    for (var _k = 0; _k < array_length(_all); _k++) {
+        var _nf = grid_split_squad(ctrl, _all[_k]);
+        if ((_nf >= 0) && !array_contains(_made, _nf)) {
+            array_push(_made, _nf);
+        }
+    }
+    grid_sel_clear(ctrl);
+    for (var _q = 0; _q < array_length(_made); _q++) {
+        grid_sel_add(ctrl, _made[_q]);
+    }
+    grid_sel_prune(ctrl);
+    grid_log(ctrl, $"Formation broken up: {array_length(ctrl.selected)} squads under individual command.", eMSG_COLOR.AQUA);
+    return array_length(ctrl.selected);
+}
+
+/// @function grid_selected_squads
+/// @description Every living squad under the current selection, in order.
+function grid_selected_squads(ctrl) {
+    var _out = [];
+    for (var _i = 0; _i < array_length(ctrl.selected); _i++) {
+        var _f = ctrl.formations[ctrl.selected[_i]];
+        for (var _m = 0; _m < array_length(_f.members); _m++) {
+            var _s = ctrl.squads[_f.members[_m]];
+            if (_s.alive && _s.deployed) {
+                array_push(_out, _f.members[_m]);
+            }
+        }
+    }
+    return _out;
+}
+
+/// @function grid_order_shape
+/// @description Places the whole selection on the battlefield in a drawn shape,
+/// the same gesture as deployment. Everything selected is gathered into one new
+/// formation whose offsets come from the drawn slots, and that formation is sent
+/// to the first slot; the existing move machinery then walks each squad into its
+/// place and holds the shape once it arrives. Shared pace, so it forms up
+/// together rather than in arrival order.
+function grid_order_shape(ctrl, _slots) {
+    var _list = grid_selected_squads(ctrl);
+    var _n = min(array_length(_list), array_length(_slots));
+    if (_n <= 0) {
+        return false;
+    }
+    var _pace = 99;
+    for (var _p = 0; _p < _n; _p++) {
+        _pace = min(_pace, ctrl.squads[_list[_p]].spd);
+    }
+    var _fi = grid_new_formation(ctrl, ctrl.squads[_list[0]].type);
+    var _f = ctrl.formations[_fi];
+    _f.anchor_col = _slots[0][0];
+    _f.anchor_row = _slots[0][1];
+    _f.dest_col = _slots[0][0];
+    _f.dest_row = _slots[0][1];
+    _f.order = GRIDORD_MOVE;
+    _f.order_target = -1;
+    _f.pace = _pace;
+    for (var _k = 0; _k < _n; _k++) {
+        var _si = _list[_k];
+        var _s = ctrl.squads[_si];
+        var _prev = (_s.formation >= 0) ? ctrl.formations[_s.formation] : undefined;
+        if (_prev != undefined) {
+            var _keep = [];
+            for (var _m = 0; _m < array_length(_prev.members); _m++) {
+                if (_prev.members[_m] != _si) {
+                    array_push(_keep, _prev.members[_m]);
+                }
+            }
+            _prev.members = _keep;
+        }
+        _s.formation = _fi;
+        _s.off_c = _slots[_k][0] - _f.anchor_col;
+        _s.off_r = _slots[_k][1] - _f.anchor_row;
+        array_push(_f.members, _si);
+    }
+    grid_sel_clear(ctrl);
+    grid_sel_add(ctrl, _fi);
+    grid_sel_prune(ctrl);
+    grid_log(ctrl, $"{_n} squads form up on {_f.anchor_col}, {_f.anchor_row}.", eMSG_COLOR.AQUA);
+    return true;
 }
 
 /// @function grid_group_bind

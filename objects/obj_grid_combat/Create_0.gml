@@ -129,6 +129,11 @@ placing_list = [];
 placing_w = 1;
 // Drag placement: where the front rank was started, and whether a drag is live.
 place_drag = false;
+// Right-drag order: where the shape starts, and how many ranks deep R has set.
+ord_drag = false;
+ord_c0 = -1;
+ord_r0 = -1;
+ord_depth = 1;
 place_c0 = -1;
 place_r0 = -1;
 

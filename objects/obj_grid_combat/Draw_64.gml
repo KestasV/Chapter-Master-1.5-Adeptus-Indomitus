@@ -120,6 +120,30 @@ if (_tp >= 14) {
     draw_set_alpha(1);
 }
 
+// order-drag preview: where the selection will stand, and the line being drawn
+if (ord_drag && (ord_c0 >= 0) && (hover_c >= 0)
+    && ((hover_c != ord_c0) || (hover_r != ord_r0))) {
+    var _osn = array_length(grid_selected_squads(id));
+    if (_osn > 1) {
+        var _opv = grid_drag_slots(id, ord_c0, ord_r0, hover_c, hover_r, _osn, ord_depth);
+        draw_set_color(GRIDC_GREEN);
+        for (var _oi = 0; _oi < array_length(_opv); _oi++) {
+            var _opx = grid_sx(id, _opv[_oi][0]);
+            var _opy = grid_sy(id, _opv[_oi][1]);
+            draw_set_alpha(0.22);
+            draw_rectangle(_opx + 2, _opy + 2, _opx + _tp - 2, _opy + _tp - 2, false);
+            draw_set_alpha(0.95);
+            draw_rectangle(_opx + 2, _opy + 2, _opx + _tp - 2, _opy + _tp - 2, true);
+        }
+        draw_line(grid_sx(id, ord_c0) + (_tp / 2), grid_sy(id, ord_r0) + (_tp / 2),
+            grid_sx(id, hover_c) + (_tp / 2), grid_sy(id, hover_r) + (_tp / 2));
+        draw_set_alpha(1);
+        draw_set_font(fnt_40k_12);
+        draw_text(grid_sx(id, hover_c) + 12, grid_sy(id, hover_r) + 12,
+            $"{_osn} squads, {ord_depth} deep (R)");
+    }
+}
+
 // legend: what every mark on the field means
 if (show_legend) {
     var _lgx = GRIDC_BF_X1 + 20;
@@ -137,6 +161,9 @@ if (show_legend) {
         ["", ""],
         ["Left click", "Select a formation. Drag a box for several."],
         ["Right click", "Move there, or right click an enemy to focus fire."],
+        ["Right click DRAG", "Place the selection in the shape you draw. R while dragging sets ranks."],
+        ["Alt + left click", "Detach one squad from its block for individual orders."],
+        ["X", "Break the whole selection into individually commanded squads."],
         ["Ctrl + 1..9", "Bind a control group. Number alone recalls it."],
         ["Space", "Pause. Speed cycles Glacial to Very Fast."],
         ["", ""],
