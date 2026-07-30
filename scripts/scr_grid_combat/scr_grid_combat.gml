@@ -936,7 +936,10 @@ function grid_build_rect(ctrl, _c0, _r0, _w, _h) {
 /// discards it, so the name is the only record and is read back the same way it
 /// was written. Anything unrecognised is open ground.
 function grid_terrain_from_region_name(_name) {
-    var _kinds = ["urban", "forest", "mountain", "coastal", "open"];
+    // Marsh is a real worldgen terrain and was missing here, so every marsh
+    // region resolved to open ground. Order matters only for names in two pools,
+    // which does not happen.
+    var _kinds = ["urban", "forest", "mountain", "coastal", "marsh", "open"];
     for (var _i = 0; _i < array_length(_kinds); _i++) {
         if (array_contains(region_terrain_name_pool(_kinds[_i]), _name)) {
             return _kinds[_i];
@@ -992,12 +995,15 @@ function grid_gen_structures(ctrl) {
                 grid_build_rect(ctrl, _bc, _br, _bw, _bh);
             }
         }
-        // Rubble and burnt-out wreckage between the blocks: light cover in the
-        // streets, so the ground between buildings is not bare killing floor.
-        for (var _c4 = _west; _c4 <= _east; _c4++) {
-            for (var _r4 = 0; _r4 < ctrl.rows; _r4++) {
-                if ((ctrl.blk[_c4][_r4] == GRIDT_OPEN) && (random(1) < 0.07)) {
-                    ctrl.blk[_c4][_r4] = GRIDT_LIGHT;
+        // Rubble between the hab blocks, streets only. A capital is rockcrete
+        // and gun lines, so it gets none: the tester read the green scatter as
+        // trees in the middle of a hive city, and they were not wrong to.
+        if (!ctrl.pending_capital) {
+            for (var _c4 = _west; _c4 <= _east; _c4++) {
+                for (var _r4 = 0; _r4 < ctrl.rows; _r4++) {
+                    if ((ctrl.blk[_c4][_r4] == GRIDT_OPEN) && (random(1) < 0.07)) {
+                        ctrl.blk[_c4][_r4] = GRIDT_LIGHT;
+                    }
                 }
             }
         }
@@ -1022,12 +1028,24 @@ function grid_gen_structures(ctrl) {
         return;
     }
 
+    if (_t == "marsh") {
+        // Sodden ground: little to hide behind, a lot of bad footing.
+        for (var _c5 = _west; _c5 <= _east; _c5++) {
+            for (var _r5 = 0; _r5 < ctrl.rows; _r5++) {
+                if ((ctrl.blk[_c5][_r5] == GRIDT_OPEN) && (random(1) < 0.06)) {
+                    ctrl.blk[_c5][_r5] = GRIDT_LIGHT;
+                }
+            }
+        }
+        return;
+    }
+
     if (_t == "forest") {
         // Treeline: light cover you can walk through, thickly scattered, so a
         // wood degrades fire from every angle without ever stopping a charge.
         for (var _c3 = _west; _c3 <= _east; _c3++) {
             for (var _r3 = 0; _r3 < ctrl.rows; _r3++) {
-                if (random(1) < 0.16) {
+                if (random(1) < 0.26) {
                     ctrl.blk[_c3][_r3] = GRIDT_LIGHT;
                 }
             }
