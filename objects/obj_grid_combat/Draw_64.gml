@@ -144,50 +144,85 @@ if (ord_drag && (ord_c0 >= 0) && (hover_c >= 0)
     }
 }
 
-// legend: what every mark on the field means
+// legend: every mark on the field and every binding, in two columns so it fits
+// inside the battlefield view instead of spilling over the log
 if (show_legend) {
-    var _lgx = GRIDC_BF_X1 + 20;
-    var _lgy = GRIDC_BF_Y1 + 20;
-    var _rows = [
-        ["Solid grey", "Wall. Impassable, and stops shots dead."],
-        ["Half grey", "Barrier: window, sandbags, low wall. Impassable, shots pass, heavy cover."],
-        ["Green box", "Trees, scrub, wreckage. Walk through it, light cover."],
-        ["Green ~~", "Good ground: trench, crater, rubble. Cover from every side."],
-        ["Red xx", "Open ground. You take more fire standing here."],
+    var _lgx = GRIDC_BF_X1 + 16;
+    var _lgy = GRIDC_BF_Y1 + 16;
+    var _lcol = [
+        ["TERRAIN", ""],
+        ["Solid grey", "Wall. Impassable, stops shots dead."],
+        ["Half grey", "Barrier: window, sandbags, low wall."],
+        ["", "Impassable, shots pass, heavy cover."],
+        ["Green box", "Trees, scrub, rubble. Walk through, light cover."],
+        ["Green ~~", "Trench or crater. Cover from every side."],
+        ["Red xx", "Open ground. You take more fire here."],
         ["", ""],
-        ["MISS / DEFLECTED", "Grey. Went wide, or armour turned it."],
+        ["HITS", ""],
+        ["MISS", "Grey. The shot went wide."],
+        ["DEFLECTED", "Grey. Armour turned it, or a hull took it."],
         ["DODGED", "Yellow. Cover took the shot."],
-        ["GRAZED / WOUNDED", "Red on yours, green on theirs. Bright is a graze, dark a kill."],
+        ["GRAZED", "Damage landed, nobody died."],
+        ["WOUNDED", "Models lost. Red is ours, green theirs."],
         ["", ""],
-        ["Left click", "Select a formation. Drag a box for several."],
-        ["Right click", "Move there, or right click an enemy to focus fire."],
-        ["Right click DRAG", "Place the selection in the shape you draw. R while dragging sets ranks."],
-        ["Alt + left click", "Detach one squad from its block for individual orders."],
-        ["X", "Break the whole selection into individually commanded squads."],
-        ["Ctrl + 1..9", "Bind a control group. Number alone recalls it."],
-        ["Space", "Pause. Speed cycles Glacial to Very Fast."],
-        ["", ""],
-        ["Chapter orders", "One key, every formation. Micromanage the exceptions after."],
-        ["F1 Hold Position", "Stand and fight where you are."],
-        ["F2 Form Fire Line", "Nobody advances, nobody charges, everything shoots."],
-        ["F3 Advance", "Close on the enemy."],
-        ["F4 Advance and Hold", "Take the ground, then hold it instead of chasing."],
-        ["F5 Full Assault", "Everything charges."],
-        ["F6 Fall Back", "Withdraw west at the pace of the slowest block."],
-        ["Cover is directional", "Flank a squad and whatever it hid behind stops counting."],
+        ["COVER", ""],
+        ["Directional", "Flank a squad and what it hid behind stops"],
+        ["", "counting. Trenches cannot be flanked."],
+        ["By race", "Tau best, then humans, marines, Orks."],
+        ["", "Tyranids barely use it at all."],
     ];
+    var _rcol = [
+        ["DEPLOYING", ""],
+        ["Drag left mouse", "Draw the front rank. The block forms along it."],
+        ["Click left mouse", "Drop the block as a rectangle instead."],
+        ["R", "Reshape the block: swap frontage for depth."],
+        ["Mouse wheel", "Widen or narrow the block."],
+        ["Right click", "Take a deployed formation back off the field."],
+        ["Escape", "Cancel what you are holding."],
+        ["Deploy All", "Lays the army out by your formation settings."],
+        ["", ""],
+        ["COMMANDING", ""],
+        ["Left click", "Select a formation. Drag a box for several."],
+        ["Right click", "Move there. On an enemy, focus fire."],
+        ["Drag right mouse", "Place the selection in the shape you draw."],
+        ["R while dragging", "Set how many ranks deep."],
+        ["Alt + left click", "Detach one squad for individual orders."],
+        ["X", "Break the selection into single squads."],
+        ["Ctrl + 1..9", "Bind a control group. Number alone recalls."],
+        ["F1..F6", "Chapter orders: hold, fire line, advance,"],
+        ["", "advance and hold, full assault, fall back."],
+        ["", ""],
+        ["VIEW AND TIME", ""],
+        ["WASD or arrows", "Pan the field. Works while deploying."],
+        ["Tab", "Toggle the whole-field overview."],
+        ["Space", "Pause. Speed cycles Glacial to Very Fast."],
+        ["Auto button", "Your formations fight on their own."],
+        ["L", "Close this."],
+    ];
+    var _lines = max(array_length(_lcol), array_length(_rcol));
+    var _lgw = 1020;
+    var _lgh = (_lines * 19) + 16;
     draw_set_color(c_black);
-    draw_set_alpha(0.86);
-    draw_rectangle(_lgx - 12, _lgy - 12, _lgx + 660, _lgy + (array_length(_rows) * 20) + 10, false);
+    draw_set_alpha(0.90);
+    draw_rectangle(_lgx - 10, _lgy - 10, _lgx + _lgw, _lgy + _lgh, false);
     draw_set_alpha(1);
     draw_set_color(GRIDC_GREEN);
-    draw_rectangle(_lgx - 12, _lgy - 12, _lgx + 660, _lgy + (array_length(_rows) * 20) + 10, true);
+    draw_rectangle(_lgx - 10, _lgy - 10, _lgx + _lgw, _lgy + _lgh, true);
     draw_set_font(fnt_40k_12);
-    for (var _lg = 0; _lg < array_length(_rows); _lg++) {
-        draw_set_color(GRIDC_GREEN);
-        draw_text(_lgx, _lgy + (_lg * 20), _rows[_lg][0]);
-        draw_set_color(c_white);
-        draw_text(_lgx + 180, _lgy + (_lg * 20), _rows[_lg][1]);
+    for (var _lg = 0; _lg < _lines; _lg++) {
+        var _ly2 = _lgy + (_lg * 19);
+        if (_lg < array_length(_lcol)) {
+            draw_set_color((_lcol[_lg][1] == "") ? c_white : GRIDC_GREEN);
+            draw_text(_lgx, _ly2, _lcol[_lg][0]);
+            draw_set_color(c_white);
+            draw_text(_lgx + 130, _ly2, _lcol[_lg][1]);
+        }
+        if (_lg < array_length(_rcol)) {
+            draw_set_color((_rcol[_lg][1] == "") ? c_white : GRIDC_GREEN);
+            draw_text(_lgx + 500, _ly2, _rcol[_lg][0]);
+            draw_set_color(c_white);
+            draw_text(_lgx + 640, _ly2, _rcol[_lg][1]);
+        }
     }
     draw_set_color(c_white);
 }
