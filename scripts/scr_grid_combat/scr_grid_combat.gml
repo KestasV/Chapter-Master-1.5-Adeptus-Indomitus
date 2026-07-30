@@ -80,6 +80,8 @@
 #macro GRIDC_WAVE_TICK 45
 #macro GRIDC_WAVES 1
 #macro GRIDC_FLOAT_LIFE 80
+// Frames the cursor must rest on a tile before it explains itself.
+#macro GRIDC_TIP_DELAY 45
 #macro GRIDC_FLOAT_RISE 0.4
 #macro GRIDC_FLASH_FRAMES 24
 #macro GRIDC_DRAG_MIN 8
@@ -514,7 +516,7 @@ function grid_floater(ctrl, _c, _r, _txt, _col) {
         frise: 0,
         ftxt: _txt,
         fcol: _col,
-        flife: GRIDC_FLOAT_LIFE,
+        flife: round(GRIDC_FLOAT_LIFE / max(0.125, ctrl.speed_mult)),
     });
     if (array_length(ctrl.floaters) > 120) {
         array_delete(ctrl.floaters, 0, 1);
@@ -1894,6 +1896,10 @@ function grid_shot_fx(ctrl, _c0, _r0, _c1, _r1, _kind, _col, _blast) {
     } else if (_kind == GRIDFX_MELEE) {
         _life = 12;
     }
+    // A tick at Crawl lasts several times as long in real seconds, so a tracer
+    // living ten frames vanishes long before anything else happens. Scaling with
+    // the clock makes the field read the same at every speed.
+    _life = round(_life / max(0.125, ctrl.speed_mult));
     array_push(ctrl.shots, {
         c0: _c0, r0: _r0, c1: _c1, r1: _r1,
         kind: _kind, col: _col, blast: _blast,
@@ -2381,7 +2387,10 @@ function grid_foe_list(ctrl, _side) {
 }
 
 /// @function grid_nearest_foe
-function grid_nearest_foe(ctrl, _si, _limit) {
+/// @description Nearest enemy within a limit. With _need_los the search skips
+/// anything behind a wall, so a shooting squad picks a target it can actually hit
+/// rather than standing there aiming at masonry.
+function grid_nearest_foe(ctrl, _si, _limit, _need_los = false) {
     var _s = ctrl.squads[_si];
     var _best = -1;
     var _bd = 99999;
@@ -2396,10 +2405,14 @@ function grid_nearest_foe(ctrl, _si, _limit) {
         if ((_limit >= 0) && (_dd > _limit)) {
             continue;
         }
-        if (_dd < _bd) {
-            _bd = _dd;
-            _best = _i;
+        if (_dd >= _bd) {
+            continue;
         }
+        if (_need_los && grid_line_block(ctrl, _s.col, _s.row, _t.col, _t.row)[0]) {
+            continue;
+        }
+        _bd = _dd;
+        _best = _i;
     }
     return _best;
 }
@@ -2659,7 +2672,8 @@ function grid_act_player(ctrl, _si) {
     // though: it fires from the line at anything already in reach, which is what
     // lets a formation trade shots without coming apart.
     if ((_ord == GRIDORD_ADVANCE) && (_f != undefined) && !_f.engaged) {
-        if ((_s.bal > 0) && (grid_dist(_s.col, _s.row, _t.col, _t.row) <= _s.rng)) {
+        if ((_s.bal > 0) && (grid_dist(_s.col, _s.row, _t.col, _t.row) <= _s.rng)
+            && !grid_line_block(ctrl, _s.col, _s.row, _t.col, _t.row)[0]) {
             grid_attack(ctrl, _si, _ti, false);
         }
         grid_follow_anchor(ctrl, _si, _f);
@@ -2709,7 +2723,8 @@ function grid_act_player(ctrl, _si) {
             return;
         }
         grid_attack(ctrl, _si, _ti, true);
-    } else if ((_dd <= _s.rng) && (_s.bal > 0) && !_seek) {
+    } else if ((_dd <= _s.rng) && (_s.bal > 0) && !_seek
+        && !grid_line_block(ctrl, _s.col, _s.row, _t.col, _t.row)[0]) {
         if (!grid_seek_cover(ctrl, _si, _ti)) {
             grid_attack(ctrl, _si, _ti, false);
         }
@@ -2728,7 +2743,7 @@ function grid_act_enemy(ctrl, _si) {
     var _ef = (_s.formation >= 0) ? ctrl.formations[_s.formation] : undefined;
     if ((_ef != undefined) && !_ef.engaged) {
         // Same rule as ours: shoot from the line, keep the shape.
-        var _lt = grid_nearest_foe(ctrl, _si, _s.rng);
+        var _lt = grid_nearest_foe(ctrl, _si, _s.rng, true);
         if ((_lt >= 0) && (_s.bal > 0)) {
             grid_attack(ctrl, _si, _lt, false);
         }
@@ -2781,7 +2796,8 @@ function grid_act_enemy(ctrl, _si) {
             return;
         }
         grid_attack(ctrl, _si, _ti, true);
-    } else if ((_dd <= _s.rng) && (_s.bal > 0) && !grid_wants_melee(_s)) {
+    } else if ((_dd <= _s.rng) && (_s.bal > 0) && !grid_wants_melee(_s)
+        && !grid_line_block(ctrl, _s.col, _s.row, _t.col, _t.row)[0]) {
         if (!grid_seek_cover(ctrl, _si, _ti)) {
             grid_attack(ctrl, _si, _ti, false);
         }
@@ -2792,6 +2808,29 @@ function grid_act_enemy(ctrl, _si) {
             }
         }
     }
+}
+
+/// @function grid_speed_step
+/// @description Moves the battle clock one notch along an ordered ladder, either
+/// direction. A ladder rather than a chain of comparisons because it has to run
+/// backwards as well: cycling forwards only meant that slowing down required
+/// passing through maximum speed, which is the worst possible moment to be at
+/// maximum speed.
+function grid_speed_step(ctrl, _dir) {
+    var _ladder = [0.125, 0.25, 0.5, 1, 2, 4];
+    var _names = ["Glacial", "Crawl", "Slow", "Normal", "Fast", "Very Fast"];
+    var _at = 2;
+    for (var _i = 0; _i < array_length(_ladder); _i++) {
+        if (abs(ctrl.speed_mult - _ladder[_i]) < 0.001) {
+            _at = _i;
+        }
+    }
+    _at = clamp(_at + _dir, 0, array_length(_ladder) - 1);
+    if (abs(ctrl.speed_mult - _ladder[_at]) < 0.001) {
+        return;
+    }
+    ctrl.speed_mult = _ladder[_at];
+    grid_log(ctrl, $"Speed: {_names[_at]}.", eMSG_COLOR.AQUA);
 }
 
 /// @function grid_battle_plan
@@ -3477,7 +3516,7 @@ function grid_buttons(ctrl) {
         var _stl = (_stn == 1) ? "Charge" : ((_stn == 2) ? "Avoid" : "Auto");
         array_push(_b, { bx: 1336, by: 556, bw: 122, bh: 32, bid: "ord_adv", blabel: "Advance", benabled: true });
         array_push(_b, { bx: 1464, by: 556, bw: 120, bh: 32, bid: "ord_hold", blabel: "Hold", benabled: true });
-        array_push(_b, { bx: 1336, by: 594, bw: 248, bh: 32, bid: "stance", blabel: $"Melee: {_stl}", benabled: true });
+        array_push(_b, { bx: 1336, by: 512, bw: 248, bh: 32, bid: "stance", blabel: $"Melee: {_stl}", benabled: true });
     }
     array_push(_b, { bx: 1336, by: 646, bw: 248, bh: 34, bid: "zoom", blabel: _zl, benabled: true });
     array_push(_b, { bx: 1336, by: 686, bw: 122, bh: 34, bid: "pause", blabel: ctrl.paused ? "Resume" : "Pause", benabled: _battle });
@@ -3499,7 +3538,9 @@ function grid_buttons(ctrl) {
     }
     // In a live battle leaving early is a withdrawal, and a withdrawal is a
     // defeat, so the button says so rather than reading like a way out.
-    array_push(_b, { bx: 1464, by: 646, bw: 120, bh: 36, bid: "auto",
+    // Full width above the zoom button. It shared a row with Zoom and the two
+    // labels overlapped; the panel above it is empty.
+    array_push(_b, { bx: 1336, by: 552, bw: 248, bh: 32, bid: "auto",
         blabel: ctrl.auto_battle ? "Auto: ON" : "Auto: OFF", benabled: _battle });
     array_push(_b, { bx: 1336, by: 812, bw: 248, bh: 30, bid: "legend",
         blabel: ctrl.show_legend ? "Hide Legend (L)" : "Legend (L)", benabled: true });

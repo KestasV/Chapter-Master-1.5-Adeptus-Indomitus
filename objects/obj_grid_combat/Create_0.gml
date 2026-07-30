@@ -57,7 +57,9 @@ frame_ctr = 0;
 paused = false;
 // Battles start at the slowest tier. Testers were consistently overrun before
 // they could give an order at the old default.
-speed_mult = 0.25;
+// Default Slow. Glacial exists a step below for anyone who wants it, but it is
+// not where a new player should be dropped.
+speed_mult = 0.5;
 exit_arm = 0;
 waves_left = GRIDC_WAVES;
 
@@ -84,8 +86,10 @@ zoom_mode = 0;
 // Sized to the strip under the battlefield rather than the vanilla side panel.
 log = new CombatLog();
 log.log_font = fnt_40k_12;
-log.log_line_height = 18;
-log.log_view_lines = 13;
+// A little taller: 14 lines at 17px still fits the strip and shows more of the
+// exchange without touching the battlefield's height.
+log.log_line_height = 17;
+log.log_view_lines = 14;
 log.log_max_width = GRIDC_BF_X2 - GRIDC_BF_X1 - 24;
 
 floaters = [];
@@ -128,6 +132,11 @@ placing = false;
 placing_list = [];
 placing_w = 1;
 // Drag placement: where the front rank was started, and whether a drag is live.
+// Hover dwell, for the tile tooltip.
+hover_time = 0;
+hover_last_c = -1;
+hover_last_r = -1;
+
 place_drag = false;
 // Right-drag order: where the shape starts, and how many ranks deep R has set.
 ord_drag = false;

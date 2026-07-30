@@ -144,6 +144,54 @@ if (ord_drag && (ord_c0 >= 0) && (hover_c >= 0)
     }
 }
 
+// hover tooltip: hold still over a tile and it tells you what it is
+if ((hover_time >= GRIDC_TIP_DELAY) && (hover_c >= 0) && (phase != GRIDPH_END) && !show_legend) {
+    var _tip = "";
+    var _sub = "";
+    var _occ = grid_squad_at(id, hover_c, hover_r);
+    if (_occ >= 0) {
+        var _us = squads[_occ];
+        _tip = _us.name;
+        _sub = _us.is_vehicle
+            ? $"{round((_us.hp_pool / max(1, _us.hp_max)) * 100)}% hull, armour {_us.armour}, reach {_us.rng}"
+            : $"{_us.men} of {_us.men0} standing, armour {_us.armour}, reach {_us.rng}";
+    } else {
+        var _bt2 = blk[hover_c][hover_r];
+        if (_bt2 == GRIDT_WALL) {
+            _tip = "Wall";
+            _sub = "Impassable. Blocks all fire through it.";
+        } else if (_bt2 == GRIDT_BARRIER) {
+            _tip = "Window or sandbags";
+            _sub = $"Heavy cover, about {round(GRIDC_BARRIER_SOAK * 100)}%. Impassable, fire passes. Flankable.";
+        } else if (_bt2 == GRIDT_LIGHT) {
+            _tip = "Trees or rubble";
+            _sub = $"Light cover, about {round(GRIDC_LIGHT_SOAK * 100)}%. Passable. Flankable.";
+        } else if (cov[hover_c][hover_r] == 1) {
+            _tip = "Trench";
+            _sub = $"About {round((1 - GRIDC_COVER_GOOD) * 100)}% cover from every direction. Cannot be flanked.";
+        } else if (cov[hover_c][hover_r] == -1) {
+            _tip = "Open ground";
+            _sub = $"Exposed. Takes about {round((GRIDC_COVER_BAD - 1) * 100)}% more fire.";
+        } else {
+            _tip = "Bare ground";
+            _sub = "No cover either way.";
+        }
+    }
+    var _tw = max(string_width(_tip), string_width(_sub)) + 20;
+    var _tx2 = min(grid_sx(id, hover_c) + 18, GRIDC_BF_X2 - _tw - 4);
+    var _ty2 = min(grid_sy(id, hover_r) + 18, GRIDC_BF_Y2 - 46);
+    draw_set_font(fnt_40k_12);
+    draw_set_color(c_black);
+    draw_set_alpha(0.92);
+    draw_rectangle(_tx2, _ty2, _tx2 + _tw, _ty2 + 40, false);
+    draw_set_alpha(1);
+    draw_set_color(GRIDC_GREEN);
+    draw_rectangle(_tx2, _ty2, _tx2 + _tw, _ty2 + 40, true);
+    draw_text(_tx2 + 8, _ty2 + 3, _tip);
+    draw_set_color(c_white);
+    draw_text(_tx2 + 8, _ty2 + 21, _sub);
+}
+
 // legend: every mark on the field and every binding, in two columns so it fits
 // inside the battlefield view instead of spilling over the log
 if (show_legend) {
@@ -195,13 +243,16 @@ if (show_legend) {
         ["VIEW AND TIME", ""],
         ["WASD or arrows", "Pan the field. Works while deploying."],
         ["Tab", "Toggle the whole-field overview."],
-        ["Space", "Pause. Speed cycles Glacial to Very Fast."],
+        ["Space", "Pause."],
+        ["- and +", "Step the clock down or up."],
+        ["Speed button", "Left click faster, right click slower."],
+        ["Hover a tile", "Hold still a moment and it tells you what it is."],
         ["Auto button", "Your formations fight on their own."],
         ["L", "Close this."],
     ];
     var _lines = max(array_length(_lcol), array_length(_rcol));
     var _lgw = 1020;
-    var _lgh = (_lines * 19) + 16;
+    var _lgh = (_lines * 17) + 16;
     draw_set_color(c_black);
     draw_set_alpha(0.90);
     draw_rectangle(_lgx - 10, _lgy - 10, _lgx + _lgw, _lgy + _lgh, false);
@@ -210,7 +261,7 @@ if (show_legend) {
     draw_rectangle(_lgx - 10, _lgy - 10, _lgx + _lgw, _lgy + _lgh, true);
     draw_set_font(fnt_40k_12);
     for (var _lg = 0; _lg < _lines; _lg++) {
-        var _ly2 = _lgy + (_lg * 19);
+        var _ly2 = _lgy + (_lg * 17);
         if (_lg < array_length(_lcol)) {
             draw_set_color((_lcol[_lg][1] == "") ? c_white : GRIDC_GREEN);
             draw_text(_lgx, _ly2, _lcol[_lg][0]);
@@ -239,10 +290,24 @@ if ((hover_c >= 0) && (phase != GRIDPH_END)) {
 for (var _sf = 0; _sf < array_length(selected); _sf++) {
     var _fo = formations[selected[_sf]];
     if (_fo.order == GRIDORD_MOVE) {
+        // One marker per squad, on the tile that squad is actually walking to.
+        // A single box on the formation destination told you nothing about where
+        // fourteen squads were going to end up.
         draw_set_color(GRIDC_COL_ORDER);
-        var _dx = grid_sx(id, _fo.dest_col);
-        var _dy = grid_sy(id, _fo.dest_row);
-        draw_rectangle(_dx + 3, _dy + 3, _dx + _tp - 3, _dy + _tp - 3, true);
+        for (var _om = 0; _om < array_length(_fo.members); _om++) {
+            var _os = squads[_fo.members[_om]];
+            if (!_os.alive || !_os.deployed) {
+                continue;
+            }
+            var _ot = grid_slot_target(id, _os, _fo);
+            var _dx = grid_sx(id, _ot[0]);
+            var _dy = grid_sy(id, _ot[1]);
+            draw_set_alpha(0.30);
+            draw_rectangle(_dx + 3, _dy + 3, _dx + _tp - 3, _dy + _tp - 3, false);
+            draw_set_alpha(0.95);
+            draw_rectangle(_dx + 3, _dy + 3, _dx + _tp - 3, _dy + _tp - 3, true);
+        }
+        draw_set_alpha(1);
     }
     if ((_fo.order == GRIDORD_ATTACK) && (_fo.order_target >= 0) && squads[_fo.order_target].alive) {
         var _tg = squads[_fo.order_target];

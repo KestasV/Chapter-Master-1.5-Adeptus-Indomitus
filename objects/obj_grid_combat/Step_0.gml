@@ -76,6 +76,26 @@ if (keyboard_check_pressed(vk_tab)) {
     grid_centre_view(id, _tc, _tr);
 }
 
+// Minus and plus step the clock, on both the main row and the numpad.
+if (keyboard_check_pressed(vk_subtract) || keyboard_check_pressed(189)
+    || keyboard_check_pressed(ord("-"))) {
+    grid_speed_step(id, -1);
+}
+if (keyboard_check_pressed(vk_add) || keyboard_check_pressed(187)
+    || keyboard_check_pressed(ord("="))) {
+    grid_speed_step(id, 1);
+}
+
+// Dwell timer for the tile tooltip: it resets the moment the cursor moves to a
+// different tile, so it only fires when you actually stop on something.
+if ((hover_c == hover_last_c) && (hover_r == hover_last_r) && (hover_c >= 0)) {
+    hover_time += 1;
+} else {
+    hover_time = 0;
+    hover_last_c = hover_c;
+    hover_last_r = hover_r;
+}
+
 if (keyboard_check_pressed(ord("L"))) {
     show_legend = !show_legend;
 }
@@ -239,7 +259,8 @@ if (placing) {
 // Buttons.
 // ---------------------------------------------------------------------------
 var _consumed = false;
-if (_lc) {
+// Right click on a button counts too: the speed button steps backwards on it.
+if (_lc || _rc) {
     var _btns = grid_buttons(id);
     for (var _bi = 0; _bi < array_length(_btns); _bi++) {
         var _bt = _btns[_bi];
@@ -272,22 +293,9 @@ if (_lc) {
         } else if (_bid == "legend") {
             show_legend = !show_legend;
         } else if (_bid == "speed") {
-            // Crawl, Slow, Normal, Fast, Very Fast. The crawl tier exists
-            // because the first thing every tester said was that the battle was
-            // decided before they could give an order.
-            if (speed_mult == 0.125) {
-                speed_mult = 0.25;
-            } else if (speed_mult == 0.25) {
-                speed_mult = 0.5;
-            } else if (speed_mult == 0.5) {
-                speed_mult = 1;
-            } else if (speed_mult == 1) {
-                speed_mult = 2;
-            } else if (speed_mult == 2) {
-                speed_mult = 4;
-            } else {
-                speed_mult = 0.125;
-            }
+            // Left click steps up, right click steps back, so nobody has to
+            // cycle all the way through max speed to slow down again.
+            grid_speed_step(id, _rc ? -1 : 1);
         } else if (_bid == "zoom") {
             var _kc = (hover_c >= 0) ? hover_c : floor(cols / 2);
             var _kr = (hover_r >= 0) ? hover_r : floor(rows / 2);
