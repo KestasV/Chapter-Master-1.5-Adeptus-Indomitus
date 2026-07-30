@@ -174,8 +174,8 @@ function grid_unit_def(_key) {
         assault:       { disp: "Assaults",        men: 10, hp_man: 12, armour: 11, mel: 15, bal: 7,  rng: 3, spd: 1.0, cost: 2, glyph: "jump",      ascii: "A",  vehicle: false, melee: true,  tele: false, jump: true,  sprite: -1 },
         devastator:    { disp: "Devastators",     men: 10, hp_man: 12, armour: 12, mel: 8,  bal: 18, rng: 9, spd: 1.0, cost: 3, glyph: "heavy",     ascii: "D",  vehicle: false, melee: false, tele: false, jump: false, sprite: -1 },
         veteran:       { disp: "Veterans",        men: 10, hp_man: 14, armour: 13, mel: 14, bal: 15, rng: 6, spd: 1.0, cost: 3, glyph: "infantry",  ascii: "V",  vehicle: false, melee: false, tele: false, jump: false, sprite: -1 },
-        terminator:    { disp: "Terminators",     men: 5,  hp_man: 26, armour: 20, mel: 16, bal: 16, rng: 5, spd: 0.5, cost: 4, glyph: "term",      ascii: "TR", vehicle: false, melee: false, tele: true,  jump: false, sprite: -1 },
-        assault_term:  { disp: "Asslt Terms",     men: 5,  hp_man: 26, armour: 20, mel: 22, bal: 5,  rng: 2, spd: 0.5, cost: 4, glyph: "term",      ascii: "AT", vehicle: false, melee: true,  tele: true,  jump: false, sprite: -1 },
+        terminator:    { disp: "Terminators",     men: 5,  hp_man: 26, armour: 20, mel: 16, bal: 16, rng: 5, spd: 0.9, cost: 4, glyph: "term",      ascii: "TR", vehicle: false, melee: false, tele: true,  jump: false, sprite: -1 },
+        assault_term:  { disp: "Asslt Terms",     men: 5,  hp_man: 26, armour: 20, mel: 22, bal: 5,  rng: 2, spd: 0.9, cost: 4, glyph: "term",      ascii: "AT", vehicle: false, melee: true,  tele: true,  jump: false, sprite: -1 },
         scout:         { disp: "Scouts",          men: 10, hp_man: 9,  armour: 7,  mel: 8,  bal: 11, rng: 7, spd: 1.0, cost: 1, glyph: "scout",     ascii: "S",  vehicle: false, melee: false, tele: false, jump: false, sprite: -1 },
         hq:            { disp: "Command",         men: 5,  hp_man: 20, armour: 15, mel: 20, bal: 15, rng: 5, spd: 1.0, cost: 3, glyph: "hq",        ascii: "HQ", vehicle: false, melee: false, tele: false, jump: false, sprite: -1 },
         guardsmen:     { disp: "Guardsmen",       men: 20, hp_man: 5,  armour: 5,  mel: 4,  bal: 7,  rng: 6, spd: 1.0, cost: 1, glyph: "guard",     ascii: "G",  vehicle: false, melee: false, tele: false, jump: false, sprite: -1 },
@@ -246,7 +246,7 @@ function grid_unit_def(_key) {
         ty_zoanthrope:  { disp: "Zoanthropes",         men: 3  , hp_man: 30  , armour: 6  , mel: 2  , bal: 21 , rng: 5 , spd: 1.0, cost: 0, glyph: "psyker",     ascii: "ZO",  vehicle: false , melee: false , tele: false , jump: false , sprite: -1 },
         ch_marine:      { disp: "Chaos Marines",       men: 10 , hp_man: 7   , armour: 9  , mel: 12 , bal: 10 , rng: 7 , spd: 1.0, cost: 0, glyph: "infantry",   ascii: "CS",  vehicle: false , melee: false , tele: false , jump: false , sprite: -1 },
         ch_berzerker:   { disp: "Khorne Berzerkers",   men: 10 , hp_man: 18  , armour: 9  , mel: 14 , bal: 8  , rng: 3 , spd: 1.0, cost: 0, glyph: "infantry",   ascii: "KB",  vehicle: false , melee: true  , tele: false , jump: false , sprite: -1 },
-        ch_terminator:  { disp: "Chaos Terminators",   men: 5  , hp_man: 12  , armour: 22 , mel: 25 , bal: 13 , rng: 3 , spd: 0.5, cost: 0, glyph: "term",       ascii: "CT",  vehicle: false , melee: false , tele: true  , jump: false , sprite: -1 },
+        ch_terminator:  { disp: "Chaos Terminators",   men: 5  , hp_man: 12  , armour: 22 , mel: 25 , bal: 13 , rng: 3 , spd: 0.9, cost: 0, glyph: "term",       ascii: "CT",  vehicle: false , melee: false , tele: true  , jump: false , sprite: -1 },
         ch_hellbrute:   { disp: "Hellbrutes",          men: 1  , hp_man: 168 , armour: 28 , mel: 28 , bal: 17 , rng: 2 , spd: 1.0, cost: 0, glyph: "walker",     ascii: "HL",  vehicle: true  , melee: false , tele: false , jump: false , sprite: -1 },
         ch_rhino:       { disp: "Chaos Rhinos",        men: 1  , hp_man: 100 , armour: 21 , mel: 2  , bal: 15 , rng: 5 , spd: 2.0, cost: 0, glyph: "transport",  ascii: "RH",  vehicle: true  , melee: false , tele: false , jump: false , sprite: -1 },
         ch_sorcerer:    { disp: "Chaos Sorcerers",     men: 5  , hp_man: 15  , armour: 16 , mel: 10 , bal: 8  , rng: 3 , spd: 1.0, cost: 0, glyph: "psyker",     ascii: "SO",  vehicle: false , melee: false , tele: false , jump: false , sprite: -1 },
@@ -2233,7 +2233,18 @@ function grid_form_advance(ctrl, _fi) {
     // Do not outrun the rest of the line. A block that has pulled well ahead of
     // its side's average waits a tick, so the army arrives together instead of
     // feeding itself to the enemy one formation at a time.
-    var _line = (_f.side == 0) ? ctrl.line0 : ctrl.line1;
+    // A block that teleported in is exempt. It did not outrun the army, it was
+    // put there on purpose, and holding it until the line catches up freezes
+    // Terminators in place for the first half of the battle: exactly the unit
+    // whose reason for existing is to already be ahead.
+    var _tele_block = false;
+    for (var _tm = 0; _tm < array_length(_f.members); _tm++) {
+        if (ctrl.squads[_f.members[_tm]].can_tele) {
+            _tele_block = true;
+            break;
+        }
+    }
+    var _line = (_tele_block) ? -1 : ((_f.side == 0) ? ctrl.line0 : ctrl.line1);
     if (_line >= 0) {
         if ((_f.side == 0) && (_f.anchor_col > (_line + GRIDC_LINE_SLACK))) {
             return;
