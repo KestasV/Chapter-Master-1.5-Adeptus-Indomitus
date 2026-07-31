@@ -90,6 +90,14 @@
 // The vanilla tally system buffers volley lines; the grid flushes them every
 // few ticks so the log reads in volleys rather than a line per bullet.
 #macro GRIDC_LOG_FLUSH 5
+// Psychic casting: a Librarian manifests every few ticks, smiting what he can
+// see or warding his squad. Perils is the price of the warp.
+#macro GRIDC_PSY_CD 6
+#macro GRIDC_PSY_RANGE 10
+#macro GRIDC_PSY_DMG 3
+#macro GRIDC_PSY_WARD_TICKS 30
+#macro GRIDC_PSY_WARD_SOAK 0.4
+#macro GRIDC_PSY_PERIL 0.05
 #macro GRIDC_STR_TALLY 20
 // Frames the cursor must rest on a tile before it explains itself.
 #macro GRIDC_TIP_DELAY 75
@@ -468,6 +476,15 @@ function GridSquad(_side, _type, _name) constructor {
     // True when this squad's numbers came from its men's actual wargear rather
     // than the type table.
     geared = false;
+    // Psyker attachment: the strongest Librarian riding with this squad, his
+    // psychic potency and discipline, snapshotted at collection because the
+    // power data on obj_ini is unreadable once the grid deactivates the world.
+    lib_psy = 0;
+    lib_name = "";
+    lib_disc = "";
+    psy_cd = GRIDC_PSY_CD;
+    // Warp ward: ticks remaining of the protective cast.
+    ward = 0;
     ammo = _d.vehicle
         ? (grid_is_artillery(_type) ? GRIDC_AMMO_ARTY : GRIDC_AMMO_VEH)
         : (grid_is_heavy_weapon(_type) ? GRIDC_AMMO_HEAVY : GRIDC_AMMO_INF);
@@ -2197,6 +2214,10 @@ function grid_attack(ctrl, _ai, _di, _melee) {
     }
 
     // The target's own plate, the reduction that reads as a deflection.
+    // A warp ward turns a share of everything while it holds.
+    if (_d.ward > 0) {
+        _raw *= (1 - GRIDC_PSY_WARD_SOAK);
+    }
     // Armour piercing eats armour before the deflect roll, so a plasma volley
     // treats Terminator plate very differently from a lasgun volley.
     var _eff_arm = max(0, _d.armour - (_melee ? _a.ap_m : _a.ap_r));
@@ -3100,6 +3121,84 @@ function grid_auto_orders(ctrl) {
     }
 }
 
+/// @function grid_psy_bolt
+/// @description A Librarian's offensive manifestation: warp damage that ignores
+/// armour entirely, applied straight to the target with the same accounting the
+/// gun path keeps. Deliberately duplicates that small accounting block rather
+/// than threading a fake weapon through grid_attack.
+function grid_psy_bolt(ctrl, _si, _ti) {
+    var _a = ctrl.squads[_si];
+    var _d = ctrl.squads[_ti];
+    var _dmg = _a.lib_psy * GRIDC_PSY_DMG;
+    var _killed = 0;
+    if (_d.is_vehicle) {
+        _d.hp_pool = max(0, _d.hp_pool - _dmg);
+    } else {
+        _killed = clamp(floor(_dmg / max(1, _d.hp_man)), 0, _d.men);
+        _d.men -= _killed;
+        _d.hp_pool = max(0, _d.hp_pool - _dmg);
+    }
+    grid_mark_outcome(ctrl, _ti, (_killed > 0) ? GRIDHIT_WOUND : GRIDHIT_GRAZE);
+    _d.hit_kills += _killed;
+    if (_killed > 0) {
+        if (_d.side == 1) {
+            ctrl.agg_ekills += _killed;
+            ctrl.total_ekills += _killed;
+        } else {
+            ctrl.agg_pkills += _killed;
+            ctrl.total_pkills += _killed;
+        }
+    }
+    if ((_d.hp_pool <= 0) && _d.alive) {
+        _d.alive = false;
+        _d.men = 0;
+        if (grid_in_bounds(ctrl, _d.col, _d.row) && (ctrl.occ[_d.col][_d.row] == _ti)) {
+            ctrl.occ[_d.col][_d.row] = -1;
+        }
+    }
+    var _dn = (_a.lib_disc != "") ? _a.lib_disc : "the warp";
+    var _line = (_killed > 0)
+        ? $"The Librarian of {_a.name} draws on {_dn} and smites the {_d.disp}, killing {_killed}!"
+        : $"The Librarian of {_a.name} draws on {_dn} and scours the {_d.disp}!";
+    add_battle_log_message(_line, (_d.side == 1) ? eMSG_COLOR.LIGHTGREEN : eMSG_COLOR.RED);
+    grid_floater(ctrl, _d.col, _d.row, "PSYCHIC", GRIDC_ORANGE);
+}
+
+/// @function grid_psy_tick
+/// @description The casting loop. Every squad carrying a Librarian manifests on
+/// its own cadence: a visible enemy in reach is smitten, otherwise the squad is
+/// warded. Perils of the Warp is rolled on every cast and paid in the caster's
+/// own blood, which is exactly the bargain the lore describes.
+function grid_psy_tick(ctrl) {
+    for (var _i = 0; _i < array_length(ctrl.squads); _i++) {
+        var _s = ctrl.squads[_i];
+        if (!_s.alive || !_s.deployed || (_s.side != 0) || (_s.lib_psy <= 0)) {
+            continue;
+        }
+        _s.psy_cd -= 1;
+        if (_s.psy_cd > 0) {
+            continue;
+        }
+        _s.psy_cd = GRIDC_PSY_CD;
+        if (random(1) < GRIDC_PSY_PERIL) {
+            var _self = _s.lib_psy * GRIDC_PSY_DMG;
+            _s.hp_pool = max(1, _s.hp_pool - _self);
+            grid_floater(ctrl, _s.col, _s.row, "PERILS!", GRIDC_RED);
+            add_battle_log_message($"The warp lashes back at {_s.name}'s Librarian!", eMSG_COLOR.RED);
+            continue;
+        }
+        var _t = grid_nearest_foe(ctrl, _i, GRIDC_PSY_RANGE, true);
+        if (_t >= 0) {
+            grid_psy_bolt(ctrl, _i, _t);
+        } else if (_s.ward <= 0) {
+            _s.ward = GRIDC_PSY_WARD_TICKS;
+            grid_floater(ctrl, _s.col, _s.row, "WARDED", make_color_rgb(120, 190, 255));
+            var _dn2 = (_s.lib_disc != "") ? _s.lib_disc : "the warp";
+            add_battle_log_message($"{_s.name}'s Librarian weaves {_dn2} into a protective ward.", eMSG_COLOR.BRIGHT_BLUE);
+        }
+    }
+}
+
 /// @function grid_battle_tick
 function grid_battle_tick(ctrl) {
     ctrl.ticks += 1;
@@ -3119,6 +3218,12 @@ function grid_battle_tick(ctrl) {
     if ((ctrl.ticks mod GRIDC_LOG_FLUSH) == 0) {
         combat_kill_tally_flush();
         combat_tally_flush();
+    }
+    grid_psy_tick(ctrl);
+    for (var _wd = 0; _wd < array_length(ctrl.squads); _wd++) {
+        if (ctrl.squads[_wd].ward > 0) {
+            ctrl.squads[_wd].ward -= 1;
+        }
     }
     if ((ctrl.ticks mod GRIDC_STR_TALLY) == 0) {
         var _se = 0;
@@ -3979,8 +4084,21 @@ function grid_collect_blocks() {
                 mdr: variable_struct_exists(_u, "damage_resistance") ? _u.damage_resistance() : 0,
                 mjump: false,
                 mbike: false,
+                mpsy: 0,
+                mdisc: "",
             });
             var _ri = array_length(_out) - 1;
+            // Librarians carry the psychic layer. Potency and discipline are
+            // read here, while the world is still awake.
+            if ((string_pos("Librarian", _role) > 0) && variable_struct_exists(_u, "psionic")) {
+                _out[_ri].mpsy = max(0, _u.psionic);
+                if (variable_struct_exists(_u, "psy_discipline")) {
+                    var _pd = _u.psy_discipline();
+                    if (is_string(_pd)) {
+                        _out[_ri].mdisc = _pd;
+                    }
+                }
+            }
             if (variable_struct_exists(_u, "get_mobility_data")) {
                 var _mob = _u.get_mobility_data();
                 if (is_struct(_mob) && variable_struct_exists(_mob, "has_tag")) {
@@ -4199,6 +4317,9 @@ function grid_gear_aggregate(_refs, _k) {
     var _hp_n = 0;
     var _dr_sum = 0;
     var _dr_n = 0;
+    var _psy_best = 0;
+    var _psy_name = "";
+    var _psy_disc = "";
     var _men_ct = 0;
     var _jump_ct = 0;
     var _bike_ct = 0;
@@ -4211,6 +4332,11 @@ function grid_gear_aggregate(_refs, _k) {
             if (variable_struct_exists(_rf, "mdr") && (_rf.mdr > 0)) {
                 _dr_sum += _rf.mdr;
                 _dr_n += 1;
+            }
+            if (variable_struct_exists(_rf, "mpsy") && (_rf.mpsy > _psy_best)) {
+                _psy_best = _rf.mpsy;
+                _psy_disc = variable_struct_exists(_rf, "mdisc") ? _rf.mdisc : "";
+                _psy_name = "";
             }
             if (variable_struct_exists(_rf, "mjump") && _rf.mjump) {
                 _jump_ct += 1;
@@ -4303,6 +4429,8 @@ function grid_gear_aggregate(_refs, _k) {
         m_ac: (_ac_n > 0) ? (_ac_sum / _ac_n) : -1,
         m_hp: (_hp_n > 0) ? (_hp_sum / _hp_n) : -1,
         m_dr: (_men_ct > 0) ? (_dr_sum / max(1, _men_ct)) : 0,
+        psy: _psy_best,
+        psy_disc: _psy_disc,
         jump_frac: (_men_ct > 0) ? (_jump_ct / _men_ct) : 0,
         bike_frac: (_men_ct > 0) ? (_bike_ct / _men_ct) : 0,
         v_ac: _vac,
@@ -4354,6 +4482,10 @@ function grid_gear_apply(_sq, _agg, _k) {
         }
         if (_agg.bike_frac >= 0.5) {
             _sq.spd = min(_sq.spd + 0.8, 3);
+        }
+        if (_agg.psy > 0) {
+            _sq.lib_psy = _agg.psy;
+            _sq.lib_disc = _agg.psy_disc;
         }
     } else {
         if (_agg.v_ac > 0) {
