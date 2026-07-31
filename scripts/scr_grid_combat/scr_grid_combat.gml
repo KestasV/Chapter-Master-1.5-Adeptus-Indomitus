@@ -1222,6 +1222,9 @@ function grid_gen_player_pool(ctrl) {
 function grid_spawn_enemy_squad(ctrl, _key, _idx, _pc = -1, _pr = -1) {
     var _d = grid_unit_def(_key);
     var _sq = new GridSquad(1, _key, $"{_d.disp} {_idx}");
+    var _eap = grid_enemy_ap(_key);
+    _sq.ap_r = _eap[0];
+    _sq.ap_m = _eap[1];
     grid_apply_range_class(ctrl, _sq);
     var _placed = false;
     // A shaped force asks for a particular tile. If it is taken the squad falls
@@ -3939,6 +3942,7 @@ function grid_collect_blocks() {
                     att: att[_w],
                     ap: (variable_instance_exists(id, "apa") && (_w < array_length(apa))) ? apa[_w] : 0,
                     rng: (variable_instance_exists(id, "range") && (_w < array_length(range))) ? range[_w] : 1,
+                    amm: (variable_instance_exists(id, "ammo") && is_array(ammo) && (_w < array_length(ammo))) ? ammo[_w] : 0,
                 });
             }
             if (array_length(_gear.stacks) <= 0) {
@@ -3965,6 +3969,10 @@ function grid_collect_blocks() {
                 veh: false,
                 ally: ally[_i],
                 gear: _gear,
+                // Real durability: this marine's armour and his health as he
+                // stands, so a wounded marine enters the field wounded.
+                mac: variable_struct_exists(_u, "armour_calc") ? _u.armour_calc() : -1,
+                mhp: variable_struct_exists(_u, "hp") ? _u.hp() : -1,
             });
             if (_gear != undefined) {
                 _gear.src_men += 1;
@@ -3982,6 +3990,8 @@ function grid_collect_blocks() {
                 veh: true,
                 ally: veh_ally[_v],
                 gear: _gear,
+                vac: (variable_instance_exists(id, "veh_ac") && (_v < array_length(veh_ac))) ? veh_ac[_v] : -1,
+                vhp: (variable_instance_exists(id, "veh_hp") && (_v < array_length(veh_hp))) ? veh_hp[_v] : -1,
             });
             if (_gear != undefined) {
                 _gear.src_men += 1;
@@ -4075,6 +4085,85 @@ function grid_take_over(_nc) {
     return true;
 }
 
+/// @function grid_ap_value
+/// @description Converts the game's 1 to 4 anti-armour class into armour
+/// negation on the grid scale. arp is a tier, not a number to subtract: tier 1
+/// is small arms that cannot hurt a tank, tier 4 melts anything. The first
+/// wargear pass treated it as subtractive and undersold every special weapon.
+function grid_ap_value(_arp) {
+    if (_arp >= 4) {
+        return 10;
+    }
+    if (_arp >= 3) {
+        return 6;
+    }
+    if (_arp >= 2) {
+        return 3;
+    }
+    return 0;
+}
+
+/// @function grid_enemy_ap
+/// @description [ranged AP, melee AP] per enemy key, derived from each race's
+/// signature weapons in scr_en_weapon through the same tier map the player
+/// side uses: Gauss Flayers are class 2, a Power Klaw class 3, Rokkits,
+/// Railguns, Lascannons and Zoanthrope blasts class 4.
+function grid_enemy_ap(_key) {
+    var _p = string_copy(_key, 1, 3);
+    if (_p == "ne_") {
+        return (string_pos("destroyer", _key) > 0) ? [10, 3] : [3, 3];
+    }
+    if (_p == "tau") {
+        return (string_pos("broadside", _key) > 0) ? [10, 0] : [3, 0];
+    }
+    if (_p == "el_") {
+        return [3, 6];
+    }
+    if (_p == "ork") {
+        if (string_pos("rokkit", _key) > 0 || string_pos("kannon", _key) > 0) {
+            return [10, 0];
+        }
+        if (string_pos("nob", _key) > 0 || string_pos("boss", _key) > 0) {
+            return [0, 6];
+        }
+        if (string_pos("snazz", _key) > 0) {
+            return [3, 0];
+        }
+        return [0, 0];
+    }
+    if (_p == "ty_") {
+        if (string_pos("zoan", _key) > 0) {
+            return [10, 0];
+        }
+        return [3, 6];
+    }
+    if (_p == "gs_") {
+        return [0, 6];
+    }
+    if (_p == "ad_") {
+        return (string_pos("thallax", _key) > 0) ? [10, 0] : [3, 3];
+    }
+    if (_p == "ch_") {
+        return (string_pos("terminator", _key) > 0) ? [3, 10] : [0, 6];
+    }
+    if (_p == "ig_" || _key == "guardsmen" || _key == "heavy_weapons") {
+        if (string_pos("hwt", _key) > 0 || _key == "heavy_weapons" || string_pos("russ", _key) > 0) {
+            return [10, 0];
+        }
+        if (string_pos("basilisk", _key) > 0) {
+            return [6, 0];
+        }
+        if (string_pos("chimera", _key) > 0 || string_pos("sentinel", _key) > 0) {
+            return [3, 0];
+        }
+        return [0, 0];
+    }
+    if (_p == "he_") {
+        return [0, 3];
+    }
+    return [0, 0];
+}
+
 /// @function grid_gear_aggregate
 /// @description Melts the real wargear of a squad's members into its combat
 /// numbers. Everything is anchored to the Bolter: _k is chosen at import so a
@@ -4089,7 +4178,32 @@ function grid_gear_aggregate(_refs, _k) {
     }
     var _blocks = [];
     var _takes = [];
+    // Durability rides on the refs themselves rather than the shared gear.
+    var _ac_sum = 0;
+    var _ac_n = 0;
+    var _hp_sum = 0;
+    var _hp_n = 0;
+    var _vac = -1;
+    var _vhp = -1;
     for (var _i = 0; _i < array_length(_refs); _i++) {
+        var _rf = _refs[_i];
+        if (!_rf.veh) {
+            if (variable_struct_exists(_rf, "mac") && (_rf.mac > 0)) {
+                _ac_sum += _rf.mac;
+                _ac_n += 1;
+            }
+            if (variable_struct_exists(_rf, "mhp") && (_rf.mhp > 0)) {
+                _hp_sum += _rf.mhp;
+                _hp_n += 1;
+            }
+        } else {
+            if (variable_struct_exists(_rf, "vac") && (_rf.vac > 0)) {
+                _vac = _rf.vac;
+            }
+            if (variable_struct_exists(_rf, "vhp") && (_rf.vhp > 0)) {
+                _vhp = _rf.vhp;
+            }
+        }
         var _g = _refs[_i].gear;
         if (_g == undefined) {
             continue;
@@ -4118,6 +4232,8 @@ function grid_gear_aggregate(_refs, _k) {
     var _best_rng = 0;
     var _best_att = 0;
     var _best_wep = "";
+    var _amm_w = 0;
+    var _amm_n = 0;
     for (var _b2 = 0; _b2 < array_length(_blocks); _b2++) {
         var _gb = _blocks[_b2];
         var _frac = _takes[_b2] / max(1, _gb.src_men);
@@ -4126,7 +4242,13 @@ function grid_gear_aggregate(_refs, _k) {
             var _share = _sk.att * _frac;
             if (_sk.rng > 1) {
                 _r_att += _share;
-                _r_ap += _sk.ap * _share;
+                // AP is a class, mapped to armour negation per stack and then
+                // weighted by how much of the squad's fire it is.
+                _r_ap += grid_ap_value(_sk.ap) * _share;
+                if (_sk.amm > 0) {
+                    _amm_w += _sk.amm * _sk.n * _frac;
+                    _amm_n += _sk.n * _frac;
+                }
                 if (_sk.rng > _best_rng) {
                     _best_rng = _sk.rng;
                 }
@@ -4136,7 +4258,7 @@ function grid_gear_aggregate(_refs, _k) {
                 }
             } else {
                 _m_att += _share;
-                _m_ap += _sk.ap * _share;
+                _m_ap += grid_ap_value(_sk.ap) * _share;
             }
         }
     }
@@ -4147,6 +4269,11 @@ function grid_gear_aggregate(_refs, _k) {
         m_ap: (_m_att > 0) ? (_m_ap / _m_att) : 0,
         best_rng: _best_rng,
         best_wep: _best_wep,
+        volleys: (_amm_n > 0) ? (_amm_w / _amm_n) : 0,
+        m_ac: (_ac_n > 0) ? (_ac_sum / _ac_n) : -1,
+        m_hp: (_hp_n > 0) ? (_hp_sum / _hp_n) : -1,
+        v_ac: _vac,
+        v_hp: _vhp,
     };
 }
 
@@ -4160,13 +4287,38 @@ function grid_gear_apply(_sq, _agg, _k) {
     if (_agg.r_att > 0) {
         _sq.bal = clamp(round((_agg.r_att / _bodies) * _k), 1, 80);
         _sq.rng = clamp(round(1.9 * sqrt(max(1, _agg.best_rng))), 2, 40);
-        _sq.ap_r = round(_agg.r_ap * 0.62);
+        _sq.ap_r = round(_agg.r_ap);
     } else {
         _sq.bal = 0;
     }
     if (_agg.m_att > 0) {
         _sq.mel = clamp(round((_agg.m_att / _bodies) * _k), 1, 80);
-        _sq.ap_m = round(_agg.m_ap * 0.62);
+        _sq.ap_m = round(_agg.m_ap);
+    }
+    if (_agg.volleys > 0) {
+        // Real magazines. The vanilla builder already tripled dreadnought ammo
+        // and quadrupled vehicle ammo, so the tags arrive priced in.
+        _sq.ammo = clamp(round(_agg.volleys), 4, 240);
+    }
+    if (!_sq.is_vehicle) {
+        // The same calibration the enemy table went through: armour is ac
+        // scaled by 0.62, a man's hit points are his health through (2 - dr)
+        // over 15 with marines carrying no dr. A wounded marine enters wounded.
+        if (_agg.m_ac > 0) {
+            _sq.armour = clamp(round(_agg.m_ac * 0.62), 1, 40);
+        }
+        if (_agg.m_hp > 0) {
+            _sq.hp_man = clamp(round(_agg.m_hp * 2 / 15), 3, 60);
+        }
+    } else {
+        if (_agg.v_ac > 0) {
+            _sq.armour = clamp(round(_agg.v_ac * 0.70), 1, 40);
+        }
+        if (_agg.v_hp > 0) {
+            // Vehicle hull through the /2.5 vehicle calibration, capped at the
+            // type maximum: a damaged Rhino rolls onto the field damaged.
+            _sq.hp_pool = clamp(round(_agg.v_hp / 2.5), 1, _sq.hp_max);
+        }
     }
     if (_agg.best_wep != "") {
         _sq.wep = _agg.best_wep;
