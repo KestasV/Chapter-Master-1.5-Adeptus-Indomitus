@@ -357,6 +357,34 @@ for (var _fx = 0; _fx < array_length(shots); _fx++) {
             draw_set_alpha(0.9 * (1 - _ep));
             draw_circle(_sbx, _sby, _rad, true);
         }
+    } else if (_sh.kind == GRIDFX_PSY) {
+        // Warp discharge. A cast on the spot (ward, perils) is rings only; a
+        // bolt crackles across as a jittered double arc, then blooms at the
+        // target with a radius that matches the power's real area. Variation
+        // comes from the blast size: wide powers get a second trailing ring.
+        var _selfcast = ((_sh.c0 == _sh.c1) && (_sh.r0 == _sh.r1));
+        if (!_selfcast && (_prog < 0.5)) {
+            var _bp = _prog / 0.5;
+            var _hx = lerp(_sax, _sbx, _bp);
+            var _hy = lerp(_say, _sby, _bp);
+            var _jx = irandom_range(-4, 4);
+            var _jy = irandom_range(-4, 4);
+            draw_set_alpha(0.9);
+            draw_line_width(_sax, _say, _hx + _jx, _hy + _jy, 2);
+            draw_set_alpha(0.5);
+            draw_line_width(_sax, _say, _hx - _jx, _hy - _jy, 1);
+        } else {
+            var _pp = _selfcast ? _prog : ((_prog - 0.5) / 0.5);
+            var _prad = (_sh.blast + 0.5) * _tp * _pp;
+            draw_set_alpha(0.40 * (1 - _pp));
+            draw_circle(_sbx, _sby, _prad, false);
+            draw_set_alpha(0.9 * (1 - _pp));
+            draw_circle(_sbx, _sby, _prad, true);
+            if (_sh.blast >= 1) {
+                draw_set_alpha(0.6 * (1 - _pp));
+                draw_circle(_sbx, _sby, _prad * 0.55, true);
+            }
+        }
     } else {
         draw_set_alpha(0.8 * (1 - _prog));
         var _mx2 = lerp(_sax, _sbx, 0.5);

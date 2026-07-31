@@ -159,6 +159,9 @@
 #macro GRIDFX_TRACER 1
 #macro GRIDFX_MISSILE 2
 #macro GRIDFX_MELEE 3
+// Psychic manifestation: a crackling purple discharge with an expanding wake.
+#macro GRIDFX_PSY 4
+#macro GRIDC_PURPLE make_color_rgb(190, 90, 255)
 #macro GRIDC_FX_MAX 90
 // Share of a burst weapon's damage that goes to everything else in the blast
 // instead of the squad aimed at. Taken out of the primary hit, not added on top,
@@ -483,6 +486,9 @@ function GridSquad(_side, _type, _name) constructor {
     lib_name = "";
     lib_disc = "";
     psy_cd = GRIDC_PSY_CD;
+    // The Librarian's actual powers, snapshotted at collection: name, flavour
+    // line and area, as far as the data exposes them.
+    lib_powers = [];
     // Warp ward: ticks remaining of the protective cast.
     ward = 0;
     ammo = _d.vehicle
@@ -1242,6 +1248,7 @@ function grid_spawn_enemy_squad(ctrl, _key, _idx, _pc = -1, _pr = -1) {
     var _eap = grid_enemy_ap(_key);
     _sq.ap_r = _eap[0];
     _sq.ap_m = _eap[1];
+    _sq.lib_psy = grid_enemy_psy(_key);
     grid_apply_range_class(ctrl, _sq);
     var _placed = false;
     // A shaped force asks for a particular tile. If it is taken the squad falls
@@ -2033,6 +2040,8 @@ function grid_shot_fx(ctrl, _c0, _r0, _c1, _r1, _kind, _col, _blast) {
         _life = 26;
     } else if (_kind == GRIDFX_MELEE) {
         _life = 12;
+    } else if (_kind == GRIDFX_PSY) {
+        _life = 30;
     }
     // A tick at Crawl lasts several times as long in real seconds, so a tracer
     // living ten frames vanishes long before anything else happens. Scaling with
@@ -3129,6 +3138,15 @@ function grid_auto_orders(ctrl) {
 function grid_psy_bolt(ctrl, _si, _ti) {
     var _a = ctrl.squads[_si];
     var _d = ctrl.squads[_ti];
+    // The manifestation itself: one of the caster's real powers when the tome
+    // was readable, its name and flavour carried into the log, its area into
+    // the damage and the discharge drawn at that radius.
+    var _pw = undefined;
+    if (array_length(_a.lib_powers) > 0) {
+        _pw = _a.lib_powers[irandom(array_length(_a.lib_powers) - 1)];
+    }
+    var _aoe = (_pw != undefined) ? _pw.aoe : 0;
+    grid_shot_fx(ctrl, _a.col, _a.row, _d.col, _d.row, GRIDFX_PSY, GRIDC_PURPLE, max(0.4, _aoe));
     var _dmg = _a.lib_psy * GRIDC_PSY_DMG;
     var _killed = 0;
     if (_d.is_vehicle) {
@@ -3156,12 +3174,54 @@ function grid_psy_bolt(ctrl, _si, _ti) {
             ctrl.occ[_d.col][_d.row] = -1;
         }
     }
+    // Area powers spill onto everything hostile adjacent to the mark, at half
+    // strength, with the same accounting through this very function's caller.
+    if (_aoe >= 1) {
+        for (var _nx = -1; _nx <= 1; _nx++) {
+            for (var _ny = -1; _ny <= 1; _ny++) {
+                if ((_nx == 0) && (_ny == 0)) {
+                    continue;
+                }
+                var _ac2 = _d.col + _nx;
+                var _ar2 = _d.row + _ny;
+                if (!grid_in_bounds(ctrl, _ac2, _ar2)) {
+                    continue;
+                }
+                var _oi = ctrl.occ[_ac2][_ar2];
+                if ((_oi >= 0) && ctrl.squads[_oi].alive && (ctrl.squads[_oi].side == _d.side)) {
+                    var _o = ctrl.squads[_oi];
+                    var _sp = round(_dmg / 2);
+                    var _ok = _o.is_vehicle ? 0 : clamp(floor(_sp / max(1, _o.hp_man)), 0, _o.men);
+                    _o.men -= _ok;
+                    _o.hp_pool = max(0, _o.hp_pool - _sp);
+                    grid_mark_outcome(ctrl, _oi, (_ok > 0) ? GRIDHIT_WOUND : GRIDHIT_GRAZE);
+                    if ((_o.hp_pool <= 0) && _o.alive) {
+                        _o.alive = false;
+                        _o.men = 0;
+                        if (grid_in_bounds(ctrl, _o.col, _o.row) && (ctrl.occ[_o.col][_o.row] == _oi)) {
+                            ctrl.occ[_o.col][_o.row] = -1;
+                        }
+                    }
+                }
+            }
+        }
+    }
     var _dn = (_a.lib_disc != "") ? _a.lib_disc : "the warp";
-    var _line = (_killed > 0)
-        ? $"The Librarian of {_a.name} draws on {_dn} and smites the {_d.disp}, killing {_killed}!"
-        : $"The Librarian of {_a.name} draws on {_dn} and scours the {_d.disp}!";
+    var _cast = (_a.side == 0) ? $"The Librarian of {_a.name}" : $"The {_a.disp}";
+    var _line = "";
+    if ((_pw != undefined) && (_pw.fl != "")) {
+        _line = $"{_cast} manifests {_pw.nm}! {_pw.fl}";
+    } else if (_pw != undefined) {
+        _line = (_killed > 0)
+            ? $"{_cast} manifests {_pw.nm}, killing {_killed} of the {_d.disp}!"
+            : $"{_cast} manifests {_pw.nm} against the {_d.disp}!";
+    } else {
+        _line = (_killed > 0)
+            ? $"{_cast} draws on {_dn} and smites the {_d.disp}, killing {_killed}!"
+            : $"{_cast} draws on {_dn} and scours the {_d.disp}!";
+    }
     add_battle_log_message(_line, (_d.side == 1) ? eMSG_COLOR.LIGHTGREEN : eMSG_COLOR.RED);
-    grid_floater(ctrl, _d.col, _d.row, "PSYCHIC", GRIDC_ORANGE);
+    grid_floater(ctrl, _d.col, _d.row, "PSYCHIC", GRIDC_PURPLE);
 }
 
 /// @function grid_psy_tick
@@ -3172,7 +3232,7 @@ function grid_psy_bolt(ctrl, _si, _ti) {
 function grid_psy_tick(ctrl) {
     for (var _i = 0; _i < array_length(ctrl.squads); _i++) {
         var _s = ctrl.squads[_i];
-        if (!_s.alive || !_s.deployed || (_s.side != 0) || (_s.lib_psy <= 0)) {
+        if (!_s.alive || !_s.deployed || (_s.lib_psy <= 0)) {
             continue;
         }
         _s.psy_cd -= 1;
@@ -3184,7 +3244,10 @@ function grid_psy_tick(ctrl) {
             var _self = _s.lib_psy * GRIDC_PSY_DMG;
             _s.hp_pool = max(1, _s.hp_pool - _self);
             grid_floater(ctrl, _s.col, _s.row, "PERILS!", GRIDC_RED);
-            add_battle_log_message($"The warp lashes back at {_s.name}'s Librarian!", eMSG_COLOR.RED);
+            grid_shot_fx(ctrl, _s.col, _s.row, _s.col, _s.row, GRIDFX_PSY, GRIDC_PURPLE, 0.7);
+            add_battle_log_message((_s.side == 0)
+                ? $"The warp lashes back at {_s.name}'s Librarian!"
+                : $"The warp lashes back at the {_s.disp}!", eMSG_COLOR.YELLOW);
             continue;
         }
         var _t = grid_nearest_foe(ctrl, _i, GRIDC_PSY_RANGE, true);
@@ -3193,8 +3256,17 @@ function grid_psy_tick(ctrl) {
         } else if (_s.ward <= 0) {
             _s.ward = GRIDC_PSY_WARD_TICKS;
             grid_floater(ctrl, _s.col, _s.row, "WARDED", make_color_rgb(120, 190, 255));
+            grid_shot_fx(ctrl, _s.col, _s.row, _s.col, _s.row, GRIDFX_PSY, GRIDC_PURPLE, 1.0);
+            var _wnm = "";
+            if (array_length(_s.lib_powers) > 0) {
+                _wnm = _s.lib_powers[irandom(array_length(_s.lib_powers) - 1)].nm;
+            }
             var _dn2 = (_s.lib_disc != "") ? _s.lib_disc : "the warp";
-            add_battle_log_message($"{_s.name}'s Librarian weaves {_dn2} into a protective ward.", eMSG_COLOR.BRIGHT_BLUE);
+            add_battle_log_message((_s.side == 0)
+                ? ((_wnm != "")
+                    ? $"{_s.name}'s Librarian manifests {_wnm}, warding his brothers."
+                    : $"{_s.name}'s Librarian weaves {_dn2} into a protective ward.")
+                : $"The {_s.disp} wreathes itself in warp-light.", eMSG_COLOR.BRIGHT_BLUE);
         }
     }
 }
@@ -4092,10 +4164,40 @@ function grid_collect_blocks() {
             // read here, while the world is still awake.
             if ((string_pos("Librarian", _role) > 0) && variable_struct_exists(_u, "psionic")) {
                 _out[_ri].mpsy = max(0, _u.psionic);
+                _out[_ri].mpowers = [];
                 if (variable_struct_exists(_u, "psy_discipline")) {
                     var _pd = _u.psy_discipline();
                     if (is_string(_pd)) {
                         _out[_ri].mdisc = _pd;
+                    }
+                    // His tome, power by power. Read now, guarded field by
+                    // field, because none of this data survives deactivation.
+                    if (is_string(_pd) && variable_global_exists("powers_data")) {
+                        var _pids = get_discipline_data(_pd, "powers");
+                        if (is_array(_pids)) {
+                            for (var _pw = 0; (_pw < array_length(_pids)) && (_pw < 6); _pw++) {
+                                var _pid = _pids[_pw];
+                                if (!is_string(_pid) || !struct_exists(global.powers_data, _pid)) {
+                                    continue;
+                                }
+                                var _pdd = global.powers_data[$ _pid];
+                                var _pnm = (is_struct(_pdd) && variable_struct_exists(_pdd, "name") && is_string(_pdd.name)) ? _pdd.name : _pid;
+                                var _pfl = "";
+                                var _pfr = get_power_data(_pid, "flavour_text");
+                                if (is_string(_pfr)) {
+                                    _pfl = _pfr;
+                                }
+                                var _paoe = 0;
+                                if (is_struct(_pdd)) {
+                                    if (variable_struct_exists(_pdd, "aoe") && is_real(_pdd.aoe)) {
+                                        _paoe = _pdd.aoe;
+                                    } else if (variable_struct_exists(_pdd, "radius") && is_real(_pdd.radius)) {
+                                        _paoe = _pdd.radius;
+                                    }
+                                }
+                                array_push(_out[_ri].mpowers, { nm: _pnm, fl: _pfl, aoe: clamp(_paoe, 0, 2) });
+                            }
+                        }
                     }
                 }
             }
@@ -4296,6 +4398,26 @@ function grid_enemy_ap(_key) {
     return [0, 0];
 }
 
+/// @function grid_enemy_psy
+/// @description Psychic potency per enemy key: the witches every race fields.
+/// Zoanthropes get a modest rating on top of their blast, which is itself
+/// psychic; sorcerers are the strongest, as they should be.
+function grid_enemy_psy(_key) {
+    if (string_pos("sorc", _key) > 0) {
+        return 5;
+    }
+    if (string_pos("warlock", _key) > 0 || string_pos("seer", _key) > 0) {
+        return 4;
+    }
+    if (string_pos("weird", _key) > 0 || string_pos("magus", _key) > 0) {
+        return 3;
+    }
+    if (string_pos("zoan", _key) > 0) {
+        return 2;
+    }
+    return 0;
+}
+
 /// @function grid_gear_aggregate
 /// @description Melts the real wargear of a squad's members into its combat
 /// numbers. Everything is anchored to the Bolter: _k is chosen at import so a
@@ -4320,6 +4442,7 @@ function grid_gear_aggregate(_refs, _k) {
     var _psy_best = 0;
     var _psy_name = "";
     var _psy_disc = "";
+    var _psy_pw = [];
     var _men_ct = 0;
     var _jump_ct = 0;
     var _bike_ct = 0;
@@ -4337,6 +4460,7 @@ function grid_gear_aggregate(_refs, _k) {
                 _psy_best = _rf.mpsy;
                 _psy_disc = variable_struct_exists(_rf, "mdisc") ? _rf.mdisc : "";
                 _psy_name = "";
+                _psy_pw = variable_struct_exists(_rf, "mpowers") ? _rf.mpowers : [];
             }
             if (variable_struct_exists(_rf, "mjump") && _rf.mjump) {
                 _jump_ct += 1;
@@ -4431,6 +4555,7 @@ function grid_gear_aggregate(_refs, _k) {
         m_dr: (_men_ct > 0) ? (_dr_sum / max(1, _men_ct)) : 0,
         psy: _psy_best,
         psy_disc: _psy_disc,
+        psy_powers: _psy_pw,
         jump_frac: (_men_ct > 0) ? (_jump_ct / _men_ct) : 0,
         bike_frac: (_men_ct > 0) ? (_bike_ct / _men_ct) : 0,
         v_ac: _vac,
@@ -4486,6 +4611,7 @@ function grid_gear_apply(_sq, _agg, _k) {
         if (_agg.psy > 0) {
             _sq.lib_psy = _agg.psy;
             _sq.lib_disc = _agg.psy_disc;
+            _sq.lib_powers = _agg.psy_powers;
         }
     } else {
         if (_agg.v_ac > 0) {
