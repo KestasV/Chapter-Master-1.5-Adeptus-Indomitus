@@ -461,6 +461,13 @@ function GridSquad(_side, _type, _name) constructor {
     fire_cd = 0;
     // What the log calls this squad's guns, and how many volleys it carries.
     wep = grid_weapon_name(_type);
+    // Armour piercing, in the same units as armour. Zero until real gear says
+    // otherwise; the deflect roll subtracts it from the target's armour.
+    ap_r = 0;
+    ap_m = 0;
+    // True when this squad's numbers came from its men's actual wargear rather
+    // than the type table.
+    geared = false;
     ammo = _d.vehicle
         ? (grid_is_artillery(_type) ? GRIDC_AMMO_ARTY : GRIDC_AMMO_VEH)
         : (grid_is_heavy_weapon(_type) ? GRIDC_AMMO_HEAVY : GRIDC_AMMO_INF);
@@ -785,6 +792,11 @@ function grid_apply_range_class(ctrl, _sq) {
     // Transports carry men, not guns, so they keep the reach on their profile.
     if (_sq.is_vehicle && (_sq.glyph != "transport")) {
         _sq.rng = min(round(_sq.rng * GRIDC_TANK_RANGE_MULT), max(2, _arty - 2));
+        return;
+    }
+    if (_sq.geared) {
+        // Real gun, real range. The synthetic bolt-weapon bonus exists to make
+        // the type table feel right and would double-count here.
         return;
     }
     _sq.rng += grid_range_bonus(_sq.type);
@@ -2182,7 +2194,10 @@ function grid_attack(ctrl, _ai, _di, _melee) {
     }
 
     // The target's own plate, the reduction that reads as a deflection.
-    _ev = grid_roll_event(100 / (100 + _d.armour * 2), GRIDC_EVENT_SHARE);
+    // Armour piercing eats armour before the deflect roll, so a plasma volley
+    // treats Terminator plate very differently from a lasgun volley.
+    var _eff_arm = max(0, _d.armour - (_melee ? _a.ap_m : _a.ap_r));
+    _ev = grid_roll_event(100 / (100 + _eff_arm * 2), GRIDC_EVENT_SHARE);
     if (_ev[0]) {
         grid_mark_outcome(ctrl, _di, GRIDHIT_DEFLECT);
         return 0;
@@ -3900,6 +3915,36 @@ function grid_role_to_type(_role) {
 function grid_collect_blocks() {
     var _out = [];
     with (obj_pnunit) {
+        // The vanilla roster builder has already melted this block's real
+        // armoury into parallel stack arrays: weapon name, how many carry it,
+        // their summed attack, armour piercing, range and splash. One shared
+        // struct per block; every ref from the block points at it, and src_men
+        // counts how many, so a block split across grid squads divides its
+        // firepower proportionally instead of duplicating it.
+        var _gear = undefined;
+        if (variable_instance_exists(id, "wep") && is_array(wep)
+            && variable_instance_exists(id, "att") && is_array(att)) {
+            _gear = { stacks: [], src_men: 0 };
+            for (var _w = 0; _w < array_length(wep); _w++) {
+                if ((wep[_w] == "") || (_w >= array_length(att))) {
+                    continue;
+                }
+                var _wn = (variable_instance_exists(id, "wep_num") && (_w < array_length(wep_num))) ? wep_num[_w] : 1;
+                if (_wn <= 0) {
+                    continue;
+                }
+                array_push(_gear.stacks, {
+                    w: wep[_w],
+                    n: _wn,
+                    att: att[_w],
+                    ap: (variable_instance_exists(id, "apa") && (_w < array_length(apa))) ? apa[_w] : 0,
+                    rng: (variable_instance_exists(id, "range") && (_w < array_length(range))) ? range[_w] : 1,
+                });
+            }
+            if (array_length(_gear.stacks) <= 0) {
+                _gear = undefined;
+            }
+        }
         for (var _i = 0; _i < array_length(unit_struct); _i++) {
             var _u = unit_struct[_i];
             if (!is_struct(_u)) {
@@ -3919,7 +3964,11 @@ function grid_collect_blocks() {
                 slot: _u.marine_number,
                 veh: false,
                 ally: ally[_i],
+                gear: _gear,
             });
+            if (_gear != undefined) {
+                _gear.src_men += 1;
+            }
         }
         for (var _v = 0; _v < array_length(veh_type); _v++) {
             if (veh_type[_v] == "") {
@@ -3932,7 +3981,11 @@ function grid_collect_blocks() {
                 slot: veh_id[_v],
                 veh: true,
                 ally: veh_ally[_v],
+                gear: _gear,
             });
+            if (_gear != undefined) {
+                _gear.src_men += 1;
+            }
         }
     }
     return _out;
@@ -4022,11 +4075,120 @@ function grid_take_over(_nc) {
     return true;
 }
 
+/// @function grid_gear_aggregate
+/// @description Melts the real wargear of a squad's members into its combat
+/// numbers. Everything is anchored to the Bolter: _k is chosen at import so a
+/// stock bolter-armed squad reproduces the hand-tuned Tactical profile exactly,
+/// and every other loadout scales from there, so introducing gear moves nothing
+/// unless the gear itself is different. Stacks are shared per source block and
+/// weighted by how many of that block's men are actually in this squad, so a
+/// block split across squads divides its guns rather than duplicating them.
+function grid_gear_aggregate(_refs, _k) {
+    if (_k <= 0) {
+        return undefined;
+    }
+    var _blocks = [];
+    var _takes = [];
+    for (var _i = 0; _i < array_length(_refs); _i++) {
+        var _g = _refs[_i].gear;
+        if (_g == undefined) {
+            continue;
+        }
+        var _at = -1;
+        for (var _b = 0; _b < array_length(_blocks); _b++) {
+            if (_blocks[_b] == _g) {
+                _at = _b;
+                break;
+            }
+        }
+        if (_at < 0) {
+            array_push(_blocks, _g);
+            array_push(_takes, 0);
+            _at = array_length(_blocks) - 1;
+        }
+        _takes[_at] += 1;
+    }
+    if (array_length(_blocks) <= 0) {
+        return undefined;
+    }
+    var _r_att = 0;
+    var _m_att = 0;
+    var _r_ap = 0;
+    var _m_ap = 0;
+    var _best_rng = 0;
+    var _best_att = 0;
+    var _best_wep = "";
+    for (var _b2 = 0; _b2 < array_length(_blocks); _b2++) {
+        var _gb = _blocks[_b2];
+        var _frac = _takes[_b2] / max(1, _gb.src_men);
+        for (var _st = 0; _st < array_length(_gb.stacks); _st++) {
+            var _sk = _gb.stacks[_st];
+            var _share = _sk.att * _frac;
+            if (_sk.rng > 1) {
+                _r_att += _share;
+                _r_ap += _sk.ap * _share;
+                if (_sk.rng > _best_rng) {
+                    _best_rng = _sk.rng;
+                }
+                if (_share > _best_att) {
+                    _best_att = _share;
+                    _best_wep = _sk.w;
+                }
+            } else {
+                _m_att += _share;
+                _m_ap += _sk.ap * _share;
+            }
+        }
+    }
+    return {
+        r_att: _r_att,
+        m_att: _m_att,
+        r_ap: (_r_att > 0) ? (_r_ap / _r_att) : 0,
+        m_ap: (_m_att > 0) ? (_m_ap / _m_att) : 0,
+        best_rng: _best_rng,
+        best_wep: _best_wep,
+    };
+}
+
+/// @function grid_gear_apply
+/// @description Writes an aggregate onto a squad. Per-man attack through the
+/// Bolter anchor gives ranged and melee damage; the longest real gun gives
+/// reach through the same square-root mapping the enemy table was calibrated
+/// with; armour piercing carries across at the armour scale factor.
+function grid_gear_apply(_sq, _agg, _k) {
+    var _bodies = max(1, _sq.men);
+    if (_agg.r_att > 0) {
+        _sq.bal = clamp(round((_agg.r_att / _bodies) * _k), 1, 80);
+        _sq.rng = clamp(round(1.9 * sqrt(max(1, _agg.best_rng))), 2, 40);
+        _sq.ap_r = round(_agg.r_ap * 0.62);
+    } else {
+        _sq.bal = 0;
+    }
+    if (_agg.m_att > 0) {
+        _sq.mel = clamp(round((_agg.m_att / _bodies) * _k), 1, 80);
+        _sq.ap_m = round(_agg.m_ap * 0.62);
+    }
+    if (_agg.best_wep != "") {
+        _sq.wep = _agg.best_wep;
+    }
+    _sq.geared = true;
+}
+
 /// @function grid_import_force
 /// @description Builds the player pool from a collected force instead of the
 /// generated test roster. Models are grouped into squads of the type's own size,
 /// so a hundred Tacticals become ten squads rather than a hundred single men.
 function grid_import_force(ctrl, _force) {
+    // The Bolter is the yardstick. Fetched live from the gear table so the
+    // anchor is whatever the mod's own data says a Bolter is; if the table
+    // cannot be read, gear scaling stays off and the type profiles stand.
+    var _k = 0;
+    var _bolt = gear_weapon_data("weapon", "Bolter", "all");
+    if (is_struct(_bolt) && variable_struct_exists(_bolt, "attack") && (_bolt.attack > 0)) {
+        _k = 18 / _bolt.attack;
+    } else {
+        grid_log(ctrl, "Gear table unavailable: squads fight on type profiles.", eMSG_COLOR.YELLOW);
+    }
     var _buckets = {};
     for (var _i = 0; _i < array_length(_force); _i++) {
         var _ref = _force[_i];
@@ -4054,6 +4216,10 @@ function grid_import_force(ctrl, _force) {
                 continue;
             }
             _sq.roster_refs = _refs;
+            var _agg = grid_gear_aggregate(_refs, _k);
+            if (_agg != undefined) {
+                grid_gear_apply(_sq, _agg, _k);
+            }
             // A squad is only as strong as the men actually in it: a half filled
             // final squad fields the models it has, not a full ten.
             if (!_def.vehicle) {

@@ -676,6 +676,16 @@ if (array_length(selected) > 0) {
         _py2 += 20;
         draw_text(GRIDC_RP_X1 + 10, _py2, $"Melee {_one.mel}  Ranged {_one.bal}");
         _py2 += 20;
+        // The armoury line: what the squad actually carries, and how well it
+        // bites through plate. Only shown when the numbers came from real gear.
+        if (_one.geared) {
+            var _apx = "";
+            if ((_one.ap_r > 0) || (_one.ap_m > 0)) {
+                _apx = $"  AP {max(_one.ap_r, _one.ap_m)}";
+            }
+            draw_text(GRIDC_RP_X1 + 10, _py2, $"{_one.wep}{_apx}");
+            _py2 += 20;
+        }
         draw_text(GRIDC_RP_X1 + 10, _py2, $"Range {_one.rng} tiles  Speed {_one.spd}");
         _py2 += 20;
         if (_one.fire_int > 1) {
