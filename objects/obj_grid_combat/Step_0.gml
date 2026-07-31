@@ -86,6 +86,46 @@ if (keyboard_check_pressed(vk_add) || keyboard_check_pressed(187)
     grid_speed_step(id, 1);
 }
 
+// Click a log line to jump the camera to the action. The line's text is
+// matched against living squads, first by squad name, then by the type name the
+// vanilla lines speak in; a type can match several squads, in which case the
+// first living one is centred, which is ambiguity a reader can live with.
+if (_lc && (phase != GRIDPH_DEPLOY)
+    && point_in_rectangle(_mgx, _mgy, GRIDC_BF_X1 + 4, GRIDC_LOG_Y1, GRIDC_BF_X2, GRIDC_LOG_Y2)) {
+    var _li = floor((_mgy - GRIDC_LOG_Y1) / log.log_line_height);
+    var _tot = array_length(log.__log_history);
+    var _st0 = max(0, _tot - log.log_view_lines - log.__log_scroll);
+    var _idx = _st0 + _li;
+    if ((_idx >= 0) && (_idx < _tot)) {
+        var _lt = string_lower(string(log.__log_history[_idx].text));
+        var _jump = -1;
+        for (var _js = 0; (_js < array_length(squads)) && (_jump < 0); _js++) {
+            var _jq = squads[_js];
+            if (!_jq.alive || !_jq.deployed) {
+                continue;
+            }
+            if (string_pos(string_lower(_jq.name), _lt) > 0) {
+                _jump = _js;
+            }
+        }
+        for (var _jt = 0; (_jt < array_length(squads)) && (_jump < 0); _jt++) {
+            var _jq2 = squads[_jt];
+            if (!_jq2.alive || !_jq2.deployed) {
+                continue;
+            }
+            if (string_pos(string_lower(_jq2.disp), _lt) > 0) {
+                _jump = _jt;
+            }
+        }
+        if (_jump >= 0) {
+            var _jp = grid_tile_px(id);
+            view_x = squads[_jump].col * _jp - ((GRIDC_BF_X2 - GRIDC_BF_X1) div 2);
+            view_y = squads[_jump].row * _jp - ((GRIDC_BF_Y2 - GRIDC_BF_Y1) div 2);
+            grid_clamp_view(id);
+        }
+    }
+}
+
 // Dwell timer for the tile tooltip: it resets the moment the cursor moves to a
 // different tile, so it only fires when you actually stop on something.
 if ((hover_c == hover_last_c) && (hover_r == hover_last_r) && (hover_c >= 0)) {

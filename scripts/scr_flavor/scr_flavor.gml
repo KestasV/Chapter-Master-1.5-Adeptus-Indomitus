@@ -27,6 +27,13 @@ function battle_log_tail_slot() {
 /// @param {real} [_message_color=0] - The color enum value (0=default, eMSG_COLOR.*)
 /// @returns {bool} Success indicator
 function add_battle_log_message(_message, _message_color = eMSG_COLOR.WHITE) {
+    // Grid combat routes every vanilla battle line into its own log. This must
+    // come first: the branch below would push into the hidden obj_ncombat's
+    // feed and re-arm its alarm 3, waking vanilla logic mid-grid-battle.
+    if (instance_exists(obj_grid_combat)) {
+        grid_log(obj_grid_combat, _message, _message_color);
+        return true;
+    }
     if (instance_exists(obj_ncombat)) {
         obj_ncombat.combat_log.push(_message, _message_color);
         obj_ncombat.alarm[3] = 2;

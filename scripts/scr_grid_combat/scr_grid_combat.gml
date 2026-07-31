@@ -80,8 +80,19 @@
 #macro GRIDC_WAVE_TICK 45
 #macro GRIDC_WAVES 1
 #macro GRIDC_FLOAT_LIFE 80
+// Ammunition, counted in volleys. Generous on purpose: it should only bite in
+// the long grinding battles, and running dry turns a squad into a melee unit.
+#macro GRIDC_AMMO_INF 40
+#macro GRIDC_AMMO_HEAVY 24
+#macro GRIDC_AMMO_VEH 50
+#macro GRIDC_AMMO_ARTY 14
+#macro GRIDC_ORANGE make_color_rgb(255, 150, 40)
+// The vanilla tally system buffers volley lines; the grid flushes them every
+// few ticks so the log reads in volleys rather than a line per bullet.
+#macro GRIDC_LOG_FLUSH 5
+#macro GRIDC_STR_TALLY 20
 // Frames the cursor must rest on a tile before it explains itself.
-#macro GRIDC_TIP_DELAY 45
+#macro GRIDC_TIP_DELAY 75
 #macro GRIDC_FLOAT_RISE 0.4
 #macro GRIDC_FLASH_FRAMES 24
 #macro GRIDC_DRAG_MIN 8
@@ -448,6 +459,12 @@ function GridSquad(_side, _type, _name) constructor {
     // is running, melee is not.
     fire_int = grid_fire_interval(_type, _d);
     fire_cd = 0;
+    // What the log calls this squad's guns, and how many volleys it carries.
+    wep = grid_weapon_name(_type);
+    ammo = _d.vehicle
+        ? (grid_is_artillery(_type) ? GRIDC_AMMO_ARTY : GRIDC_AMMO_VEH)
+        : (grid_is_heavy_weapon(_type) ? GRIDC_AMMO_HEAVY : GRIDC_AMMO_INF);
+    ammo_out = false;
     kills = 0;
     // Worst thing that happened to this squad this tick, so the floating text
     // shows the outcome that mattered rather than whichever landed last.
@@ -686,6 +703,52 @@ function grid_range_bonus(_key) {
             return 2;
     }
     return 0;
+}
+
+/// @function grid_weapon_name
+/// @description The weapon string the combat log speaks in. Player types get
+/// their armoury names; enemies resolve by race prefix with the specials picked
+/// out of the key, so an unknown roster key still reads sensibly.
+function grid_weapon_name(_key) {
+    switch (_key) {
+        case "tactical": return "Bolters";
+        case "veteran": return "Stalker Pattern Bolters";
+        case "terminator": return "Storm Bolters";
+        case "assault_term": return "Lightning Claws";
+        case "assault": return "Bolt Pistols";
+        case "devastator": return "Heavy Bolters";
+        case "scout": return "Sniper Rifles";
+        case "hq": return "Plasma Pistols";
+        case "guardsmen": case "ig_guardsman": return "Lasguns";
+        case "heavy_weapons": case "ig_hwt": return "Lascannons";
+        case "whirlwind": return "Whirlwind Missiles";
+        case "dreadnought": return "Twin Linked Lascannons";
+        case "predator": return "Predator Autocannons";
+        case "land_raider": return "Godhammer Lascannons";
+        case "land_speeder": return "Heavy Bolters";
+        case "rhino": case "chimera": case "ig_chimera": return "Multi-Lasers";
+        case "ig_russ": case "he_russ": return "Battle Cannon shells";
+        case "ig_basilisk": return "Earthshaker shells";
+        case "ig_sentinel": return "Multi-Lasers";
+    }
+    var _p = string_copy(_key, 1, 3);
+    if (_p == "ork") {
+        if (string_pos("rokkit", _key) > 0) return "Rokkitz";
+        if (string_pos("kannon", _key) > 0) return "Kannonz";
+        if (string_pos("snazz", _key) > 0) return "Snazzgunz";
+        if (string_pos("big", _key) > 0) return "Big Shootaz";
+        if (string_pos("slugga", _key) > 0) return "Sluggaz";
+        return "Shootaz";
+    }
+    if (_p == "tau") return (string_pos("broadside", _key) > 0) ? "Railguns" : "Pulse Rifles";
+    if (_p == "el_") return "Shuriken Catapults";
+    if (_p == "ne_") return "Gauss Flayers";
+    if (_p == "ty_") return "Bio-weapons";
+    if (_p == "gs_") return "Autoguns";
+    if (_p == "he_") return "Autoguns";
+    if (_p == "ad_") return "Volkite Chargers";
+    if (_p == "ch_") return "Bolters";
+    return "guns";
 }
 
 /// @function grid_fire_interval
@@ -1820,6 +1883,31 @@ function grid_apply_damage(ctrl, _di, _dmg, _ai) {
     _d.men = _after;
     var _killed = _before - _after;
     grid_mark_outcome(ctrl, _di, (_killed > 0) ? GRIDHIT_WOUND : GRIDHIT_GRAZE);
+    // The vanilla log speaks here, through its own tally machinery in
+    // scr_flavor, so the lines are the game's own: buffered per weapon and
+    // target, flushed every few ticks by grid_battle_tick.
+    if (_ai >= 0) {
+        var _atk = ctrl.squads[_ai];
+        var _lcol = (_d.side == 1) ? eMSG_COLOR.LIGHTGREEN : eMSG_COLOR.RED;
+        if (_melee) {
+            if (_killed > 0) {
+                add_battle_log_message($"{_atk.name} cut into the {_d.disp} ranks, killing {_killed}.", _lcol);
+            }
+        } else if (_killed > 0) {
+            var _shots = _atk.is_vehicle ? 1 : max(1, _atk.men);
+            var _rich = $"{_shots} {_atk.wep} strike at the {_d.disp} ranks, killing {_killed}.";
+            if (string_pos("Plasma", _atk.wep) > 0) {
+                _rich = $"{_shots} {_atk.wep} shoot bolts of energy into the {_d.disp}, cleansing {_killed}.";
+            } else if (string_pos("Flamer", _atk.wep) > 0) {
+                _rich = $"{_shots} {_atk.wep} bathe the {_d.disp} ranks in holy promethium, cleansing {_killed}.";
+            } else if (string_pos("Rokkit", _atk.wep) > 0) {
+                _rich = $"{_shots} {_atk.wep} scream upward and then fall upon the {_d.disp}. {_killed} lost.";
+            }
+            combat_kill_tally_add(_d.disp, _atk.wep, _shots, _killed, _rich, _lcol, "");
+        } else {
+            combat_tally_add(_d.disp, _atk.wep, true, 0.2, _d.is_vehicle);
+        }
+    }
     if (_killed > 0) {
         _d.hit_kills += _killed;
         if (_ai >= 0) {
@@ -1982,6 +2070,15 @@ function grid_attack(ctrl, _ai, _di, _melee) {
     if (!_melee && (_a.fire_cd > 0)) {
         return 0;
     }
+    if (!_melee && (_a.ammo <= 0)) {
+        // Dry. Say so once, loudly, then fight with what is in hand.
+        if (!_a.ammo_out) {
+            _a.ammo_out = true;
+            grid_floater(ctrl, _a.col, _a.row, "OUT OF AMMO", GRIDC_ORANGE);
+            grid_log(ctrl, $"{_a.name} has expended its ammunition!", eMSG_COLOR.YELLOW);
+        }
+        return 0;
+    }
     // Nothing shoots through a wall. No tracer, no reload spent: the shot was
     // never taken, and the absence of fire through a building reads correctly.
     var _los = [false, 0];
@@ -2000,6 +2097,7 @@ function grid_attack(ctrl, _ai, _di, _melee) {
         // The round is spent whether or not it lands, so the reload starts here
         // rather than after the outcome is known.
         _a.fire_cd = max(0, _a.fire_int - 1);
+        _a.ammo = max(0, _a.ammo - 1);
     }
     // The mark goes out now, before anything can stop the shot, so a miss still
     // shows a round crossing the field and then reads MISS on the target.
@@ -2060,6 +2158,10 @@ function grid_attack(ctrl, _ai, _di, _melee) {
             _ev = grid_roll_event(_soak, min(0.95, GRIDC_EVENT_SHARE * 1.5));
             if (_ev[0]) {
                 grid_mark_outcome(ctrl, _di, GRIDHIT_DODGE);
+                if (ctrl.cover_line_win != (ctrl.ticks div GRIDC_LOG_FLUSH)) {
+                    ctrl.cover_line_win = ctrl.ticks div GRIDC_LOG_FLUSH;
+                    add_battle_log_message($"The {_d.disp} weather the fire from effective cover!", eMSG_COLOR.BRIGHT_BLUE);
+                }
                 return 0;
             }
             _raw *= _ev[1];
@@ -2070,6 +2172,9 @@ function grid_attack(ctrl, _ai, _di, _melee) {
             _ev = grid_roll_event(GRIDC_COVER_HULL, GRIDC_EVENT_SHARE);
             if (_ev[0]) {
                 grid_mark_outcome(ctrl, _di, GRIDHIT_DEFLECT);
+    if (_ai >= 0) {
+        combat_tally_add(_d.disp, ctrl.squads[_ai].wep, false, 0, _d.is_vehicle);
+    }
                 return 0;
             }
             _raw *= _ev[1];
@@ -2237,8 +2342,19 @@ function grid_form_advance(ctrl, _fi) {
         // The fight has moved on. Re-seat the anchor on the survivors and close
         // ranks before doing anything else; an attack order is stale by now.
         if (grid_form_reanchor(ctrl, _f)) {
+            // Re-centre the offsets on the survivors as well as the anchor.
+            // Without this the slots keep the shape of the block as deployed,
+            // and a formation whose slot pattern trails west of the anchor walks
+            // its men back toward the deployment zone to fill it: the "they won
+            // and then retreated to the start" report. Normalised, the reform is
+            // bounded to the survivors' own footprint.
+            grid_form_normalize(ctrl, _f);
             _f.reforming = true;
-            _f.order = GRIDORD_ADVANCE;
+            if (_f.order != GRIDORD_HOLD) {
+                // A block that was told to hold stays held. Only advancing
+                // blocks resume the advance after closing ranks.
+                _f.order = GRIDORD_ADVANCE;
+            }
             _f.order_target = -1;
             grid_log(ctrl, $"{_f.name} breaks off and reforms.", eMSG_COLOR.AQUA);
         }
@@ -2590,6 +2706,10 @@ function grid_move_budget(_s) {
 /// charge charges even when it carries a decent gun, and anything with no gun
 /// at all has nothing to wait for.
 function grid_wants_melee(_s) {
+    // A squad with empty magazines and working blades is a melee squad now.
+    if ((_s.ammo <= 0) && (_s.mel > 0)) {
+        return true;
+    }
     if (_s.melee_pref) {
         return true;
     }
@@ -2690,9 +2810,15 @@ function grid_act_player(ctrl, _si) {
     // though: it fires from the line at anything already in reach, which is what
     // lets a formation trade shots without coming apart.
     if ((_ord == GRIDORD_ADVANCE) && (_f != undefined) && !_f.engaged) {
-        if ((_s.bal > 0) && (grid_dist(_s.col, _s.row, _t.col, _t.row) <= _s.rng)
-            && !grid_line_block(ctrl, _s.col, _s.row, _t.col, _t.row)[0]) {
-            grid_attack(ctrl, _si, _ti, false);
+        // Shoot whatever is actually visible in reach, not just the nearest
+        // body. Gating on the nearest alone meant a squad whose closest enemy
+        // stood behind a wall held its fire even with a clear shot at another,
+        // which read as squads refusing to use their guns.
+        if (_s.bal > 0) {
+            var _vt = grid_nearest_foe(ctrl, _si, _s.rng, true);
+            if (_vt >= 0) {
+                grid_attack(ctrl, _si, _vt, false);
+            }
         }
         grid_follow_anchor(ctrl, _si, _f);
         return;
@@ -2741,10 +2867,15 @@ function grid_act_player(ctrl, _si) {
             return;
         }
         grid_attack(ctrl, _si, _ti, true);
-    } else if ((_dd <= _s.rng) && (_s.bal > 0) && !_seek
-        && !grid_line_block(ctrl, _s.col, _s.row, _t.col, _t.row)[0]) {
-        if (!grid_seek_cover(ctrl, _si, _ti)) {
-            grid_attack(ctrl, _si, _ti, false);
+    } else if ((_dd <= _s.rng) && (_s.bal > 0) && !_seek) {
+        var _vt = grid_nearest_foe(ctrl, _si, _s.rng, true);
+        if (_vt >= 0) {
+            if (!grid_seek_cover(ctrl, _si, _vt)) {
+                grid_attack(ctrl, _si, _vt, false);
+            }
+        } else {
+            // Nothing visible from here: work around the wall.
+            grid_step_toward(ctrl, _si, _t.col, _t.row);
         }
     } else if (_ord != GRIDORD_HOLD) {
         for (var _m3 = 0; _m3 < _steps; _m3++) {
@@ -2814,10 +2945,14 @@ function grid_act_enemy(ctrl, _si) {
             return;
         }
         grid_attack(ctrl, _si, _ti, true);
-    } else if ((_dd <= _s.rng) && (_s.bal > 0) && !grid_wants_melee(_s)
-        && !grid_line_block(ctrl, _s.col, _s.row, _t.col, _t.row)[0]) {
-        if (!grid_seek_cover(ctrl, _si, _ti)) {
-            grid_attack(ctrl, _si, _ti, false);
+    } else if ((_dd <= _s.rng) && (_s.bal > 0) && !grid_wants_melee(_s)) {
+        var _vt = grid_nearest_foe(ctrl, _si, _s.rng, true);
+        if (_vt >= 0) {
+            if (!grid_seek_cover(ctrl, _si, _vt)) {
+                grid_attack(ctrl, _si, _vt, false);
+            }
+        } else {
+            grid_step_toward(ctrl, _si, _t.col, _t.row);
         }
     } else {
         for (var _m = 0; _m < _steps; _m++) {
@@ -2960,6 +3095,34 @@ function grid_battle_tick(ctrl) {
         if (ctrl.squads[_rl].fire_cd > 0) {
             ctrl.squads[_rl].fire_cd -= 1;
         }
+    }
+    // Post the buffered volley lines in vanilla's own voice, then the running
+    // strength readouts the old screen always showed.
+    if ((ctrl.ticks mod GRIDC_LOG_FLUSH) == 0) {
+        combat_kill_tally_flush();
+        combat_tally_flush();
+    }
+    if ((ctrl.ticks mod GRIDC_STR_TALLY) == 0) {
+        var _se = 0;
+        var _sp = 0;
+        for (var _st = 0; _st < array_length(ctrl.squads); _st++) {
+            var _sq2 = ctrl.squads[_st];
+            if (!_sq2.alive) {
+                continue;
+            }
+            var _w = _sq2.is_vehicle ? _sq2.hp_pool : (_sq2.men * _sq2.hp_man);
+            if (_sq2.side == 1) {
+                _se += _w;
+            } else {
+                _sp += _w;
+            }
+        }
+        if (ctrl.str_base_e <= 0) {
+            ctrl.str_base_e = max(1, _se);
+            ctrl.str_base_p = max(1, _sp);
+        }
+        add_battle_log_message($"Enemy Forces at {round(100 * _se / ctrl.str_base_e)}%", eMSG_COLOR.YELLOW);
+        add_battle_log_message($"Our forces at {round(100 * _sp / ctrl.str_base_p)}%", eMSG_COLOR.YELLOW);
     }
 
     var _order = [];
@@ -3147,6 +3310,48 @@ function grid_sel_box(ctrl, _x1, _y1, _x2, _y2) {
     return array_length(ctrl.selected);
 }
 
+/// @function grid_form_normalize
+/// @description Re-centres a formation's offsets so its anchor is its middle,
+/// shifting the anchor (and any in-flight destination) by the same amount so
+/// every squad's actual slot is unchanged. Without this, a squad that was
+/// deployed at the edge of a block keeps that offset forever: detach it or
+/// whittle the block down to one survivor, order it somewhere, and it walks to
+/// the click plus a stale offset from a formation that no longer exists around
+/// it, which reads as the unit ignoring the mouse.
+function grid_form_normalize(ctrl, _f) {
+    var _n = 0;
+    var _mc = 0;
+    var _mr = 0;
+    for (var _i = 0; _i < array_length(_f.members); _i++) {
+        var _s = ctrl.squads[_f.members[_i]];
+        if (!_s.alive || !_s.deployed) {
+            continue;
+        }
+        _mc += _s.off_c;
+        _mr += _s.off_r;
+        _n += 1;
+    }
+    if (_n <= 0) {
+        return;
+    }
+    _mc = round(_mc / _n);
+    _mr = round(_mr / _n);
+    if ((_mc == 0) && (_mr == 0)) {
+        return;
+    }
+    _f.anchor_col = clamp(_f.anchor_col + _mc, 0, ctrl.cols - 1);
+    _f.anchor_row = clamp(_f.anchor_row + _mr, 0, ctrl.rows - 1);
+    if (_f.dest_col >= 0) {
+        _f.dest_col = clamp(_f.dest_col + _mc, 0, ctrl.cols - 1);
+        _f.dest_row = clamp(_f.dest_row + _mr, 0, ctrl.rows - 1);
+    }
+    for (var _k = 0; _k < array_length(_f.members); _k++) {
+        var _s2 = ctrl.squads[_f.members[_k]];
+        _s2.off_c -= _mc;
+        _s2.off_r -= _mr;
+    }
+}
+
 /// @function grid_order_move
 /// @description Moves the whole selection as one body. Each formation is sent to
 /// the click plus its own offset from the selection's centre, so several
@@ -3166,6 +3371,9 @@ function grid_order_move(ctrl, _c, _r) {
     var _py = [];
     for (var _i = 0; _i < _n; _i++) {
         var _f0 = ctrl.formations[ctrl.selected[_i]];
+        // The click means "put the middle of this formation here", so the anchor
+        // must be the middle before the destination is measured from it.
+        grid_form_normalize(ctrl, _f0);
         var _ax = ((_f0.order == GRIDORD_MOVE) && (_f0.dest_col >= 0)) ? _f0.dest_col : _f0.anchor_col;
         var _ay = ((_f0.order == GRIDORD_MOVE) && (_f0.dest_row >= 0)) ? _f0.dest_row : _f0.anchor_row;
         array_push(_px, _ax);
@@ -3492,6 +3700,15 @@ function grid_draw_unit(_s, _cx, _cy, _tp, _col) {
         return;
     }
     grid_draw_glyph(_s.glyph, _cx, _cy, _tp * 0.72, _col);
+    // Doctrine pip until proper pose art exists: red for a squad that fights
+    // hand to hand, pale blue for one that fights at range. Vehicles are
+    // obvious enough already.
+    if (!_s.is_vehicle) {
+        draw_set_color((_s.mel > _s.bal) ? GRIDC_RED : make_color_rgb(120, 190, 255));
+        draw_set_alpha(0.9);
+        draw_rectangle(_x + (_tp / 2) - 7, _y - (_tp / 2) + 2, _x + (_tp / 2) - 2, _y - (_tp / 2) + 7, false);
+        draw_set_alpha(1);
+    }
 }
 
 // ---------------------------------------------------------------------------

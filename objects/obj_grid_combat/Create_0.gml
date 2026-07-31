@@ -134,6 +134,11 @@ placing_w = 1;
 // Drag placement: where the front rank was started, and whether a drag is live.
 // Hover dwell, for the tile tooltip.
 hover_time = 0;
+// Vanilla tally plumbing: strength baselines for the running percentage lines,
+// and the cover-line rate limiter.
+str_base_e = -1;
+str_base_p = -1;
+cover_line_win = -1;
 hover_last_c = -1;
 hover_last_r = -1;
 

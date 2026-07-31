@@ -378,56 +378,7 @@ for (var _fd = 0; _fd < array_length(floaters); _fd++) {
     draw_set_color(_fe.fcol);
     draw_text(_fx, _fy, _fe.ftxt);
 }
-
-// selection info: the space under Orders. One row per unit type in the current
-// selection, so a mixed force reads as "5x Guardsmen, 3x Tacticals" with each
-// type's pooled health, its armour (worst survivor, never summed: armour does
-// not pool), damage, reach and the men standing out of men fielded.
-if ((array_length(selected) > 0) && (phase != GRIDPH_END)) {
-    var _isq = grid_selected_squads(id);
-    var _types = [];
-    var _agg = {};
-    for (var _ii = 0; _ii < array_length(_isq); _ii++) {
-        var _is = squads[_isq[_ii]];
-        var _k2 = _is.type;
-        if (!variable_struct_exists(_agg, _k2)) {
-            _agg[$ _k2] = {
-                disp: grid_unit_def(_k2).disp, n: 0, veh: _is.is_vehicle,
-                hp: 0, hp0: 0, men: 0, men0: 0, arm: 999, mel: _is.mel, bal: _is.bal, rng: _is.rng,
-            };
-            array_push(_types, _k2);
-        }
-        var _a2 = _agg[$ _k2];
-        _a2.n += 1;
-        _a2.arm = min(_a2.arm, _is.armour);
-        if (_is.is_vehicle) {
-            _a2.hp += _is.hp_pool;
-            _a2.hp0 += _is.hp_max;
-        } else {
-            _a2.hp += _is.men * _is.hp_man;
-            _a2.hp0 += _is.men0 * _is.hp_man;
-            _a2.men += _is.men;
-            _a2.men0 += _is.men0;
-        }
-    }
-    var _py2 = 280;
-    draw_set_font(fnt_40k_12);
-    draw_set_color(GRIDC_GREEN);
-    draw_text(GRIDC_RP_X1 + 8, _py2, $"Selected: {array_length(_isq)} squads");
-    _py2 += 22;
-    for (var _ti2 = 0; (_ti2 < array_length(_types)) && (_py2 < 508); _ti2++) {
-        var _g2 = _agg[$ _types[_ti2]];
-        draw_set_color(c_white);
-        draw_text(GRIDC_RP_X1 + 8, _py2, $"{_g2.n}x {_g2.disp}");
-        draw_set_color(GRIDC_GREEN);
-        var _hline = _g2.veh
-            ? $"  Hull {round(_g2.hp)}/{round(_g2.hp0)}  Armour {_g2.arm}"
-            : $"  HP {round(_g2.hp)}/{round(_g2.hp0)}  ({_g2.men}/{_g2.men0} men)  Armour {_g2.arm}";
-        draw_text(GRIDC_RP_X1 + 8, _py2 + 16, _hline);
-        draw_text(GRIDC_RP_X1 + 8, _py2 + 32, $"  Melee {_g2.mel}  Ranged {_g2.bal}  Reach {_g2.rng}");
-        _py2 += 52;
-    }
-}
+draw_set_halign(fa_left);
 
 // order-drag preview: where the selection will stand, and the line being drawn
 if (ord_drag && (ord_c0 >= 0) && (hover_c >= 0)
@@ -557,6 +508,9 @@ if (show_legend) {
         ["Speed button", "Left click faster, right click slower."],
         ["Hover a tile", "Hold still a moment and it tells you what it is."],
         ["Hold Ctrl", "Shade everything the selection can see and reach."],
+        ["Click a log line", "Jump the camera to whoever it names."],
+        ["Corner pip", "Red: fights hand to hand. Blue: fights at range."],
+        ["Ammo", "Squads carry limited volleys. Dry squads charge."],
         ["Auto button", "Your formations fight on their own."],
         ["L", "Close this."],
     ];
@@ -679,7 +633,7 @@ if (array_length(selected) > 0) {
     if (_sel0.order == GRIDORD_HOLD) {
         _ostr = "Holding position";
     } else if (_sel0.order == GRIDORD_MOVE) {
-        _ostr = $"Moving to {_sel0.dest_col}, {_sel0.dest_row}";
+        _ostr = "Repositioning";
     } else if ((_sel0.order == GRIDORD_ATTACK) && (_sel0.order_target >= 0)) {
         _ostr = $"Attacking {squads[_sel0.order_target].name}";
     }
@@ -693,6 +647,101 @@ if (array_length(selected) > 0) {
     draw_text(GRIDC_RP_X1 + 10, _iy + 44, _ostr);
     var _stt = (_sel0.stance == 1) ? "Charge" : ((_sel0.stance == 2) ? "Avoid melee" : "Auto");
     draw_text(GRIDC_RP_X1 + 10, _iy + 66, $"Stance: {_stt}");
+
+    // Selection detail, in the free space below. Drawn here, inside the right
+    // panel chrome, after everything battlefield-side: the first version drew
+    // mid-stack, inherited the floaters' centred alignment, and was then painted
+    // over by this very panel's background, leaving clipped fragments.
+    draw_set_halign(fa_left);
+    var _isq = grid_selected_squads(id);
+    var _py2 = _iy + 100;
+    if (array_length(_isq) == 1) {
+        // One squad: the full card. Name first, since that is what was missing.
+        var _one = squads[_isq[0]];
+        draw_set_color(c_white);
+        draw_set_font(fnt_40k_14);
+        draw_text(GRIDC_RP_X1 + 10, _py2, _one.name);
+        draw_set_font(fnt_40k_12);
+        draw_set_color(GRIDC_GREEN);
+        _py2 += 24;
+        draw_text(GRIDC_RP_X1 + 10, _py2, grid_unit_def(_one.type).disp);
+        _py2 += 20;
+        if (_one.is_vehicle) {
+            draw_text(GRIDC_RP_X1 + 10, _py2, $"Hull {round(_one.hp_pool)} of {round(_one.hp_max)}");
+        } else {
+            draw_text(GRIDC_RP_X1 + 10, _py2, $"{_one.men} of {_one.men0} men, {_one.hp_man} hp each");
+        }
+        _py2 += 20;
+        draw_text(GRIDC_RP_X1 + 10, _py2, $"Armour {_one.armour}");
+        _py2 += 20;
+        draw_text(GRIDC_RP_X1 + 10, _py2, $"Melee {_one.mel}  Ranged {_one.bal}");
+        _py2 += 20;
+        draw_text(GRIDC_RP_X1 + 10, _py2, $"Range {_one.rng} tiles  Speed {_one.spd}");
+        _py2 += 20;
+        if (_one.fire_int > 1) {
+            draw_text(GRIDC_RP_X1 + 10, _py2, $"Fires every {_one.fire_int} ticks");
+            _py2 += 20;
+        }
+        if (_one.ammo <= 0) {
+            draw_set_color(GRIDC_ORANGE);
+            draw_text(GRIDC_RP_X1 + 10, _py2, "OUT OF AMMO");
+            draw_set_color(GRIDC_GREEN);
+        } else {
+            draw_text(GRIDC_RP_X1 + 10, _py2, $"Ammo: {_one.ammo} volleys");
+        }
+        _py2 += 20;
+        if (_one.sgt_hp == 0) {
+            draw_set_color(GRIDC_RED);
+            draw_text(GRIDC_RP_X1 + 10, _py2, "Sergeant down");
+            _py2 += 20;
+        }
+    } else if (array_length(_isq) > 1) {
+        // Mixed selection: one block per type, separated as asked, each with its
+        // pooled health, worst armour, damage, range and speed.
+        var _types = [];
+        var _agg = {};
+        for (var _ii = 0; _ii < array_length(_isq); _ii++) {
+            var _is = squads[_isq[_ii]];
+            var _k2 = _is.type;
+            if (!variable_struct_exists(_agg, _k2)) {
+                _agg[$ _k2] = {
+                    disp: grid_unit_def(_k2).disp, n: 0, veh: _is.is_vehicle,
+                    hp: 0, hp0: 0, men: 0, men0: 0, arm: 999, amo: 99999,
+                    mel: _is.mel, bal: _is.bal, rng: _is.rng, spd: _is.spd,
+                };
+                array_push(_types, _k2);
+            }
+            var _a2 = _agg[$ _k2];
+            _a2.n += 1;
+            _a2.arm = min(_a2.arm, _is.armour);
+            _a2.amo = min(_a2.amo, _is.ammo);
+            if (_is.is_vehicle) {
+                _a2.hp += _is.hp_pool;
+                _a2.hp0 += _is.hp_max;
+            } else {
+                _a2.hp += _is.men * _is.hp_man;
+                _a2.hp0 += _is.men0 * _is.hp_man;
+                _a2.men += _is.men;
+                _a2.men0 += _is.men0;
+            }
+        }
+        draw_set_color(GRIDC_GREEN);
+        draw_text(GRIDC_RP_X1 + 10, _py2, $"Selected: {array_length(_isq)} squads");
+        _py2 += 22;
+        for (var _ti2 = 0; (_ti2 < array_length(_types)) && (_py2 < 480); _ti2++) {
+            var _g2 = _agg[$ _types[_ti2]];
+            draw_set_color(c_white);
+            draw_text(GRIDC_RP_X1 + 10, _py2, $"{_g2.n}x {_g2.disp}");
+            draw_set_color(GRIDC_GREEN);
+            if (_g2.veh) {
+                draw_text(GRIDC_RP_X1 + 10, _py2 + 16, $"  Hull {round(_g2.hp)}/{round(_g2.hp0)}  Armour {_g2.arm}");
+            } else {
+                draw_text(GRIDC_RP_X1 + 10, _py2 + 16, $"  {_g2.men}/{_g2.men0} men  HP {round(_g2.hp)}/{round(_g2.hp0)}  Arm {_g2.arm}");
+            }
+            draw_text(GRIDC_RP_X1 + 10, _py2 + 32, $"  Mel {_g2.mel}  Rng dmg {_g2.bal}  Reach {_g2.rng}  Spd {_g2.spd}  Ammo {_g2.amo}");
+            _py2 += 54;
+        }
+    }
 } else {
     draw_set_color(GRIDC_DIM);
     if (phase == GRIDPH_DEPLOY) {
