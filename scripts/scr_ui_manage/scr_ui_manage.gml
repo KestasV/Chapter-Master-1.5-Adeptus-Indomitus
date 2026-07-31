@@ -762,6 +762,19 @@ function draw_sprite_and_unit_equip_data() {
 
             // Draw unit name and role
 
+            // Armour: if the constants were never built for this unit, build
+            // them now from the focused unit, and if that still cannot supply a
+            // name, skip the panel this frame rather than erroring on it.
+            if (!variable_struct_exists(unit_manage_constants, "name")) {
+                if (is_struct(obj_controller.unit_focus)) {
+                    with (obj_controller) {
+                        reset_manage_unit_constants(unit_focus);
+                    }
+                }
+                if (!variable_struct_exists(unit_manage_constants, "name")) {
+                    exit;
+                }
+            }
             unit_manage_constants.name.update({x1: xx + 402, y1: yy + 76});
 
             unit_manage_constants.role_name.update({x1: xx + 402, y1: yy + 56});
@@ -1953,7 +1966,15 @@ function draw_auxilia_squad_rows(xx, yy, _stats_displayed = false) {
 
         // Hover focus so the Load / selection buttons render, like unit rows do.
         if ((mouse_x >= _rect[0]) && (mouse_y >= _rect[1]) && (mouse_x < _rect[2]) && (mouse_y < _rect[3]) && is_struct(_lead)) {
-            unit_focus = _lead;
+            // Focus alone is not enough: the equip panel draws from
+            // unit_manage_constants, which only reset_manage_unit_constants
+            // builds. Setting focus without it left the panel reading .name
+            // from an empty struct, erroring every frame and making ship units
+            // unmanageable. Rebuild only when the focus actually changes.
+            if (unit_focus != _lead) {
+                unit_focus = _lead;
+                reset_manage_unit_constants(_lead);
+            }
         }
 
         // Click toggles the whole squad, mirroring scr_draw_management_unit's gates
@@ -2403,7 +2424,15 @@ function draw_marine_squad_rows(xx, yy, _stats_displayed = false, _command_slots
 
         // Hover focus so the Load / selection buttons render, like unit rows do.
         if ((mouse_x >= _rect[0]) && (mouse_y >= _rect[1]) && (mouse_x < _rect[2]) && (mouse_y < _rect[3]) && is_struct(_lead)) {
-            unit_focus = _lead;
+            // Focus alone is not enough: the equip panel draws from
+            // unit_manage_constants, which only reset_manage_unit_constants
+            // builds. Setting focus without it left the panel reading .name
+            // from an empty struct, erroring every frame and making ship units
+            // unmanageable. Rebuild only when the focus actually changes.
+            if (unit_focus != _lead) {
+                unit_focus = _lead;
+                reset_manage_unit_constants(_lead);
+            }
         }
 
         // Click toggles the whole squad, mirroring scr_draw_management_unit's gates
