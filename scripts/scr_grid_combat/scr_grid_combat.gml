@@ -3973,7 +3973,21 @@ function grid_collect_blocks() {
                 // stands, so a wounded marine enters the field wounded.
                 mac: variable_struct_exists(_u, "armour_calc") ? _u.armour_calc() : -1,
                 mhp: variable_struct_exists(_u, "hp") ? _u.hp() : -1,
+                // Vanilla's damage path applies each man's damage_resistance,
+                // and its stack builder honours jump and bike mobility tags.
+                // Both are gear rules, so both come along.
+                mdr: variable_struct_exists(_u, "damage_resistance") ? _u.damage_resistance() : 0,
+                mjump: false,
+                mbike: false,
             });
+            var _ri = array_length(_out) - 1;
+            if (variable_struct_exists(_u, "get_mobility_data")) {
+                var _mob = _u.get_mobility_data();
+                if (is_struct(_mob) && variable_struct_exists(_mob, "has_tag")) {
+                    _out[_ri].mjump = _mob.has_tag("jump");
+                    _out[_ri].mbike = _mob.has_tag("bike");
+                }
+            }
             if (_gear != undefined) {
                 _gear.src_men += 1;
             }
@@ -4183,11 +4197,27 @@ function grid_gear_aggregate(_refs, _k) {
     var _ac_n = 0;
     var _hp_sum = 0;
     var _hp_n = 0;
+    var _dr_sum = 0;
+    var _dr_n = 0;
+    var _men_ct = 0;
+    var _jump_ct = 0;
+    var _bike_ct = 0;
     var _vac = -1;
     var _vhp = -1;
     for (var _i = 0; _i < array_length(_refs); _i++) {
         var _rf = _refs[_i];
         if (!_rf.veh) {
+            _men_ct += 1;
+            if (variable_struct_exists(_rf, "mdr") && (_rf.mdr > 0)) {
+                _dr_sum += _rf.mdr;
+                _dr_n += 1;
+            }
+            if (variable_struct_exists(_rf, "mjump") && _rf.mjump) {
+                _jump_ct += 1;
+            }
+            if (variable_struct_exists(_rf, "mbike") && _rf.mbike) {
+                _bike_ct += 1;
+            }
             if (variable_struct_exists(_rf, "mac") && (_rf.mac > 0)) {
                 _ac_sum += _rf.mac;
                 _ac_n += 1;
@@ -4272,6 +4302,9 @@ function grid_gear_aggregate(_refs, _k) {
         volleys: (_amm_n > 0) ? (_amm_w / _amm_n) : 0,
         m_ac: (_ac_n > 0) ? (_ac_sum / _ac_n) : -1,
         m_hp: (_hp_n > 0) ? (_hp_sum / _hp_n) : -1,
+        m_dr: (_men_ct > 0) ? (_dr_sum / max(1, _men_ct)) : 0,
+        jump_frac: (_men_ct > 0) ? (_jump_ct / _men_ct) : 0,
+        bike_frac: (_men_ct > 0) ? (_bike_ct / _men_ct) : 0,
         v_ac: _vac,
         v_hp: _vhp,
     };
@@ -4308,7 +4341,19 @@ function grid_gear_apply(_sq, _agg, _k) {
             _sq.armour = clamp(round(_agg.m_ac * 0.62), 1, 40);
         }
         if (_agg.m_hp > 0) {
-            _sq.hp_man = clamp(round(_agg.m_hp * 2 / 15), 3, 60);
+            // Resistance is a share of incoming damage shrugged off, so it
+            // converts to effective toughness: hp over (1 minus resistance).
+            // A man with no resistance lands exactly where he did before.
+            var _res = clamp(_agg.m_dr / 100, 0, 0.6);
+            _sq.hp_man = clamp(round((_agg.m_hp * 2 / 15) / (1 - _res)), 3, 80);
+        }
+        if (_agg.jump_frac >= 0.5) {
+            // Half the squad or more wears jump packs: the squad jumps, the
+            // same once-per-battle leap Assault Marines get by type.
+            _sq.can_jump = true;
+        }
+        if (_agg.bike_frac >= 0.5) {
+            _sq.spd = min(_sq.spd + 0.8, 3);
         }
     } else {
         if (_agg.v_ac > 0) {

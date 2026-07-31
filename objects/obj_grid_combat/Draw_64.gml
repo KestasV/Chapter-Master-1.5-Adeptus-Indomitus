@@ -683,7 +683,13 @@ if (array_length(selected) > 0) {
             if ((_one.ap_r > 0) || (_one.ap_m > 0)) {
                 _apx = $"  AP {max(_one.ap_r, _one.ap_m)}";
             }
-            draw_text(GRIDC_RP_X1 + 10, _py2, $"{_one.wep}{_apx}");
+            var _mob2 = "";
+            if (_one.can_jump && (_one.type != "assault") && (_one.type != "assault_term")) {
+                _mob2 = "  Jump Packs";
+            } else if (_one.spd > grid_unit_def(_one.type).spd) {
+                _mob2 = "  Bikes";
+            }
+            draw_text(GRIDC_RP_X1 + 10, _py2, $"{_one.wep}{_apx}{_mob2}");
             _py2 += 20;
         }
         draw_text(GRIDC_RP_X1 + 10, _py2, $"Range {_one.rng} tiles  Speed {_one.spd}");
