@@ -7,6 +7,15 @@ function scr_draw_management_unit(selected, yy = 0, xx = 0, draw = true, click_l
     var health_string = "";
     var eventing = false;
     var jailed = false;
+    // A row can outlive the list it indexes: anything that rebuilds
+    // display_unit mid-frame (the command-slot picker, a menu switch) leaves
+    // callers holding stale indices, and both reads below crash before the
+    // impossible flag can catch anything. Out of range is a skip, and the log
+    // names the slot so the caller that went stale can be found.
+    if ((selected < 0) || (selected >= array_length(display_unit)) || (selected >= array_length(man))) {
+        LOGGER.error($"Management row asked for slot {selected} of {array_length(display_unit)}. Skipped.");
+        return "continue";
+    }
     var impossible = !is_struct(display_unit[selected]) && !is_array(display_unit[selected]);
     var is_man = false;
     var _loc_name = "";
