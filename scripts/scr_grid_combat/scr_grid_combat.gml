@@ -3901,7 +3901,7 @@ function grid_draw_unit(_s, _cx, _cy, _tp, _col) {
     if (!_s.is_vehicle) {
         draw_set_color((_s.mel > _s.bal) ? GRIDC_RED : make_color_rgb(120, 190, 255));
         draw_set_alpha(0.9);
-        draw_rectangle(_x + (_tp / 2) - 7, _y - (_tp / 2) + 2, _x + (_tp / 2) - 2, _y - (_tp / 2) + 7, false);
+        draw_rectangle(_cx + (_tp / 2) - 7, _cy - (_tp / 2) + 2, _cx + (_tp / 2) - 2, _cy - (_tp / 2) + 7, false);
         draw_set_alpha(1);
     }
 }
