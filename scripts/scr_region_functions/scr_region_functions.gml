@@ -4959,7 +4959,11 @@ function region_building_catalogue() {
                     var _scout_role = obj_ini.role[100][eROLE.SCOUT];
                     for (var i = 0, l = array_length(_gar.members); i < l; i++) {
                         var _unit = _gar.members[i];
-                        if (is_struct(_unit) && (_unit.role() == _scout_role)) {
+                        // Sergeants drill beside their Scouts: any role carrying
+                        // the word Scout trains here, which is exactly the two
+                        // of them. An exact match left Scout Sergeants standing
+                        // on the range gaining nothing.
+                        if (is_struct(_unit) && (string_pos(_scout_role, _unit.role()) > 0)) {
                             // Drills only take a Scout so far: grounds teach up to
                             // TRAINING_GROUND_XP_CAP, at TRAINING_GROUND_XP_PER_TURN per
                             // ground per turn. Real combat covers the rest of the road
