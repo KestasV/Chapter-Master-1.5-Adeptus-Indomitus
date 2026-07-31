@@ -4484,7 +4484,7 @@ function grid_gear_aggregate(_refs, _k) {
                 _vhp = _rf.vhp;
             }
         }
-        var _g = _refs[_i].gear;
+        var _g = variable_struct_exists(_refs[_i], "gear") ? _refs[_i].gear : undefined;
         if (_g == undefined) {
             continue;
         }
@@ -4637,10 +4637,14 @@ function grid_import_force(ctrl, _force) {
     // The Bolter is the yardstick. Fetched live from the gear table so the
     // anchor is whatever the mod's own data says a Bolter is; if the table
     // cannot be read, gear scaling stays off and the type profiles stand.
-    var _k = 0;
+    // Named to survive this function: the bucketing loop below declares _k as
+    // its key variable, and GML locals are function scoped, so an anchor called
+    // _k was silently overwritten with a type string like "land_raider" and
+    // every geared battle crashed at import.
+    var _gear_k = 0;
     var _bolt = gear_weapon_data("weapon", "Bolter", "all");
     if (is_struct(_bolt) && variable_struct_exists(_bolt, "attack") && (_bolt.attack > 0)) {
-        _k = 18 / _bolt.attack;
+        _gear_k = 18 / _bolt.attack;
     } else {
         grid_log(ctrl, "Gear table unavailable: squads fight on type profiles.", eMSG_COLOR.YELLOW);
     }
@@ -4671,9 +4675,9 @@ function grid_import_force(ctrl, _force) {
                 continue;
             }
             _sq.roster_refs = _refs;
-            var _agg = grid_gear_aggregate(_refs, _k);
+            var _agg = grid_gear_aggregate(_refs, _gear_k);
             if (_agg != undefined) {
-                grid_gear_apply(_sq, _agg, _k);
+                grid_gear_apply(_sq, _agg, _gear_k);
             }
             // A squad is only as strong as the men actually in it: a half filled
             // final squad fields the models it has, not a full ten.
