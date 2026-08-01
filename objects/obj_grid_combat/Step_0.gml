@@ -86,6 +86,30 @@ if (keyboard_check_pressed(vk_add) || keyboard_check_pressed(187)
     grid_speed_step(id, 1);
 }
 
+// Dwell timer for the tile tooltip: it resets the moment the cursor moves to a
+// different tile, so it only fires when you actually stop on something.
+if ((hover_c == hover_last_c) && (hover_r == hover_last_r) && (hover_c >= 0)) {
+    hover_time += 1;
+} else {
+    hover_time = 0;
+    hover_last_c = hover_c;
+    hover_last_r = hover_r;
+}
+
+if (keyboard_check_pressed(ord("L"))) {
+    show_legend = !show_legend;
+}
+
+
+var _mgx = device_mouse_x_to_gui(0);
+var _mgy = device_mouse_y_to_gui(0);
+var _lc = mouse_check_button_pressed(mb_left);
+var _rc = mouse_check_button_pressed(mb_right);
+var _lheld = mouse_check_button(mb_left);
+var _lrel = mouse_check_button_released(mb_left);
+var _rheld = mouse_check_button(mb_right);
+var _rrel = mouse_check_button_released(mb_right);
+
 // Click a log line to jump the camera to the action. The line's text is
 // matched against living squads, first by squad name, then by the type name the
 // vanilla lines speak in; a type can match several squads, in which case the
@@ -126,29 +150,6 @@ if (_lc && (phase != GRIDPH_DEPLOY)
     }
 }
 
-// Dwell timer for the tile tooltip: it resets the moment the cursor moves to a
-// different tile, so it only fires when you actually stop on something.
-if ((hover_c == hover_last_c) && (hover_r == hover_last_r) && (hover_c >= 0)) {
-    hover_time += 1;
-} else {
-    hover_time = 0;
-    hover_last_c = hover_c;
-    hover_last_r = hover_r;
-}
-
-if (keyboard_check_pressed(ord("L"))) {
-    show_legend = !show_legend;
-}
-
-
-var _mgx = device_mouse_x_to_gui(0);
-var _mgy = device_mouse_y_to_gui(0);
-var _lc = mouse_check_button_pressed(mb_left);
-var _rc = mouse_check_button_pressed(mb_right);
-var _lheld = mouse_check_button(mb_left);
-var _lrel = mouse_check_button_released(mb_left);
-var _rheld = mouse_check_button(mb_right);
-var _rrel = mouse_check_button_released(mb_right);
 
 // Floating combat text drifts and fades every frame, independent of sim speed,
 // pause, popups, and the end screen; hit flashes decay alongside it.
