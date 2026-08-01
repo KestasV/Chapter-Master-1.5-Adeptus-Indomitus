@@ -1907,7 +1907,7 @@ function grid_hit_label(_s) {
 }
 
 /// @function grid_apply_damage
-function grid_apply_damage(ctrl, _di, _dmg, _ai) {
+function grid_apply_damage(ctrl, _di, _dmg, _ai, _melee) {
     var _d = ctrl.squads[_di];
     _d.hp_pool = max(0, _d.hp_pool - _dmg);
     _d.hit_dmg += _dmg;
@@ -2090,7 +2090,7 @@ function grid_blast_splash(ctrl, _ai, _di, _dmg, _blast) {
     var _each = _dmg / _n;
     var _kills = 0;
     for (var _h = 0; _h < _n; _h++) {
-        _kills += grid_apply_damage(ctrl, _hits[_h], _each, _ai);
+        _kills += grid_apply_damage(ctrl, _hits[_h], _each, _ai, false);
     }
     return _kills;
 }
@@ -2239,9 +2239,9 @@ function grid_attack(ctrl, _ai, _di, _melee) {
 
     var _blast = (!_melee && (_style.kind == GRIDFX_MISSILE)) ? _style.blast : 0;
     if (_blast <= 0) {
-        return grid_apply_damage(ctrl, _di, _raw, _ai);
+        return grid_apply_damage(ctrl, _di, _raw, _ai, _melee);
     }
-    var _kills = grid_apply_damage(ctrl, _di, _raw * (1 - GRIDC_SPLASH_SHARE), _ai);
+    var _kills = grid_apply_damage(ctrl, _di, _raw * (1 - GRIDC_SPLASH_SHARE), _ai, _melee);
     return _kills + grid_blast_splash(ctrl, _ai, _di, _raw * GRIDC_SPLASH_SHARE, _blast);
 }
 
@@ -2971,7 +2971,7 @@ function grid_act_enemy(ctrl, _si) {
             }
             if (_best >= 0) {
                 var _zd = 55 + irandom(25);
-                var _kk = grid_apply_damage(ctrl, _best, _zd, _si);
+                var _kk = grid_apply_damage(ctrl, _best, _zd, _si, false);
                 grid_log(ctrl, $"Weirdboy zzap scorches {ctrl.squads[_best].name}: {_kk} down!", eMSG_COLOR.RED);
                 grid_floater(ctrl, ctrl.squads[_best].col, ctrl.squads[_best].row, "ZZAP!", make_color_rgb(208, 110, 230));
                 _s.zap_cd = 6;
@@ -3287,10 +3287,12 @@ function grid_battle_tick(ctrl) {
     }
     // Post the buffered volley lines in vanilla's own voice, then the running
     // strength readouts the old screen always showed.
-    if ((ctrl.ticks mod GRIDC_LOG_FLUSH) == 0) {
-        combat_kill_tally_flush();
-        combat_tally_flush();
-    }
+	if ((ctrl.ticks mod GRIDC_LOG_FLUSH) == 0) {
+	    if (instance_exists(obj_ncombat)) {
+	        combat_kill_tally_flush();
+	        combat_tally_flush();
+	    }
+	}
     grid_psy_tick(ctrl);
     for (var _wd = 0; _wd < array_length(ctrl.squads); _wd++) {
         if (ctrl.squads[_wd].ward > 0) {
