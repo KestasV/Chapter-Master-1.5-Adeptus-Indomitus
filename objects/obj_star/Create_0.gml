@@ -93,6 +93,13 @@ p_region_names = array_create_advanced(_planet_array_size, -1);
 // gun-world (-1 = no landing). Declared here so the serializer saves it and deserialize
 // does not crash on load (same rule as p_region_focus).
 p_ground_position = array_create(_planet_array_size, -1);
+// PDF reserve depth per planet, seeded on first invasion by scr_battle_resolver
+// (-1 = not yet seeded, matching its lazy init exactly). It lived only as that
+// lazy creation, which is precisely the landmine every comment above warns
+// about: a save capturing it crashes at deserialize on any build without the
+// sanitize guard below. Declared first-class so the guard is a backstop, not a
+// requirement.
+p_pdf_reserve = array_create(_planet_array_size, -1);
 p_enemy_gun_progress = array_create(_planet_array_size, 0); // enemy Orbital Gun Array build progress (turns)
 p_influence = array_create_advanced(_planet_array_size, array_create(15, 0));
 p_problem = array_create_advanced(_planet_array_size, array_create(8, ""));
