@@ -99,6 +99,13 @@
 #macro GRIDC_PSY_WARD_SOAK 0.4
 #macro GRIDC_PSY_PERIL 0.05
 #macro GRIDC_STR_TALLY 20
+
+// How many friendly squads may lock onto the same target before a shooter
+// picks someone else. Two allows a kill to be secured by a pair of volleys
+// without six squads pouring their whole magazine into one body.
+#macro GRIDC_SHOT_LOCK_MAX 2
+
+
 // Frames the cursor must rest on a tile before it explains itself.
 #macro GRIDC_TIP_DELAY 75
 #macro GRIDC_FLOAT_RISE 0.4
@@ -2105,6 +2112,21 @@ function grid_attack(ctrl, _ai, _di, _melee) {
     var _a = ctrl.squads[_ai];
     var _d = ctrl.squads[_di];
     var _stat = _melee ? _a.mel : _a.bal;
+	// A target that died earlier this tick is no target at all. Ranged squads
+    // pick another instead of wasting the volley; melee simply has nothing to
+    // hit any more and stops.
+    if (!_d.alive || !_d.deployed) {
+        if (_melee) {
+            return 0;
+        }
+        var _pick = grid_pick_shot_target(ctrl, _ai);
+        if ((_pick < 0) || (_pick == _di)) {
+            return 0;
+        }
+        _di = _pick;
+        _d = ctrl.squads[_di];
+    }
+	
     if (_stat <= 0) {
         return 0;
     }
@@ -2599,6 +2621,158 @@ function grid_nearest_foe(ctrl, _si, _limit, _need_los = false) {
     return _best;
 }
 
+/// @function grid_expected_volley_damage
+/// @description What a squad's next volley is expected to do to a target,
+/// before the variance rolls. Mirrors grid_attack's average path: distance
+/// falloff, position cover, intervening barriers, armour and warp wards all
+/// feed the same rates the real shot will use. Used by target selection to
+/// prefer finishable targets over nearby ones. Deliberately omits the hq aura
+/// (it is a per-target-search cost with only a 10% swing) and the raw random
+/// spread, whose expectation is 1.
+function grid_expected_volley_damage(ctrl, _ai, _di) {
+    var _a = ctrl.squads[_ai];
+    var _d = ctrl.squads[_di];
+    if (_a.bal <= 0) {
+        return 0;
+    }
+    var _raw = _a.bal * max(1, _a.men);
+    if (_a.sgt_hp == 0) {
+        _raw *= 0.9;
+    }
+    var _rd = grid_dist(_a.col, _a.row, _d.col, _d.row);
+    var _reach = max(1, _a.rng);
+    var _acc = GRIDC_HIT_BASE * max(GRIDC_FALLOFF_MIN, 1 - 0.45 * (max(0, _rd - 1) / _reach));
+    _raw *= _acc;
+    if (grid_in_bounds(ctrl, _d.col, _d.row)) {
+        if (ctrl.cov[_d.col][_d.row] == 1) {
+            _raw *= GRIDC_COVER_GOOD;
+        } else if (ctrl.cov[_d.col][_d.row] == -1) {
+            _raw *= GRIDC_COVER_BAD;
+        }
+    }
+    var _los = grid_line_block(ctrl, _a.col, _a.row, _d.col, _d.row);
+    if ((_los[1] > 0) || (_los[2] > 0)) {
+        var _skill = grid_cover_skill(_d.type);
+        _raw *= max(GRIDC_BARRIER_FLOOR,
+            power(1 - (GRIDC_BARRIER_SOAK * _skill), _los[1])
+                * power(1 - (GRIDC_LIGHT_SOAK * _skill), _los[2]));
+    }
+    var _eff_arm = max(0, _d.armour - _a.ap_r);
+    _raw *= 100 / (100 + _eff_arm * 2);
+    if (_d.ward > 0) {
+        _raw *= (1 - GRIDC_PSY_WARD_SOAK);
+    }
+    return _raw;
+}
+
+/// @function grid_pick_shot_target
+/// @description Picks the squad this shooter actually fires at. Unlike
+/// grid_nearest_foe, which is about who to march toward, this one is about
+/// spending ammunition where it kills.
+///
+/// Two rules, in order:
+///
+/// 1. A squad never locks onto a target that already has GRIDC_SHOT_LOCK_MAX
+///    shooters on it, so a horde charging the line is met by the front spreading
+///    across it instead of every gun pouring into one body. The lock is taken
+///    when the target is chosen, so two squads that both decided to shoot this
+///    tick agree on who has been claimed.
+///
+/// 2. Ammunition is the scarce resource, so the target is scored by "volleys
+///    to kill" rather than raw distance. A squad that can one-round a target
+///    takes a kill credit over a target it would only scratch; if nothing is
+///    close to death, range decides. The distance term is deliberately small:
+///    a target worth 0.1 volleys outranks a full-health target ten tiles
+///    closer, because that is the difference between spending a round on a
+///    kill and spending it on a scratch.
+///
+/// _prefer is a manual focus-fire override: when the player orders a specific
+/// target, that target is always taken regardless of the lock cap, and every
+/// squad given the order stacks on it. Those stacks still count toward the
+/// lock so automatic squads do not pile on too.
+function grid_pick_shot_target(ctrl, _si, _prefer = -1) {
+    var _a = ctrl.squads[_si];
+    var _prev = ctrl.squad_shot[_si];
+
+    // Already locked a target this tick and it is still standing: stay on it.
+    if ((_prev >= 0) && ctrl.squads[_prev].alive && ctrl.squads[_prev].deployed) {
+        return _prev;
+    }
+    // The previously chosen target died earlier this tick. Release its lock
+    // before looking, so a dead body does not block anyone else.
+    if (_prev >= 0) {
+        ctrl.shot_locks[_prev] = max(0, ctrl.shot_locks[_prev] - 1);
+        ctrl.squad_shot[_si] = -1;
+    }
+    // Empty magazines and reloading squads do not claim a target.
+    if ((_a.ammo <= 0) || (_a.fire_cd > 0)) {
+        return -1;
+    }
+
+    // Manual focus fire always wins: it ignores the lock cap, but it takes a
+    // lock so automatic spread leaves the target alone once enough shooters
+    // have been told to pile on.
+    if (_prefer >= 0) {
+        var _pd = ctrl.squads[_prefer];
+        if (_pd.alive && _pd.deployed
+            && (grid_dist(_a.col, _a.row, _pd.col, _pd.row) <= max(1, _a.rng))
+            && !grid_line_block(ctrl, _a.col, _a.row, _pd.col, _pd.row)[0]) {
+            ctrl.squad_shot[_si] = _prefer;
+            ctrl.shot_locks[_prefer] += 1;
+            return _prefer;
+        }
+    }
+
+    var _foes = grid_foe_list(ctrl, _a.side);
+    var _best_all = -1;      // global best, lock or no lock (last-resort fallback)
+    var _best_score = 999999;
+    var _best_open = -1;     // best target that still has lock room
+    var _best_open_score = 999999;
+    var _rng = max(1, _a.rng);
+
+    for (var _f = 0; _f < array_length(_foes); _f++) {
+        var _ti = _foes[_f];
+        var _d = ctrl.squads[_ti];
+        if (!_d.alive || !_d.deployed) {
+            continue;
+        }
+        var _dd = grid_dist(_a.col, _a.row, _d.col, _d.row);
+        if (_dd > _rng) {
+            continue;
+        }
+        if (grid_line_block(ctrl, _a.col, _a.row, _d.col, _d.row)[0]) {
+            continue;
+        }
+        var _exp = grid_expected_volley_damage(ctrl, _si, _ti);
+        if (_exp <= 0) {
+            continue;
+        }
+        // Volleys to kill, with distance as a small tiebreak. 10 tiles of
+        // distance are worth roughly 1 volley of health.
+        var _need = _d.hp_pool / _exp;
+        var _score = (_need * 10) + _dd;
+
+        if (_score < _best_score) {
+            _best_score = _score;
+            _best_all = _ti;
+        }
+        if (ctrl.shot_locks[_ti] < GRIDC_SHOT_LOCK_MAX) {
+            if (_score < _best_open_score) {
+                _best_open_score = _score;
+                _best_open = _ti;
+            }
+        }
+    }
+
+    var _out = (_best_open >= 0) ? _best_open : _best_all;
+    if (_out >= 0) {
+        ctrl.squad_shot[_si] = _out;
+        ctrl.shot_locks[_out] += 1;
+    }
+    return _out;
+}
+
+
 /// @function grid_free_tile_near
 /// @description First empty tile adjacent to a target, used by the assault leap.
 function grid_free_tile_near(ctrl, _tc, _tr) {
@@ -2857,13 +3031,12 @@ function grid_act_player(ctrl, _si) {
     // block rather than racing ahead on its own legs. The guns still work
     // though: it fires from the line at anything already in reach, which is what
     // lets a formation trade shots without coming apart.
-    if ((_ord == GRIDORD_ADVANCE) && (_f != undefined) && !_f.engaged) {
-        // Shoot whatever is actually visible in reach, not just the nearest
-        // body. Gating on the nearest alone meant a squad whose closest enemy
-        // stood behind a wall held its fire even with a clear shot at another,
-        // which read as squads refusing to use their guns.
+
+	if ((_ord == GRIDORD_ADVANCE) && (_f != undefined) && !_f.engaged) {
+        // Shoot whatever the ammunition logic says is worth a round, spread
+        // across the advancing line rather than all pouring into one body.
         if (_s.bal > 0) {
-            var _vt = grid_nearest_foe(ctrl, _si, _s.rng, true);
+            var _vt = grid_pick_shot_target(ctrl, _si);
             if (_vt >= 0) {
                 grid_attack(ctrl, _si, _vt, false);
             }
@@ -2871,6 +3044,7 @@ function grid_act_player(ctrl, _si) {
         grid_follow_anchor(ctrl, _si, _f);
         return;
     }
+
 
     if ((_ord == GRIDORD_ATTACK) && grid_try_jump(ctrl, _si, _ti)) {
         grid_attack(ctrl, _si, _ti, true);
@@ -2910,21 +3084,30 @@ function grid_act_player(ctrl, _si) {
         if ((_stance == 0) && (_ord != GRIDORD_HOLD) && grid_should_back_off(_s, _t)
             && grid_step_away(ctrl, _si, _t.col, _t.row)) {
             if (grid_dist(_s.col, _s.row, _t.col, _t.row) <= _s.rng) {
-                grid_attack(ctrl, _si, _ti, false);
+                var _pref = ((_ord == GRIDORD_ATTACK) && (_f != undefined))
+                    ? _f.order_target : -1;
+                var _st = grid_pick_shot_target(ctrl, _si, _pref);
+                if (_st >= 0) {
+                    grid_attack(ctrl, _si, _st, false);
+                }
             }
             return;
         }
         grid_attack(ctrl, _si, _ti, true);
-    } else if ((_dd <= _s.rng) && (_s.bal > 0) && !_seek) {
-        var _vt = grid_nearest_foe(ctrl, _si, _s.rng, true);
-        if (_vt >= 0) {
-            if (!grid_seek_cover(ctrl, _si, _vt)) {
-                grid_attack(ctrl, _si, _vt, false);
-            }
-        } else {
-            // Nothing visible from here: work around the wall.
-            grid_step_toward(ctrl, _si, _t.col, _t.row);
-        }
+	} else if ((_dd <= _s.rng) && (_s.bal > 0) && !_seek) {
+	    var _vt = grid_nearest_foe(ctrl, _si, _s.rng, true);
+	    if (_vt >= 0) {
+	        if (!grid_seek_cover(ctrl, _si, _vt)) {
+	            var _pref = ((_ord == GRIDORD_ATTACK) && (_f != undefined))
+	                ? _f.order_target : -1;
+	            var _st = grid_pick_shot_target(ctrl, _si, _pref);
+	            if (_st >= 0) {
+	                grid_attack(ctrl, _si, _st, false);
+	            }
+	        }
+	    } else {
+	        grid_step_toward(ctrl, _si, _t.col, _t.row);
+	    }
     } else if (_ord != GRIDORD_HOLD) {
         for (var _m3 = 0; _m3 < _steps; _m3++) {
             if (!grid_step_toward(ctrl, _si, _t.col, _t.row)) {
@@ -2940,9 +3123,11 @@ function grid_act_enemy(ctrl, _si) {
     var _ef = (_s.formation >= 0) ? ctrl.formations[_s.formation] : undefined;
     if ((_ef != undefined) && !_ef.engaged) {
         // Same rule as ours: shoot from the line, keep the shape.
-        var _lt = grid_nearest_foe(ctrl, _si, _s.rng, true);
-        if ((_lt >= 0) && (_s.bal > 0)) {
-            grid_attack(ctrl, _si, _lt, false);
+        if (_s.bal > 0) {
+            var _lt = grid_pick_shot_target(ctrl, _si);
+            if (_lt >= 0) {
+                grid_attack(ctrl, _si, _lt, false);
+            }
         }
         grid_follow_anchor(ctrl, _si, _ef);
         return;
@@ -2997,7 +3182,10 @@ function grid_act_enemy(ctrl, _si) {
         var _vt = grid_nearest_foe(ctrl, _si, _s.rng, true);
         if (_vt >= 0) {
             if (!grid_seek_cover(ctrl, _si, _vt)) {
-                grid_attack(ctrl, _si, _vt, false);
+                var _st = grid_pick_shot_target(ctrl, _si);
+                if (_st >= 0) {
+                    grid_attack(ctrl, _si, _st, false);
+                }
             }
         } else {
             grid_step_toward(ctrl, _si, _t.col, _t.row);
@@ -3277,6 +3465,13 @@ function grid_battle_tick(ctrl) {
     ctrl.agg_ekills = 0;
     ctrl.agg_pkills = 0;
     grid_refresh_live(ctrl);
+	// Target locks reset every tick. squad_shot remembers what each squad
+    // chose this tick so repeated target searches inside one action do not
+    // take a second lock, and shot_locks counts how many shooters have claimed
+    // each target.
+    ctrl.shot_locks = array_create(array_length(ctrl.squads), 0);
+    ctrl.squad_shot = array_create(array_length(ctrl.squads), -1);
+
     if (ctrl.auto_battle) {
         grid_auto_orders(ctrl);
     }

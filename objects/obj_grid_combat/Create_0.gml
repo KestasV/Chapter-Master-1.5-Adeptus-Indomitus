@@ -157,6 +157,10 @@ for (var _gi = 0; _gi <= 9; _gi++) {
     groups[_gi] = [];
 }
 
+// Target locks for ammunition-efficient fire distribution, reset each tick.
+shot_locks = [];
+squad_shot = [];
+
 selected = [];
 losses_written = false;
 drag_active = false;
