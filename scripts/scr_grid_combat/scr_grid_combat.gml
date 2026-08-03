@@ -429,7 +429,6 @@ function grid_sgt_names() {
     ];
 }
 
-/// @function GridSquad
 function GridSquad(_side, _type, _name) constructor {
     var _d = grid_unit_def(_type);
     side = _side;
@@ -509,6 +508,19 @@ function GridSquad(_side, _type, _name) constructor {
     hit_kills = 0;
     hit_dmg = 0;
     hit_flash = 0;
+
+    // Multi-weapon slots. Infantry always has exactly one entry, which mirrors
+    // the legacy squad-level fields above. Vehicles may carry several, and each
+    // slot tracks its own weapon name, ballistic skill, range, AP, ammo,
+    // fire interval and cooldown. The legacy fields remain as aliases to the
+    // first slot so old code that reads _s.wep / _s.bal / _s.rng / _s.ammo
+    // keeps working without modification.
+    weapons = [];
+
+    // Battlefield width carried for artillery reach scaling. Zero means the
+    // caller has not set it yet; range-class application happens later anyway.
+    cols = 0;
+
     if (_d.vehicle || (_side == 1)) {
         sgt_hp = -1;
         sgt_name = "";
@@ -517,6 +529,19 @@ function GridSquad(_side, _type, _name) constructor {
         var _sn = grid_sgt_names();
         sgt_name = _sn[irandom(array_length(_sn) - 1)];
     }
+
+    // Seed the single-weapon slot. Everything above used the legacy fields, so
+    // folding them into the first slot here keeps old call sites intact.
+    array_push(weapons, {
+        wep: wep,
+        bal: bal,
+        rng: rng,
+        ap_r: ap_r,
+        ammo: ammo,
+        fire_int: fire_int,
+        fire_cd: fire_cd,
+        ammo_out: false,
+    });
 }
 
 /// @function GridFormation
@@ -809,6 +834,29 @@ function grid_fire_interval(_key, _def) {
     return 1;
 }
 
+
+/// @function grid_fire_interval_for_weapon
+/// @description Per-weapon reload rate for a named weapon. Artillery and big
+/// guns take longer between shots; small arms and close-in defence weapons fire
+/// every tick. Used when a vehicle's weapon slots are built from its real gear.
+function grid_fire_interval_for_weapon(_wep_name) {
+    var _s = string_lower(string(_wep_name));
+    // Indirect fire and heavy ordnance: slow.
+    if (string_pos("whirlwind", _s) > 0 || string_pos("earthshaker", _s) > 0
+        || string_pos("battle cannon", _s) > 0) {
+        return GRIDC_CD_ARTILLERY;
+    }
+    // Tank-grade main guns and heavy support weapons.
+    if (string_pos("lascannon", _s) > 0 || string_pos("autocannon", _s) > 0
+        || string_pos("assault cannon", _s) > 0 || string_pos("heavy bolter", _s) > 0
+        || string_pos("missile", _s) > 0 || string_pos("multi-melta", _s) > 0
+        || string_pos("melta", _s) > 0 || string_pos("plasma", _s) > 0) {
+        return GRIDC_CD_TANK;
+    }
+    // Everything else: rapid fire.
+    return 1;
+}
+
 /// @function grid_apply_range_class
 /// @description Sets a squad's reach from its class once the field size is
 /// known, since artillery range is a fraction of the map rather than a fixed
@@ -912,7 +960,7 @@ function grid_seek_cover(ctrl, _si, _ti) {
             if (!grid_passable(ctrl, _nc, _nr)) {
                 continue;
             }
-            if (grid_dist(_nc, _nr, _t.col, _t.row) > _s.rng) {
+            if (grid_dist(_nc, _nr, _t.col, _t.row) > grid_max_range(_s)) {
                 continue;
             }
             var _cand = grid_line_block(ctrl, _t.col, _t.row, _nc, _nr);
@@ -1448,8 +1496,14 @@ function grid_clear_picks(ctrl) {
 }
 
 /// @function grid_squad_power
+/// @description Combat power estimate. Uses the strongest weapon slot so a
+/// vehicle with a dead main gun still scores via its remaining mounts.
 function grid_squad_power(_s) {
-    return (_s.hp_pool / 10) + ((_s.bal + _s.mel) * max(1, _s.men) / 4) + (_s.armour / 4);
+    var _best_bal = _s.bal;
+    for (var _i = 0; _i < array_length(_s.weapons); _i++) {
+        _best_bal = max(_best_bal, _s.weapons[_i].bal);
+    }
+    return (_s.hp_pool / 10) + ((_best_bal + _s.mel) * max(1, _s.men) / 4) + (_s.armour / 4);
 }
 
 /// @function grid_any_deployed
@@ -1914,7 +1968,7 @@ function grid_hit_label(_s) {
 }
 
 /// @function grid_apply_damage
-function grid_apply_damage(ctrl, _di, _dmg, _ai, _melee) {
+function grid_apply_damage(ctrl, _di, _dmg, _ai, _melee, _wslot = 0) {
     var _d = ctrl.squads[_di];
     _d.hp_pool = max(0, _d.hp_pool - _dmg);
     _d.hit_dmg += _dmg;
@@ -1934,6 +1988,7 @@ function grid_apply_damage(ctrl, _di, _dmg, _ai, _melee) {
     // target, flushed every few ticks by grid_battle_tick.
     if (_ai >= 0) {
         var _atk = ctrl.squads[_ai];
+        var _wep_name = _melee ? "" : _atk.weapons[clamp(_wslot, 0, array_length(_atk.weapons) - 1)].wep;
         var _lcol = (_d.side == 1) ? eMSG_COLOR.LIGHTGREEN : eMSG_COLOR.RED;
         if (_melee) {
             if (_killed > 0) {
@@ -1941,17 +1996,17 @@ function grid_apply_damage(ctrl, _di, _dmg, _ai, _melee) {
             }
         } else if (_killed > 0) {
             var _shots = _atk.is_vehicle ? 1 : max(1, _atk.men);
-            var _rich = $"{_shots} {_atk.wep} strike at the {_d.disp} ranks, killing {_killed}.";
-            if (string_pos("Plasma", _atk.wep) > 0) {
-                _rich = $"{_shots} {_atk.wep} shoot bolts of energy into the {_d.disp}, cleansing {_killed}.";
-            } else if (string_pos("Flamer", _atk.wep) > 0) {
-                _rich = $"{_shots} {_atk.wep} bathe the {_d.disp} ranks in holy promethium, cleansing {_killed}.";
-            } else if (string_pos("Rokkit", _atk.wep) > 0) {
-                _rich = $"{_shots} {_atk.wep} scream upward and then fall upon the {_d.disp}. {_killed} lost.";
+            var _rich = $"{_shots} {_wep_name} strike at the {_d.disp} ranks, killing {_killed}.";
+            if (string_pos("Plasma", _wep_name) > 0) {
+                _rich = $"{_shots} {_wep_name} shoot bolts of energy into the {_d.disp}, cleansing {_killed}.";
+            } else if (string_pos("Flamer", _wep_name) > 0) {
+                _rich = $"{_shots} {_wep_name} bathe the {_d.disp} ranks in holy promethium, cleansing {_killed}.";
+            } else if (string_pos("Rokkit", _wep_name) > 0) {
+                _rich = $"{_shots} {_wep_name} scream upward and then fall upon the {_d.disp}. {_killed} lost.";
             }
-            combat_kill_tally_add(_d.disp, _atk.wep, _shots, _killed, _rich, _lcol, "");
+            combat_kill_tally_add(_d.disp, _wep_name, _shots, _killed, _rich, _lcol, "");
         } else {
-            combat_tally_add(_d.disp, _atk.wep, true, 0.2, _d.is_vehicle);
+            combat_tally_add(_d.disp, _wep_name, true, 0.2, _d.is_vehicle);
         }
     }
     if (_killed > 0) {
@@ -2038,6 +2093,33 @@ function grid_shot_style(_key) {
     return { kind: GRIDFX_TRACER, col: make_color_rgb(255, 156, 60), blast: 0 };
 }
 
+/// @function grid_weapon_shot_style
+/// @description Visual style for a shot fired by a named weapon. Returns
+/// undefined when the name matches nothing special, so the caller can fall
+/// back to the normal unit-profile style. Only used by vehicles, whose real
+/// weapon names carry more information than the unit type alone.
+function grid_weapon_shot_style(_wep) {
+    var _s = string_lower(string(_wep));
+    if (string_pos("lascannon", _s) > 0 || string_pos("melta", _s) > 0) {
+        return { kind: GRIDFX_BEAM, col: make_color_rgb(255, 70, 40), blast: 0 };
+    }
+    if (string_pos("plasma", _s) > 0) {
+        return { kind: GRIDFX_TRACER, col: make_color_rgb(80, 220, 255), blast: 1 };
+    }
+    if (string_pos("missile", _s) > 0 || string_pos("whirlwind", _s) > 0
+        || string_pos("earthshaker", _s) > 0 || string_pos("battle cannon", _s) > 0) {
+        return { kind: GRIDFX_MISSILE, col: make_color_rgb(255, 178, 72), blast: 2 };
+    }
+    if (string_pos("heavy bolter", _s) > 0 || string_pos("assault cannon", _s) > 0
+        || string_pos("autocannon", _s) > 0) {
+        return { kind: GRIDFX_TRACER, col: make_color_rgb(255, 156, 60), blast: 0 };
+    }
+    if (string_pos("storm bolter", _s) > 0 || string_pos("bolter", _s) > 0) {
+        return { kind: GRIDFX_TRACER, col: make_color_rgb(240, 190, 90), blast: 0 };
+    }
+    return undefined;
+}
+
 /// @function grid_shot_fx
 /// @description Queues one shot mark. Oldest is dropped past the cap, so a big
 /// battle never accumulates effects faster than it can clear them.
@@ -2103,44 +2185,47 @@ function grid_blast_splash(ctrl, _ai, _di, _dmg, _blast) {
 }
 
 /// @function grid_attack
-/// @description One squad's volley or charge, resolved as a sequence of things
-/// that can stop it: the shot can miss, the cover can eat it, a friendly hull
-/// can take it, or the target's own armour can turn it. Each is rolled through
+/// @description One volley or charge, resolved as a sequence of things that
+/// can stop it: the shot can miss, the cover can eat it, a friendly hull can
+/// take it, or the target's own armour can turn it. Each is rolled through
 /// grid_roll_event, so the expected damage is unchanged from the old silent
 /// multipliers and every reduction now announces itself on the field.
-function grid_attack(ctrl, _ai, _di, _melee) {
+/// _wslot selects which of the attacker's weapon mounts fires; melee always
+/// uses the squad's own close combat stat and ignores the slot.
+function grid_attack(ctrl, _ai, _di, _melee, _wslot = 0) {
     var _a = ctrl.squads[_ai];
     var _d = ctrl.squads[_di];
-    var _stat = _melee ? _a.mel : _a.bal;
-	// A target that died earlier this tick is no target at all. Ranged squads
+    // Pick the weapon slot. Melee never uses slots.
+    var _w = _a.weapons[clamp(_wslot, 0, array_length(_a.weapons) - 1)];
+    var _stat = _melee ? _a.mel : _w.bal;
+    if (_stat <= 0) {
+        return 0;
+    }
+    if (!_melee && (_w.fire_cd > 0)) {
+        return 0;
+    }
+    if (!_melee && (_w.ammo <= 0)) {
+        // Dry. Say so once, loudly, then fight with what is in hand.
+        if (!_w.ammo_out) {
+            _w.ammo_out = true;
+            grid_floater(ctrl, _a.col, _a.row, "OUT OF AMMO", GRIDC_ORANGE);
+            grid_log(ctrl, $"{_a.name} has expended its {_w.wep}!", eMSG_COLOR.YELLOW);
+        }
+        return 0;
+    }
+    // A target that died earlier this tick is no target at all. Ranged squads
     // pick another instead of wasting the volley; melee simply has nothing to
     // hit any more and stops.
     if (!_d.alive || !_d.deployed) {
         if (_melee) {
             return 0;
         }
-        var _pick = grid_pick_shot_target(ctrl, _ai);
+        var _pick = grid_pick_shot_target(ctrl, _ai, -1, _wslot);
         if ((_pick < 0) || (_pick == _di)) {
             return 0;
         }
         _di = _pick;
         _d = ctrl.squads[_di];
-    }
-	
-    if (_stat <= 0) {
-        return 0;
-    }
-    if (!_melee && (_a.fire_cd > 0)) {
-        return 0;
-    }
-    if (!_melee && (_a.ammo <= 0)) {
-        // Dry. Say so once, loudly, then fight with what is in hand.
-        if (!_a.ammo_out) {
-            _a.ammo_out = true;
-            grid_floater(ctrl, _a.col, _a.row, "OUT OF AMMO", GRIDC_ORANGE);
-            grid_log(ctrl, $"{_a.name} has expended its ammunition!", eMSG_COLOR.YELLOW);
-        }
-        return 0;
     }
     // Nothing shoots through a wall. No tracer, no reload spent: the shot was
     // never taken, and the absence of fire through a building reads correctly.
@@ -2159,20 +2244,30 @@ function grid_attack(ctrl, _ai, _di, _melee) {
     if (!_melee) {
         // The round is spent whether or not it lands, so the reload starts here
         // rather than after the outcome is known.
-        _a.fire_cd = max(0, _a.fire_int - 1);
-        _a.ammo = max(0, _a.ammo - 1);
+        _w.fire_cd = max(0, _w.fire_int - 1);
+        _w.ammo = max(0, _w.ammo - 1);
     }
     // The mark goes out now, before anything can stop the shot, so a miss still
     // shows a round crossing the field and then reads MISS on the target.
-    var _style = grid_shot_style(_a.type);
+    var _style;
+    if (_a.is_vehicle) {
+        // Vehicles name their real guns, so the shot style follows the weapon.
+        _style = grid_weapon_shot_style(_w.wep);
+        if (_style == undefined) {
+            _style = grid_shot_style(_a.type);
+        }
+    } else {
+        // Infantry keeps the profile-derived style so behaviour is unchanged.
+        _style = grid_shot_style(_a.type);
+    }
     if (_melee) {
         grid_shot_fx(ctrl, _a.col, _a.row, _d.col, _d.row, GRIDFX_MELEE, GRIDC_COL_GREY, 0);
     } else {
         grid_shot_fx(ctrl, _a.col, _a.row, _d.col, _d.row, _style.kind, _style.col, _style.blast);
     }
     _raw *= grid_hq_aura(ctrl, _a);
-    // The base spread is variance, not a nerf. Every other roll below replaces a
-    // multiplier that already existed, but the flat chance of a shot simply
+    // The base spread is variance, not a nerf. Every other roll below replaces
+    // a multiplier that already existed, but the flat chance of a shot simply
     // going wide is new, so the volley is scaled up by exactly that much first.
     // The shots that land carry the damage the misses would have done, and the
     // average output is what it was before any of this was visible.
@@ -2184,7 +2279,7 @@ function grid_attack(ctrl, _ai, _di, _melee) {
     var _acc = GRIDC_HIT_BASE;
     if (!_melee) {
         var _rd = grid_dist(_a.col, _a.row, _d.col, _d.row);
-        var _reach = max(1, _a.rng);
+        var _reach = max(1, _w.rng);
         _acc *= max(GRIDC_FALLOFF_MIN, 1 - 0.45 * (max(0, _rd - 1) / _reach));
     }
     _ev = grid_roll_event(_acc, GRIDC_EVENT_SHARE);
@@ -2210,9 +2305,7 @@ function grid_attack(ctrl, _ai, _di, _melee) {
             }
         }
         // Barriers: windows, low walls, firing slits. Each one crossed turns
-        // part of the shot, scaled by how well that race actually uses cover, and
-        // the roll is weighted half again toward an outright dodge so the DODGED
-        // marker shows what the position is doing for them.
+        // part of the shot, scaled by how well that race actually uses cover.
         if ((_los[1] > 0) || (_los[2] > 0)) {
             var _skill = grid_cover_skill(_d.type);
             var _soak = max(GRIDC_BARRIER_FLOOR,
@@ -2235,9 +2328,9 @@ function grid_attack(ctrl, _ai, _di, _melee) {
             _ev = grid_roll_event(GRIDC_COVER_HULL, GRIDC_EVENT_SHARE);
             if (_ev[0]) {
                 grid_mark_outcome(ctrl, _di, GRIDHIT_DEFLECT);
-    if (_ai >= 0) {
-        combat_tally_add(_d.disp, ctrl.squads[_ai].wep, false, 0, _d.is_vehicle);
-    }
+                if (_ai >= 0) {
+                    combat_tally_add(_d.disp, _w.wep, false, 0, _d.is_vehicle);
+                }
                 return 0;
             }
             _raw *= _ev[1];
@@ -2251,7 +2344,7 @@ function grid_attack(ctrl, _ai, _di, _melee) {
     }
     // Armour piercing eats armour before the deflect roll, so a plasma volley
     // treats Terminator plate very differently from a lasgun volley.
-    var _eff_arm = max(0, _d.armour - (_melee ? _a.ap_m : _a.ap_r));
+    var _eff_arm = max(0, _d.armour - (_melee ? _a.ap_m : _w.ap_r));
     _ev = grid_roll_event(100 / (100 + _eff_arm * 2), GRIDC_EVENT_SHARE);
     if (_ev[0]) {
         grid_mark_outcome(ctrl, _di, GRIDHIT_DEFLECT);
@@ -2261,9 +2354,9 @@ function grid_attack(ctrl, _ai, _di, _melee) {
 
     var _blast = (!_melee && (_style.kind == GRIDFX_MISSILE)) ? _style.blast : 0;
     if (_blast <= 0) {
-        return grid_apply_damage(ctrl, _di, _raw, _ai, _melee);
+        return grid_apply_damage(ctrl, _di, _raw, _ai, _melee, _wslot);
     }
-    var _kills = grid_apply_damage(ctrl, _di, _raw * (1 - GRIDC_SPLASH_SHARE), _ai, _melee);
+    var _kills = grid_apply_damage(ctrl, _di, _raw * (1 - GRIDC_SPLASH_SHARE), _ai, _melee, _wslot);
     return _kills + grid_blast_splash(ctrl, _ai, _di, _raw * GRIDC_SPLASH_SHARE, _blast);
 }
 
@@ -2628,19 +2721,21 @@ function grid_nearest_foe(ctrl, _si, _limit, _need_los = false) {
 /// feed the same rates the real shot will use. Used by target selection to
 /// prefer finishable targets over nearby ones. Deliberately omits the hq aura
 /// (it is a per-target-search cost with only a 10% swing) and the raw random
-/// spread, whose expectation is 1.
-function grid_expected_volley_damage(ctrl, _ai, _di) {
+/// spread, whose expectation is 1. _wslot picks the weapon mount that would
+/// fire.
+function grid_expected_volley_damage(ctrl, _ai, _di, _wslot = 0) {
     var _a = ctrl.squads[_ai];
     var _d = ctrl.squads[_di];
-    if (_a.bal <= 0) {
+    var _w = _a.weapons[clamp(_wslot, 0, array_length(_a.weapons) - 1)];
+    if (_w.bal <= 0) {
         return 0;
     }
-    var _raw = _a.bal * max(1, _a.men);
+    var _raw = _w.bal * max(1, _a.men);
     if (_a.sgt_hp == 0) {
         _raw *= 0.9;
     }
     var _rd = grid_dist(_a.col, _a.row, _d.col, _d.row);
-    var _reach = max(1, _a.rng);
+    var _reach = max(1, _w.rng);
     var _acc = GRIDC_HIT_BASE * max(GRIDC_FALLOFF_MIN, 1 - 0.45 * (max(0, _rd - 1) / _reach));
     _raw *= _acc;
     if (grid_in_bounds(ctrl, _d.col, _d.row)) {
@@ -2657,7 +2752,7 @@ function grid_expected_volley_damage(ctrl, _ai, _di) {
             power(1 - (GRIDC_BARRIER_SOAK * _skill), _los[1])
                 * power(1 - (GRIDC_LIGHT_SOAK * _skill), _los[2]));
     }
-    var _eff_arm = max(0, _d.armour - _a.ap_r);
+    var _eff_arm = max(0, _d.armour - _w.ap_r);
     _raw *= 100 / (100 + _eff_arm * 2);
     if (_d.ward > 0) {
         _raw *= (1 - GRIDC_PSY_WARD_SOAK);
@@ -2687,12 +2782,21 @@ function grid_expected_volley_damage(ctrl, _ai, _di) {
 ///    kill and spending it on a scratch.
 ///
 /// _prefer is a manual focus-fire override: when the player orders a specific
-/// target, that target is always taken regardless of the lock cap, and every
-/// squad given the order stacks on it. Those stacks still count toward the
-/// lock so automatic squads do not pile on too.
-function grid_pick_shot_target(ctrl, _si, _prefer = -1) {
+/// target, that target is always taken regardless of the lock cap. It costs a
+/// lock, so automatic squads do not pile on it.
+///
+/// _wslot selects which weapon mount is looking for a target. Each slot keeps
+/// its own lock memory, so a Predator's autocannon and its sponsons do not
+/// overwrite each other's decision within the same tick.
+function grid_pick_shot_target(ctrl, _si, _prefer = -1, _wslot = 0) {
     var _a = ctrl.squads[_si];
-    var _prev = ctrl.squad_shot[_si];
+    var _w = _a.weapons[clamp(_wslot, 0, array_length(_a.weapons) - 1)];
+
+    // Per-slot lock memory: this slot's previous pick this tick, if any.
+    var _prev = -1;
+    if (is_array(ctrl.squad_shot[_si]) && (_wslot < array_length(ctrl.squad_shot[_si]))) {
+        _prev = ctrl.squad_shot[_si][_wslot];
+    }
 
     // Already locked a target this tick and it is still standing: stay on it.
     if ((_prev >= 0) && ctrl.squads[_prev].alive && ctrl.squads[_prev].deployed) {
@@ -2702,10 +2806,12 @@ function grid_pick_shot_target(ctrl, _si, _prefer = -1) {
     // before looking, so a dead body does not block anyone else.
     if (_prev >= 0) {
         ctrl.shot_locks[_prev] = max(0, ctrl.shot_locks[_prev] - 1);
-        ctrl.squad_shot[_si] = -1;
+        if (is_array(ctrl.squad_shot[_si]) && (_wslot < array_length(ctrl.squad_shot[_si]))) {
+            ctrl.squad_shot[_si][_wslot] = -1;
+        }
     }
-    // Empty magazines and reloading squads do not claim a target.
-    if ((_a.ammo <= 0) || (_a.fire_cd > 0)) {
+    // Empty magazines and reloading slots do not claim a target.
+    if ((_w.ammo <= 0) || (_w.fire_cd > 0)) {
         return -1;
     }
 
@@ -2715,9 +2821,11 @@ function grid_pick_shot_target(ctrl, _si, _prefer = -1) {
     if (_prefer >= 0) {
         var _pd = ctrl.squads[_prefer];
         if (_pd.alive && _pd.deployed
-            && (grid_dist(_a.col, _a.row, _pd.col, _pd.row) <= max(1, _a.rng))
+            && (grid_dist(_a.col, _a.row, _pd.col, _pd.row) <= max(1, _w.rng))
             && !grid_line_block(ctrl, _a.col, _a.row, _pd.col, _pd.row)[0]) {
-            ctrl.squad_shot[_si] = _prefer;
+            if (is_array(ctrl.squad_shot[_si]) && (_wslot < array_length(ctrl.squad_shot[_si]))) {
+                ctrl.squad_shot[_si][_wslot] = _prefer;
+            }
             ctrl.shot_locks[_prefer] += 1;
             return _prefer;
         }
@@ -2728,7 +2836,7 @@ function grid_pick_shot_target(ctrl, _si, _prefer = -1) {
     var _best_score = 999999;
     var _best_open = -1;     // best target that still has lock room
     var _best_open_score = 999999;
-    var _rng = max(1, _a.rng);
+    var _rng = max(1, _w.rng);
 
     for (var _f = 0; _f < array_length(_foes); _f++) {
         var _ti = _foes[_f];
@@ -2743,7 +2851,7 @@ function grid_pick_shot_target(ctrl, _si, _prefer = -1) {
         if (grid_line_block(ctrl, _a.col, _a.row, _d.col, _d.row)[0]) {
             continue;
         }
-        var _exp = grid_expected_volley_damage(ctrl, _si, _ti);
+        var _exp = grid_expected_volley_damage(ctrl, _si, _ti, _wslot);
         if (_exp <= 0) {
             continue;
         }
@@ -2766,12 +2874,65 @@ function grid_pick_shot_target(ctrl, _si, _prefer = -1) {
 
     var _out = (_best_open >= 0) ? _best_open : _best_all;
     if (_out >= 0) {
-        ctrl.squad_shot[_si] = _out;
+        if (is_array(ctrl.squad_shot[_si]) && (_wslot < array_length(ctrl.squad_shot[_si]))) {
+            ctrl.squad_shot[_si][_wslot] = _out;
+        }
         ctrl.shot_locks[_out] += 1;
     }
     return _out;
 }
 
+/// @function grid_max_range
+/// @description Longest reach across a squad's weapon slots. Used for movement
+/// and approach decisions so a mixed loadout is judged by its best gun.
+function grid_max_range(_s) {
+    var _best = 1;
+    for (var _i = 0; _i < array_length(_s.weapons); _i++) {
+        _best = max(_best, _s.weapons[_i].rng);
+    }
+    return _best;
+}
+
+/// @function grid_has_ranged
+/// @description True if any weapon slot can still shoot: has ballistic skill,
+/// ammunition and is off cooldown. A vehicle whose autocannon is dry but whose
+/// storm bolter is still loaded should keep shooting.
+function grid_has_ranged(_s) {
+    for (var _i = 0; _i < array_length(_s.weapons); _i++) {
+        var _w = _s.weapons[_i];
+        if ((_w.bal > 0) && (_w.ammo > 0) && (_w.fire_cd <= 0)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/// @function grid_weapon_target
+/// @description Picks a target for one specific weapon slot. A manual focus
+/// order is honoured only when that slot can actually reach and see it;
+/// otherwise the slot falls back to the shared ammo-efficient selection.
+function grid_weapon_target(ctrl, _si, _wslot, _prefer) {
+    // grid_pick_shot_target already handles the prefer override internally
+    // with the correct per-slot range check, so hand the prefer straight down.
+    return grid_pick_shot_target(ctrl, _si, _prefer, _wslot);
+}
+
+/// @function grid_fire_all_weapons
+/// @description Fires every ready ranged slot, each at its own chosen target.
+/// Shared by both sides so multi-weapon behaviour is symmetric.
+function grid_fire_all_weapons(ctrl, _si, _prefer = -1) {
+    var _s = ctrl.squads[_si];
+    for (var _ws = 0; _ws < array_length(_s.weapons); _ws++) {
+        var _w = _s.weapons[_ws];
+        if ((_w.bal <= 0) || (_w.ammo <= 0) || (_w.fire_cd > 0)) {
+            continue;
+        }
+        var _target = grid_weapon_target(ctrl, _si, _ws, _prefer);
+        if (_target >= 0) {
+            grid_attack(ctrl, _si, _target, false, _ws);
+        }
+    }
+}
 
 /// @function grid_free_tile_near
 /// @description First empty tile adjacent to a target, used by the assault leap.
@@ -2926,16 +3087,29 @@ function grid_move_budget(_s) {
 /// in close combat than at range closes the distance; one that shoots better
 /// holds off and fires. The explicit melee flag still wins, so a unit built to
 /// charge charges even when it carries a decent gun, and anything with no gun
-/// at all has nothing to wait for.
+/// at all has nothing to wait for. Multi-weapon aware: a vehicle whose main
+/// gun is dry but whose secondary is still loaded is NOT a melee squad yet.
 function grid_wants_melee(_s) {
-    // A squad with empty magazines and working blades is a melee squad now.
-    if ((_s.ammo <= 0) && (_s.mel > 0)) {
+    // A squad with no ammunition in ANY weapon slot and working blades is a
+    // melee squad now.
+    var _any_ammo = false;
+    var _any_bal = false;
+    for (var _i = 0; _i < array_length(_s.weapons); _i++) {
+        var _w = _s.weapons[_i];
+        if (_w.bal > 0) {
+            _any_bal = true;
+        }
+        if (_w.ammo > 0) {
+            _any_ammo = true;
+        }
+    }
+    if (!_any_ammo && (_s.mel > 0)) {
         return true;
     }
     if (_s.melee_pref) {
         return true;
     }
-    if (_s.bal <= 0) {
+    if (!_any_bal) {
         return true;
     }
     return (_s.mel > _s.bal);
@@ -3019,7 +3193,7 @@ function grid_act_player(ctrl, _si) {
         _ti = _f.order_target;
     }
     if ((_ti < 0) || !ctrl.squads[_ti].alive) {
-        var _lim = (_ord == GRIDORD_HOLD) ? _s.rng : -1;
+        var _lim = (_ord == GRIDORD_HOLD) ? grid_max_range(_s) : -1;
         _ti = grid_nearest_foe(ctrl, _si, _lim);
     }
     if (_ti < 0) {
@@ -3031,20 +3205,17 @@ function grid_act_player(ctrl, _si) {
     // block rather than racing ahead on its own legs. The guns still work
     // though: it fires from the line at anything already in reach, which is what
     // lets a formation trade shots without coming apart.
-
-	if ((_ord == GRIDORD_ADVANCE) && (_f != undefined) && !_f.engaged) {
-        // Shoot whatever the ammunition logic says is worth a round, spread
-        // across the advancing line rather than all pouring into one body.
-        if (_s.bal > 0) {
-            var _vt = grid_pick_shot_target(ctrl, _si);
-            if (_vt >= 0) {
-                grid_attack(ctrl, _si, _vt, false);
+    if ((_ord == GRIDORD_ADVANCE) && (_f != undefined) && !_f.engaged) {
+        if (grid_has_ranged(_s)) {
+            // Shoot whatever the ammunition logic says is worth a round, spread
+            // across the advancing line rather than all pouring into one body.
+            if (grid_nearest_foe(ctrl, _si, grid_max_range(_s), true) >= 0) {
+                grid_fire_all_weapons(ctrl, _si);
             }
         }
         grid_follow_anchor(ctrl, _si, _f);
         return;
     }
-
 
     if ((_ord == GRIDORD_ATTACK) && grid_try_jump(ctrl, _si, _ti)) {
         grid_attack(ctrl, _si, _ti, true);
@@ -3059,15 +3230,18 @@ function grid_act_player(ctrl, _si) {
         && ((_stance == 1) || ((_stance == 0) && grid_wants_melee(_s)));
 
     if (_stance == 2) {
+        // Avoid melee: back off from anyone adjacent, shoot anything in reach.
         if (_dd <= 1) {
             if (!grid_step_away(ctrl, _si, _t.col, _t.row)) {
                 grid_attack(ctrl, _si, _ti, true);
             }
             return;
         }
-        if ((_dd <= _s.rng) && (_s.bal > 0)) {
-            grid_attack(ctrl, _si, _ti, false);
-        } else if ((_ord != GRIDORD_HOLD) && (_dd > _s.rng)) {
+        if ((_dd <= grid_max_range(_s)) && grid_has_ranged(_s)) {
+            var _pref = ((_ord == GRIDORD_ATTACK) && (_f != undefined))
+                ? _f.order_target : -1;
+            grid_fire_all_weapons(ctrl, _si, _pref);
+        } else if ((_ord != GRIDORD_HOLD) && (_dd > grid_max_range(_s))) {
             for (var _m2 = 0; _m2 < _steps; _m2++) {
                 if (!grid_step_toward(ctrl, _si, _t.col, _t.row)) {
                     break;
@@ -3083,31 +3257,27 @@ function grid_act_player(ctrl, _si) {
         // held, so an explicit Hold order overrides the instinct.
         if ((_stance == 0) && (_ord != GRIDORD_HOLD) && grid_should_back_off(_s, _t)
             && grid_step_away(ctrl, _si, _t.col, _t.row)) {
-            if (grid_dist(_s.col, _s.row, _t.col, _t.row) <= _s.rng) {
+            if (grid_dist(_s.col, _s.row, _t.col, _t.row) <= grid_max_range(_s)) {
                 var _pref = ((_ord == GRIDORD_ATTACK) && (_f != undefined))
                     ? _f.order_target : -1;
-                var _st = grid_pick_shot_target(ctrl, _si, _pref);
-                if (_st >= 0) {
-                    grid_attack(ctrl, _si, _st, false);
-                }
+                grid_fire_all_weapons(ctrl, _si, _pref);
             }
             return;
         }
         grid_attack(ctrl, _si, _ti, true);
-	} else if ((_dd <= _s.rng) && (_s.bal > 0) && !_seek) {
-	    var _vt = grid_nearest_foe(ctrl, _si, _s.rng, true);
-	    if (_vt >= 0) {
-	        if (!grid_seek_cover(ctrl, _si, _vt)) {
-	            var _pref = ((_ord == GRIDORD_ATTACK) && (_f != undefined))
-	                ? _f.order_target : -1;
-	            var _st = grid_pick_shot_target(ctrl, _si, _pref);
-	            if (_st >= 0) {
-	                grid_attack(ctrl, _si, _st, false);
-	            }
-	        }
-	    } else {
-	        grid_step_toward(ctrl, _si, _t.col, _t.row);
-	    }
+    } else if ((_dd <= grid_max_range(_s)) && grid_has_ranged(_s) && !_seek) {
+        // In reach of at least one weapon: prefer a visible target. If nothing
+        // can be seen, work around the wall instead of firing through it.
+        var _vt = grid_nearest_foe(ctrl, _si, grid_max_range(_s), true);
+        if (_vt >= 0) {
+            if (!grid_seek_cover(ctrl, _si, _vt)) {
+                var _pref = ((_ord == GRIDORD_ATTACK) && (_f != undefined))
+                    ? _f.order_target : -1;
+                grid_fire_all_weapons(ctrl, _si, _pref);
+            }
+        } else {
+            grid_step_toward(ctrl, _si, _t.col, _t.row);
+        }
     } else if (_ord != GRIDORD_HOLD) {
         for (var _m3 = 0; _m3 < _steps; _m3++) {
             if (!grid_step_toward(ctrl, _si, _t.col, _t.row)) {
@@ -3123,10 +3293,9 @@ function grid_act_enemy(ctrl, _si) {
     var _ef = (_s.formation >= 0) ? ctrl.formations[_s.formation] : undefined;
     if ((_ef != undefined) && !_ef.engaged) {
         // Same rule as ours: shoot from the line, keep the shape.
-        if (_s.bal > 0) {
-            var _lt = grid_pick_shot_target(ctrl, _si);
-            if (_lt >= 0) {
-                grid_attack(ctrl, _si, _lt, false);
+        if (grid_has_ranged(_s)) {
+            if (grid_nearest_foe(ctrl, _si, grid_max_range(_s), true) >= 0) {
+                grid_fire_all_weapons(ctrl, _si);
             }
         }
         grid_follow_anchor(ctrl, _si, _ef);
@@ -3172,20 +3341,19 @@ function grid_act_enemy(ctrl, _si) {
     var _dd = grid_dist(_s.col, _s.row, _t.col, _t.row);
     if (_dd <= 1) {
         if (grid_should_back_off(_s, _t) && grid_step_away(ctrl, _si, _t.col, _t.row)) {
-            if (grid_dist(_s.col, _s.row, _t.col, _t.row) <= _s.rng) {
-                grid_attack(ctrl, _si, _ti, false);
+            if (grid_dist(_s.col, _s.row, _t.col, _t.row) <= grid_max_range(_s)) {
+                grid_fire_all_weapons(ctrl, _si);
             }
             return;
         }
         grid_attack(ctrl, _si, _ti, true);
-    } else if ((_dd <= _s.rng) && (_s.bal > 0) && !grid_wants_melee(_s)) {
-        var _vt = grid_nearest_foe(ctrl, _si, _s.rng, true);
+    } else if ((_dd <= grid_max_range(_s)) && grid_has_ranged(_s) && !grid_wants_melee(_s)) {
+        // Prefer a visible target. If nothing can be seen, work around the
+        // wall instead of firing through it.
+        var _vt = grid_nearest_foe(ctrl, _si, grid_max_range(_s), true);
         if (_vt >= 0) {
             if (!grid_seek_cover(ctrl, _si, _vt)) {
-                var _st = grid_pick_shot_target(ctrl, _si);
-                if (_st >= 0) {
-                    grid_attack(ctrl, _si, _st, false);
-                }
+                grid_fire_all_weapons(ctrl, _si);
             }
         } else {
             grid_step_toward(ctrl, _si, _t.col, _t.row);
@@ -3465,19 +3633,26 @@ function grid_battle_tick(ctrl) {
     ctrl.agg_ekills = 0;
     ctrl.agg_pkills = 0;
     grid_refresh_live(ctrl);
-	// Target locks reset every tick. squad_shot remembers what each squad
-    // chose this tick so repeated target searches inside one action do not
-    // take a second lock, and shot_locks counts how many shooters have claimed
-    // each target.
+    // Target locks reset every tick. squad_shot is now two-dimensional:
+    // [squad_index][weapon_slot], so each mount keeps its own pick and multi-
+    // weapon vehicles do not overwrite one slot's target with another's.
     ctrl.shot_locks = array_create(array_length(ctrl.squads), 0);
-    ctrl.squad_shot = array_create(array_length(ctrl.squads), -1);
+    ctrl.squad_shot = array_create(array_length(ctrl.squads));
+    for (var _qi = 0; _qi < array_length(ctrl.squads); _qi++) {
+        ctrl.squad_shot[_qi] = array_create(max(1, array_length(ctrl.squads[_qi].weapons)), -1);
+    }
 
     if (ctrl.auto_battle) {
         grid_auto_orders(ctrl);
     }
+    // Reload timers for every weapon slot, not just the legacy main gun.
+    // A Predator's autocannon and its sponsons each cool down independently.
     for (var _rl = 0; _rl < array_length(ctrl.squads); _rl++) {
-        if (ctrl.squads[_rl].fire_cd > 0) {
-            ctrl.squads[_rl].fire_cd -= 1;
+        var _rs = ctrl.squads[_rl];
+        for (var _rw = 0; _rw < array_length(_rs.weapons); _rw++) {
+            if (_rs.weapons[_rw].fire_cd > 0) {
+                _rs.weapons[_rw].fire_cd -= 1;
+            }
         }
     }
     // Post the buffered volley lines in vanilla's own voice, then the running
@@ -4746,6 +4921,9 @@ function grid_gear_aggregate(_refs, _k) {
     var _best_wep = "";
     var _amm_w = 0;
     var _amm_n = 0;
+    // Raw ranged stacks for vehicles: one slot per real gun, weighted by how
+    // much of the source block belongs to this squad.
+    var _stacks_out = [];
     for (var _b2 = 0; _b2 < array_length(_blocks); _b2++) {
         var _gb = _blocks[_b2];
         var _frac = _takes[_b2] / max(1, _gb.src_men);
@@ -4768,6 +4946,15 @@ function grid_gear_aggregate(_refs, _k) {
                     _best_att = _share;
                     _best_wep = _sk.w;
                 }
+                // Keep the stack itself so a vehicle can build one independent
+                // weapon slot per mount instead of a folded aggregate value.
+                array_push(_stacks_out, {
+                    w: _sk.w,
+                    att: _share,
+                    ap: _sk.ap,
+                    rng: _sk.rng,
+                    amm: _sk.amm,
+                });
             } else {
                 _m_att += _share;
                 _m_ap += grid_ap_value(_sk.ap) * _share;
@@ -4792,32 +4979,83 @@ function grid_gear_aggregate(_refs, _k) {
         bike_frac: (_men_ct > 0) ? (_bike_ct / _men_ct) : 0,
         v_ac: _vac,
         v_hp: _vhp,
+        stacks: _stacks_out,
     };
 }
 
 /// @function grid_gear_apply
-/// @description Writes an aggregate onto a squad. Per-man attack through the
-/// Bolter anchor gives ranged and melee damage; the longest real gun gives
-/// reach through the same square-root mapping the enemy table was calibrated
-/// with; armour piercing carries across at the armour scale factor.
+/// @description Writes an aggregate onto a squad. Vehicles with real gear get
+/// one independent weapon slot per mount, so the autocannon, sponsons and storm
+/// bolter each carry their own ballistic skill, range, AP, ammo and reload.
+/// Infantry and vehicles without stacks still fold everything into the legacy
+/// single-weapon fields, so the old behaviour is unchanged.
 function grid_gear_apply(_sq, _agg, _k) {
     var _bodies = max(1, _sq.men);
-    if (_agg.r_att > 0) {
-        _sq.bal = clamp(round((_agg.r_att / _bodies) * _k), 1, 80);
-        _sq.rng = clamp(round(1.9 * sqrt(max(1, _agg.best_rng))), 2, 40);
-        _sq.ap_r = round(_agg.r_ap);
+    // Vehicles with real weapon stacks: build one slot per gun.
+    if (_sq.is_vehicle && (array_length(_agg.stacks) > 0)) {
+        var _new_weapons = [];
+        var _field_cols = (_sq.cols > 0) ? _sq.cols : 24;
+        for (var _vi = 0; _vi < array_length(_agg.stacks); _vi++) {
+            var _vst = _agg.stacks[_vi];
+            var _v_bal = clamp(round((_vst.att / _bodies) * _k), 1, 80);
+            // Reach by class: artillery reaches across the map, transports keep
+            // their gun range, everything else with a hull doubles it.
+            var _v_rng;
+            if (grid_is_artillery(_sq.type)) {
+                _v_rng = max(2, round(_field_cols * GRIDC_ARTY_RANGE_FRAC));
+            } else if (_sq.glyph == "transport") {
+                _v_rng = clamp(round(1.9 * sqrt(max(1, _vst.rng))), 2, 40);
+            } else {
+                _v_rng = clamp(round(1.9 * sqrt(max(1, _vst.rng)) * GRIDC_TANK_RANGE_MULT), 2, 40);
+            }
+            var _v_ap = round(grid_ap_value(_vst.ap));
+            var _v_amm = (_vst.amm > 0) ? clamp(round(_vst.amm), 4, 240) : GRIDC_AMMO_VEH;
+            var _v_int = grid_fire_interval_for_weapon(_vst.w);
+            array_push(_new_weapons, {
+                wep: _vst.w,
+                bal: _v_bal,
+                rng: _v_rng,
+                ap_r: _v_ap,
+                ammo: _v_amm,
+                fire_int: _v_int,
+                fire_cd: 0,
+                ammo_out: false,
+            });
+        }
+        if (array_length(_new_weapons) > 0) {
+            _sq.weapons = _new_weapons;
+            // Keep legacy aliases in sync with slot 0.
+            _sq.wep = _sq.weapons[0].wep;
+            _sq.bal = _sq.weapons[0].bal;
+            _sq.rng = _sq.weapons[0].rng;
+            _sq.ap_r = _sq.weapons[0].ap_r;
+            _sq.ammo = _sq.weapons[0].ammo;
+            _sq.fire_int = _sq.weapons[0].fire_int;
+            _sq.fire_cd = _sq.weapons[0].fire_cd;
+        }
     } else {
-        _sq.bal = 0;
+        // Original folded path for infantry and gearless vehicles.
+        if (_agg.r_att > 0) {
+            _sq.bal = clamp(round((_agg.r_att / _bodies) * _k), 1, 80);
+            _sq.rng = clamp(round(1.9 * sqrt(max(1, _agg.best_rng))), 2, 40);
+            _sq.ap_r = round(_agg.r_ap);
+        } else {
+            _sq.bal = 0;
+        }
+        if (_agg.m_att > 0) {
+            _sq.mel = clamp(round((_agg.m_att / _bodies) * _k), 1, 80);
+            _sq.ap_m = round(_agg.m_ap);
+        }
+        if (_agg.volleys > 0) {
+            // Real magazines. The vanilla builder already tripled dreadnought ammo
+            // and quadrupled vehicle ammo, so the tags arrive priced in.
+            _sq.ammo = clamp(round(_agg.volleys), 4, 240);
+        }
+        if (_agg.best_wep != "") {
+            _sq.wep = _agg.best_wep;
+        }
     }
-    if (_agg.m_att > 0) {
-        _sq.mel = clamp(round((_agg.m_att / _bodies) * _k), 1, 80);
-        _sq.ap_m = round(_agg.m_ap);
-    }
-    if (_agg.volleys > 0) {
-        // Real magazines. The vanilla builder already tripled dreadnought ammo
-        // and quadrupled vehicle ammo, so the tags arrive priced in.
-        _sq.ammo = clamp(round(_agg.volleys), 4, 240);
-    }
+    // Durability and movement are shared by both paths.
     if (!_sq.is_vehicle) {
         // The same calibration the enemy table went through: armour is ac
         // scaled by 0.62, a man's hit points are his health through (2 - dr)
@@ -4854,9 +5092,6 @@ function grid_gear_apply(_sq, _agg, _k) {
             // type maximum: a damaged Rhino rolls onto the field damaged.
             _sq.hp_pool = clamp(round(_agg.v_hp / 2.5), 1, _sq.hp_max);
         }
-    }
-    if (_agg.best_wep != "") {
-        _sq.wep = _agg.best_wep;
     }
     _sq.geared = true;
 }
@@ -4898,6 +5133,7 @@ function grid_import_force(ctrl, _force) {
         var _squads = max(1, ceil(array_length(_list) / _per));
         for (var _s = 0; _s < _squads; _s++) {
             var _sq = new GridSquad(0, _key, $"{_def.disp} {_s + 1}");
+            _sq.cols = ctrl.cols;
             grid_apply_range_class(ctrl, _sq);
             var _refs = [];
             for (var _m = _s * _per; (_m < (_s + 1) * _per) && (_m < array_length(_list)); _m++) {
