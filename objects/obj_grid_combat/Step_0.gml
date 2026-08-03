@@ -77,12 +77,10 @@ if (keyboard_check_pressed(vk_tab)) {
 }
 
 // Minus and plus step the clock, on both the main row and the numpad.
-if (keyboard_check_pressed(vk_subtract) || keyboard_check_pressed(189)
-    || keyboard_check_pressed(ord("-"))) {
+if (keyboard_check_pressed(vk_subtract) || keyboard_check_pressed(189) || keyboard_check_pressed(ord("-"))) {
     grid_speed_step(id, -1);
 }
-if (keyboard_check_pressed(vk_add) || keyboard_check_pressed(187)
-    || keyboard_check_pressed(ord("="))) {
+if (keyboard_check_pressed(vk_add) || keyboard_check_pressed(187) || keyboard_check_pressed(ord("="))) {
     grid_speed_step(id, 1);
 }
 
@@ -100,7 +98,6 @@ if (keyboard_check_pressed(ord("L"))) {
     show_legend = !show_legend;
 }
 
-
 var _mgx = device_mouse_x_to_gui(0);
 var _mgy = device_mouse_y_to_gui(0);
 var _lc = mouse_check_button_pressed(mb_left);
@@ -114,8 +111,7 @@ var _rrel = mouse_check_button_released(mb_right);
 // matched against living squads, first by squad name, then by the type name the
 // vanilla lines speak in; a type can match several squads, in which case the
 // first living one is centred, which is ambiguity a reader can live with.
-if (_lc && (phase != GRIDPH_DEPLOY)
-    && point_in_rectangle(_mgx, _mgy, GRIDC_BF_X1 + 4, GRIDC_LOG_Y1, GRIDC_BF_X2, GRIDC_LOG_Y2)) {
+if (_lc && (phase != GRIDPH_DEPLOY) && point_in_rectangle(_mgx, _mgy, GRIDC_BF_X1 + 4, GRIDC_LOG_Y1, GRIDC_BF_X2, GRIDC_LOG_Y2)) {
     var _li = floor((_mgy - GRIDC_LOG_Y1) / log.log_line_height);
     var _tot = array_length(log.__log_history);
     var _st0 = max(0, _tot - log.log_view_lines - log.__log_scroll);
@@ -149,7 +145,6 @@ if (_lc && (phase != GRIDPH_DEPLOY)
         }
     }
 }
-
 
 // Floating combat text drifts and fades every frame, independent of sim speed,
 // pause, popups, and the end screen; hit flashes decay alongside it.
@@ -328,9 +323,7 @@ if (_lc || _rc) {
             paused = !paused;
         } else if (_bid == "auto") {
             auto_battle = !auto_battle;
-            grid_log(id, auto_battle
-                ? "Auto battle on: your formations will advance and fight on their own."
-                : "Auto battle off: your formations hold their current orders.", eMSG_COLOR.AQUA);
+            grid_log(id, auto_battle ? "Auto battle on: your formations will advance and fight on their own." : "Auto battle off: your formations hold their current orders.", eMSG_COLOR.AQUA);
         } else if (_bid == "legend") {
             show_legend = !show_legend;
         } else if (_bid == "speed") {
@@ -356,7 +349,7 @@ if (_lc || _rc) {
         } else if (_bid == "stance") {
             for (var _os = 0; _os < array_length(selected); _os++) {
                 var _fs = formations[selected[_os]];
-                _fs.stance = (_fs.stance + 1) mod 3;
+                _fs.stance = (_fs.stance + 1) % 3;
             }
             if (array_length(selected) > 0) {
                 var _sv = formations[selected[0]].stance;
@@ -455,8 +448,7 @@ if (drag_active && _lrel) {
         }
     } else {
         var _pick = grid_squad_at(id, hover_c, hover_r);
-        if ((_pick >= 0) && (squads[_pick].side == 0) && (squads[_pick].formation >= 0)
-            && keyboard_check(vk_alt)) {
+        if ((_pick >= 0) && (squads[_pick].side == 0) && (squads[_pick].formation >= 0) && keyboard_check(vk_alt)) {
             // Alt click takes one squad out of its block and selects only it.
             var _one = grid_split_squad(id, _pick);
             grid_sel_clear(id);
@@ -477,7 +469,6 @@ if (drag_active && !_lheld) {
 }
 
 grid_sel_prune(id);
-
 
 // Control groups. Ctrl and a number binds the current selection, the number on
 // its own recalls it, which is what every RTS has trained hands to expect.

@@ -146,7 +146,7 @@ try {
     // planetary campaign is the hardest one even when it happens in an outlying sector.
     last_stand = false;
     if (instance_exists(battle_object) && is_real(battle_region) && (battle_region >= 0)) {
-        last_stand = (planet_faction_last_region(battle_object, battle_id, enemy) == battle_region);
+        last_stand = planet_faction_last_region(battle_object, battle_id, enemy) == battle_region;
     }
     var _threat_cap = ENEMY_BATTLE_THREAT_CAP;
     if (battle_region <= 0) {
@@ -573,8 +573,8 @@ try {
     // * Imperial Guard Force *
     if (enemy == eFACTION.IMPERIUM) {
         // Strategic garrison headcount -> tactical spawn cap (see ENEMY_GUARD_BATTLE_CAP):
-    // fighting an Imperial world with millions of PDF must not spawn millions.
-    guard_total = min(threat, ENEMY_GUARD_BATTLE_CAP);
+        // fighting an Imperial world with millions of PDF must not spawn millions.
+        guard_total = min(threat, ENEMY_GUARD_BATTLE_CAP);
 
         var guar = threat / 10;
 

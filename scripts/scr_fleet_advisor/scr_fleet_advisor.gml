@@ -23,7 +23,7 @@ function scr_fleet_advisor() {
         return;
     }
     var cn = id;
-    
+
     if (menu_adept == 0) {
         if (struct_exists(ini.custom_advisors, "admiral")) {
             scr_image("advisor/splash", ini.custom_advisors.admiral, xx + 16, yy + 43, 310, 828);

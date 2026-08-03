@@ -39,9 +39,9 @@ p_population = array_create(_planet_array_size, 0);
 p_max_population = array_create(_planet_array_size, 0);
 // --- Sector Governor overhaul: population/force data model (p_* so they serialise; old saves back-fill) ---
 p_race_pop = array_create_advanced(_planet_array_size, array_create(15, 0)); // [planet][eFACTION] headcount
-p_infra_turns = array_create(_planet_array_size, 32);   // world development counter (drives force tier)
-p_ork_loot = array_create(_planet_array_size, 0);       // looted vehicles the Orks hold
-p_biomass = array_create(_planet_array_size, 0);        // Tyranid biomass reserve
+p_infra_turns = array_create(_planet_array_size, 32); // world development counter (drives force tier)
+p_ork_loot = array_create(_planet_array_size, 0); // looted vehicles the Orks hold
+p_biomass = array_create(_planet_array_size, 0); // Tyranid biomass reserve
 // Highest devouring-warning stage already announced for this world (0 = none, 4 = stripped bare), so
 // each escalating warning fires once instead of every turn. MUST be declared here like the other p_*
 // arrays or deserialize crashes on load.
@@ -64,7 +64,7 @@ p_tyranids = array_create(_planet_array_size, 0);
 p_traitors = array_create(_planet_array_size, 0);
 p_chaos = array_create(_planet_array_size, 0);
 p_demons = array_create(_planet_array_size, 0);
-p_chaos_god = array_create(_planet_array_size, -1);      // which Chaos god a Chaos world flies (-1 = none) §16r
+p_chaos_god = array_create(_planet_array_size, -1); // which Chaos god a Chaos world flies (-1 = none) §16r
 p_sisters = array_create(_planet_array_size, 0);
 p_necrons = array_create(_planet_array_size, 0);
 p_halp = array_create(_planet_array_size, 0);
@@ -117,7 +117,7 @@ get_garrison = function(planet) {
         _gar = system_garrison[planet];
         _gar.star = id;
         _gar.planet = planet;
-    } else  {
+    } else {
         try {
             _gar.update();
         } catch (_garrison_reload_error) {
@@ -139,7 +139,7 @@ get_sabatours = function(planet) {
         _gar = system_sabatours[planet];
         _gar.star = id;
         _gar.planet = planet;
-    } else  {
+    } else {
         try {
             _gar.update();
         } catch (_sabotage_reload_error) {
@@ -158,7 +158,7 @@ get_planet_data = function(planet) {
     if (is_undefined(_gar)) {
         system_datas[planet] = new PlanetData(planet, id);
         _gar = system_datas[planet];
-    } else  {
+    } else {
         try {
             _gar.refresh_data();
         } catch (_planetdata_reload_error) {
@@ -170,11 +170,11 @@ get_planet_data = function(planet) {
 };
 
 /// @returns {Array<Struct.Region>}
-get_regions = function(planet){
+get_regions = function(planet) {
     return regions_ensure(self, planet);
-}
+};
 
-add_feature = function(planet, feature){
+add_feature = function(planet, feature) {
     array_push(p_feature[planet], feature);
 };
 

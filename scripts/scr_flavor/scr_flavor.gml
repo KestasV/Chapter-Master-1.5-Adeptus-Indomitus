@@ -186,7 +186,7 @@ function scr_flavor(id_of_attacking_weapons, target, target_type, number_of_shot
 
     // A plain volley line ("<n> <weapons>", no character title) can be summed with other volleys
     // of the same weapon on the same target into one consolidated kill line (see emit_volley_flavour).
-    var _volley_line = (!(character_shot && unit_name != "")) && (number_of_shots > 1);
+    var _volley_line = !(character_shot && unit_name != "") && (number_of_shots > 1);
 
     var flavoured = false;
 
@@ -491,7 +491,7 @@ function scr_flavor(id_of_attacking_weapons, target, target_type, number_of_shot
                 }
             }
         }
-    } else if ((weapon_name == "Melee")) {
+    } else if (weapon_name == "Melee") {
         flavoured = true;
         var ra = choose(1, 2, 3, 4);
         // This needs to be worked out
@@ -949,7 +949,13 @@ function combat_kill_tally_add(_target, _weapon, _shots, _kills, _attack, _color
         obj_ncombat.ktally_leaders = [];
     }
     if (!variable_struct_exists(obj_ncombat.ktally_weapons, _weapon)) {
-        obj_ncombat.ktally_weapons[$ _weapon] = { shots: 0, kills: 0, count: 0, attack: _attack, color: _color };
+        obj_ncombat.ktally_weapons[$ _weapon] = {
+            shots: 0,
+            kills: 0,
+            count: 0,
+            attack: _attack,
+            color: _color,
+        };
         array_push(obj_ncombat.ktally_order, _weapon);
     }
     var _acc = obj_ncombat.ktally_weapons[$ _weapon];
@@ -957,7 +963,7 @@ function combat_kill_tally_add(_target, _weapon, _shots, _kills, _attack, _color
     _acc.kills += _kills;
     _acc.count += 1;
     if (_leader != "") {
-        array_push(obj_ncombat.ktally_leaders, { text: _leader, color: _color });
+        array_push(obj_ncombat.ktally_leaders, {text: _leader, color: _color});
     }
 }
 

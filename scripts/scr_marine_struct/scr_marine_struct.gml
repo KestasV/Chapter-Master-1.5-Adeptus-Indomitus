@@ -729,7 +729,7 @@ function TTRPG_stats(faction, comp, mar, class = "marine", other_spawn_data = {}
         return _return_string;
     };
 
-    static has_trait = function (_wanted_trait, _any = true) {
+    static has_trait = function(_wanted_trait, _any = true) {
         if (is_array(_wanted_trait)) {
             var _len = array_length(_wanted_trait);
 
@@ -1318,8 +1318,7 @@ function TTRPG_stats(faction, comp, mar, class = "marine", other_spawn_data = {}
     static hands_carrying = function(is_melee = false) {
         var _data_key = is_melee ? "melee_hands" : "ranged_hands";
         var _carrying = 0;
-        var _tooltip = new TooltipBuilder()
-            .set_header("- Carrying -");
+        var _tooltip = new TooltipBuilder().set_header("- Carrying -");
 
         var _weapons = [
             {
@@ -1368,9 +1367,7 @@ function TTRPG_stats(faction, comp, mar, class = "marine", other_spawn_data = {}
             _limit = GUARD_HEAVY_WEAPONS_TEAM_SIZE;
         }
 
-        var _tooltip = new TooltipBuilder()
-            .set_header("- Maximum -")
-            .add_entry("base", "Base", _limit);
+        var _tooltip = new TooltipBuilder().set_header("- Maximum -").add_entry("base", "Base", _limit);
 
         // Strength Check
         if (strength >= 50) {
@@ -1514,13 +1511,7 @@ function TTRPG_stats(faction, comp, mar, class = "marine", other_spawn_data = {}
 
         var _tooltip = new TooltipBuilder();
 
-        _tooltip.add_section("primary_weapon", "- Primary Weapon -")
-            .add_section("primary_mods", "- Primary Modifiers -")
-            .add_section("primary_bonuses", "- Primary Bonuses -")
-            .add_section("secondary_weapon", "- Secondary Weapon -")
-            .add_section("secondary_mult", "- Secondary Multiplier -")
-            .add_section("flat_bonuses", "- Bonuses -")
-            .add_section("final_mult", "- Multipliers -");
+        _tooltip.add_section("primary_weapon", "- Primary Weapon -").add_section("primary_mods", "- Primary Modifiers -").add_section("primary_bonuses", "- Primary Bonuses -").add_section("secondary_weapon", "- Secondary Weapon -").add_section("secondary_mult", "- Secondary Multiplier -").add_section("flat_bonuses", "- Bonuses -").add_section("final_mult", "- Multipliers -");
 
         // Base Stat Multiplier
 
@@ -1785,7 +1776,7 @@ function TTRPG_stats(faction, comp, mar, class = "marine", other_spawn_data = {}
                 spli: _melee_weapon.spli,
                 arp: _melee_weapon.arp,
             },
-            "weapon"
+            "weapon",
         );
 
         var wrath_melee = new EquipmentStruct(
@@ -1797,7 +1788,7 @@ function TTRPG_stats(faction, comp, mar, class = "marine", other_spawn_data = {}
                 spli: _melee_weapon.spli,
                 arp: _melee_weapon.arp,
             },
-            "weapon"
+            "weapon",
         );
 
         wrath.second_profiles = [wrath_melee];
@@ -2015,7 +2006,7 @@ function TTRPG_stats(faction, comp, mar, class = "marine", other_spawn_data = {}
         // region that is empty, held by the player, or held by an allied Imperial faction and not
         // contested. A hostile/contested region refuses the drop - taking it needs an opposed Hold
         // Ground assault. The chosen region is the world's stored focus (what the player selected).
-        var _multi = (planet_region_count(system, planet_number) > 1);
+        var _multi = planet_region_count(system, planet_number) > 1;
         var _land_region = _multi ? region_focus_get(system, planet_number) : 0;
         if (!is_real(_land_region) || (_land_region < 0) || (_land_region >= planet_region_count(system, planet_number))) {
             _land_region = 0; // a stale focus must not book the landing into a region that does not exist
@@ -2473,10 +2464,14 @@ function dread_infantry_weapon(_weapon) {
         return _weapon;
     }
     switch (_weapon) {
-        case "Twin Linked Assault Cannon Mount":  return "Assault Cannon";
-        case "Twin Linked Heavy Bolter Mount":    return "Twin Linked Heavy Bolter";
-        case "Twin Linked Lascannon Mount":       return "Twin Linked Lascannon";
-        case "Twin Linked Heavy Flamer Sponsons": return "Heavy Flamer";
+        case "Twin Linked Assault Cannon Mount":
+            return "Assault Cannon";
+        case "Twin Linked Heavy Bolter Mount":
+            return "Twin Linked Heavy Bolter";
+        case "Twin Linked Lascannon Mount":
+            return "Twin Linked Lascannon";
+        case "Twin Linked Heavy Flamer Sponsons":
+            return "Heavy Flamer";
     }
     return _weapon;
 }

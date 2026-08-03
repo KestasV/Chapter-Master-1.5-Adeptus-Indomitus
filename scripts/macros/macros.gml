@@ -203,7 +203,7 @@
 // is worth ~77,000 Guard, i.e. tier 4: real pressure, but not enough to break a horde on its own.
 #macro SECTOR_NAVY_CAPITAL_GUARD 12000
 #macro SECTOR_NAVY_FRIGATE_GUARD 5000
-#macro SECTOR_NAVY_ESCORT_GUARD  2000
+#macro SECTOR_NAVY_ESCORT_GUARD 2000
 
 // --- Hive Fleet consumption (how fast a Tyranid swarm strips a world to a dead husk) ---
 // APPETITE: fraction of its own mass the swarm strips from the biomass reserve each turn. The swarm
@@ -471,7 +471,6 @@
 // Lower for more, smaller volleys; raise toward one big stack. Keep it from making too many
 // stacks: a block has 71 stack slots shared with every other weapon.
 #macro GUARD_VOLLEY_SIZE 100
-
 
 // Imperial Guard accuracy ("doom"): mirrors the enemy's per-faction doom in scr_shoot (the
 // owner == eFACTION.IMPERIUM branch, e.g. Orks 0.2, Tyranids 0.4). Massed lasgun fire from raw

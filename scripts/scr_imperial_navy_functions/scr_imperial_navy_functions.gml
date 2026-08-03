@@ -420,7 +420,7 @@ function navy_finish_destroying_player_world() {
         function(prev, _curr, idx) {
             return _curr > 0 ? idx : prev;
         },
-        0
+        0,
     );
 
     if (tar == 0) {
@@ -1338,7 +1338,6 @@ function navy_orders_tick() {
     }
 }
 
-
 /// @function navy_open_fleet_orders
 /// @description Open the Sector Governor's audience in fleet-order mode for a specific Imperial
 ///              Navy fleet (the one the player clicked). Mirrors scr_toggle_diplomacy's audience
@@ -1355,7 +1354,7 @@ function navy_open_fleet_orders(_fleet) {
         set_zoom_to_default();
         set_up_diplomacy_buttons();
         menu = eMENU.DIPLOMACY;
-        audience = 1;                 // in an audience (not the faction-select screen)
+        audience = 1; // in an audience (not the faction-select screen)
         diplomacy = eFACTION.IMPERIUM; // talking to the Sector Governor
         hide_banner = 1;
         character_diplomacy = false;
@@ -1363,7 +1362,6 @@ function navy_open_fleet_orders(_fleet) {
         scr_dialogue("fleet_orders");
     }
 }
-
 
 /// @function player_fleet_with_chapter_master
 /// @description The player fleet that currently bears the Chapter Master, or noone. The Chapter
@@ -1427,9 +1425,13 @@ function navy_war_room_follow(_rule) {
         var _best_pf = noone;
         var _best_d = -1;
         with (obj_p_fleet) {
-            if (player_fleet_ship_count(id) <= 0) { continue; }
+            if (player_fleet_ship_count(id) <= 0) {
+                continue;
+            }
             var _nf = navy_nearest_fleet_to(x, y);
-            if (!instance_exists(_nf)) { continue; }
+            if (!instance_exists(_nf)) {
+                continue;
+            }
             var _d = point_distance(x, y, _nf.x, _nf.y);
             if ((_best_pf == noone) || (_d < _best_d)) {
                 _best_pf = id;

@@ -28,7 +28,7 @@ if (space_hulk) {
     // artwork (spr_ship_hulk, 326x425, previously unreferenced) at map scale
     // instead, with a stable per-hulk drift angle derived from position so each
     // wreck hangs at its own tilt without storing any state.
-    var _drift = (x * 7 + y * 13) mod 360;
+    var _drift = (x * 7 + y * 13) % 360;
     draw_sprite_ext(spr_ship_hulk, 0, x, y, 0.16 * scale, 0.16 * scale, _drift, c_white, 1);
 }
 

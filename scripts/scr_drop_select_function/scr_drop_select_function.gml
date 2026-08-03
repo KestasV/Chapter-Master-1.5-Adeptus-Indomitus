@@ -268,7 +268,15 @@ function drop_select_unit_selection() {
         if (planet_region_count(p_target, planet_number) > 1) {
             var _seci = region_focus_get(p_target, planet_number);
             var _secr = region_get(p_target, planet_number, _seci);
-            var _forti_n = ["None", "Sparse", "Light", "Moderate", "Heavy", "Major", "Extreme"];
+            var _forti_n = [
+                "None",
+                "Sparse",
+                "Light",
+                "Moderate",
+                "Heavy",
+                "Major",
+                "Extreme",
+            ];
             var _sector_str = $"Sector {_seci + 1}: {_secr.name} ({region_faction_name(_secr.owner)}, Fort {_forti_n[clamp(_secr.fortification, 0, 6)]}, Def {_secr.defences})";
             // Show the commitment tradeoff while cycling: outlying sectors of a foe
             // holding several regions meet a partial force; the capital (or a foe
@@ -325,9 +333,9 @@ function drop_select_unit_selection() {
                 // lands on a region the assault can be launched at. Falls back to the plain
                 // next index when nothing is assaultable, leaving the launch gate to explain.
                 var _region_count = planet_region_count(p_target, planet_number);
-                var _new_focus = (_seci + 1) mod _region_count;
+                var _new_focus = (_seci + 1) % _region_count;
                 for (var _try = 0; _try < _region_count; _try++) {
-                    var _cand = (_seci + 1 + _try) mod _region_count;
+                    var _cand = (_seci + 1 + _try) % _region_count;
                     if (region_can_assault_index(p_target, planet_number, _cand)) {
                         _new_focus = _cand;
                         break;
@@ -364,7 +372,9 @@ function drop_select_unit_selection() {
         btn_behead.update();
         btn_behead.draw();
         if (btn_behead.clicked()) {
-            if (sh_target != noone) { sh_target.acted += 1; }
+            if (sh_target != noone) {
+                sh_target.acted += 1;
+            }
             var _bh_res = ork_decapitation_strike(p_target, planet_number);
             scr_popup("Decapitation Strike", _bh_res.text, "waaagh");
             menu = 0;
@@ -479,8 +489,7 @@ function drop_select_unit_selection() {
             // is actually in orbit (a purely planetside local-forces attack risks no ship).
             // The toll is charged once per launch on the region the assault is aimed at.
             if (instance_exists(sh_target)) {
-                var _og_region = (planet_region_count(p_target, planet_number) > 1)
-                    ? region_focus_get(p_target, planet_number) : -1;
+                var _og_region = (planet_region_count(p_target, planet_number) > 1) ? region_focus_get(p_target, planet_number) : -1;
                 orbital_gun_ship_toll(p_target, planet_number, _og_region);
             }
 
@@ -795,7 +804,15 @@ function drop_select_draw() {
                 if (planet_region_count(p_target, planet_number) > 1) {
                     var _bseci = region_focus_get(p_target, planet_number);
                     var _bsecr = region_get(p_target, planet_number, _bseci);
-                    var _bforti_n = ["None", "Sparse", "Light", "Moderate", "Heavy", "Major", "Extreme"];
+                    var _bforti_n = [
+                        "None",
+                        "Sparse",
+                        "Light",
+                        "Moderate",
+                        "Heavy",
+                        "Major",
+                        "Extreme",
+                    ];
                     var _bsector_str = $"Sector {_bseci + 1}: {_bsecr.name} ({region_faction_name(_bsecr.owner)}, Fort {_bforti_n[clamp(_bsecr.fortification, 0, 6)]}, Def {_bsecr.defences})";
                     // Drawn directly (centred both ways), below the purge option buttons.
                     draw_set_font(fnt_40k_14);
@@ -814,7 +831,7 @@ function drop_select_draw() {
                     draw_set_halign(fa_left);
                     draw_set_valign(fa_top);
                     if (scr_hit(_bsx1, _bsy1, _bsx2, _bsy2) && mouse_button_clicked()) {
-                        region_focus_set(p_target, planet_number, (_bseci + 1) mod planet_region_count(p_target, planet_number));
+                        region_focus_set(p_target, planet_number, (_bseci + 1) % planet_region_count(p_target, planet_number));
                     }
                 }
 

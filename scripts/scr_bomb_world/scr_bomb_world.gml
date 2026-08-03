@@ -25,10 +25,14 @@
 /// burn hardest; spread-out agri and feudal worlds lose fewer people per bombardment.
 function bombard_planet_type_pop_mult(_type) {
     switch (_type) {
-        case "Hive": return 1.5;
-        case "Desert": return 0.8;
-        case "Agri": return 0.6;
-        case "Feudal": return 0.5;
+        case "Hive":
+            return 1.5;
+        case "Desert":
+            return 0.8;
+        case "Agri":
+            return 0.6;
+        case "Feudal":
+            return 0.5;
     }
     return 1.0; // Temperate / civilised and everything else
 }
@@ -37,7 +41,15 @@ function bombard_planet_type_pop_mult(_type) {
 /// deeply embedded enemy (strength tier 0 none .. 6 Overwhelming) means the bombardment
 /// has to hit more of the world to root it out, so more civilians die alongside it.
 function bombard_presence_pop_mult(_tier) {
-    var _mults = [0.6, 0.7, 0.85, 1.0, 1.2, 1.4, 1.6];
+    var _mults = [
+        0.6,
+        0.7,
+        0.85,
+        1.0,
+        1.2,
+        1.4,
+        1.6,
+    ];
     return _mults[clamp(_tier, 0, 6)];
 }
 
@@ -100,8 +112,7 @@ function scr_bomb_world(bombard_target_faction, bombard_ment_power, target_stren
     // the bombardment is aimed at the safe landing region (which you may clear to land in).
     // Charged once per bombardment on the focused region.
     if (instance_exists(system)) {
-        var _og_region = (planet_region_count(system, planet) > 1)
-            ? region_focus_get(system, planet) : -1;
+        var _og_region = (planet_region_count(system, planet) > 1) ? region_focus_get(system, planet) : -1;
         orbital_gun_ship_toll(system, planet, _og_region);
     }
 
@@ -565,7 +576,13 @@ function bombard_effect_estimate(_planet, _target_faction, _bomb_power, _target_
     if (_target_strength > 0) {
         var _reduced = _bomb_power / 3;
         var _protection = clamp(bombard_protection_estimate(_target_faction), 0, 4);
-        var _protect_scores = [4, 0.9, 0.75, 0.5, 0.34];
+        var _protect_scores = [
+            4,
+            0.9,
+            0.75,
+            0.5,
+            0.34,
+        ];
         var _stages = floor(_reduced * _protect_scores[_protection]);
         _en_pct = (min(_stages, _target_strength) / _target_strength) * 100;
     }
@@ -580,17 +597,28 @@ function bombard_effect_estimate(_planet, _target_faction, _bomb_power, _target_
 /// scr_bomb_world (Ork Stronghold and Daemon-world bonuses are left out of the estimate).
 function bombard_protection_estimate(_faction) {
     switch (_faction) {
-        case 2: return 2;
-        case 2.5: return 1;
-        case 3: return 3;
-        case 5: return 1;
-        case 6: return 4;
-        case 7: return 2;
-        case 8: return 3;
-        case 9: return 0;
-        case 10: return 2;
-        case 11: return 2;
-        case 13: return 4;
+        case 2:
+            return 2;
+        case 2.5:
+            return 1;
+        case 3:
+            return 3;
+        case 5:
+            return 1;
+        case 6:
+            return 4;
+        case 7:
+            return 2;
+        case 8:
+            return 3;
+        case 9:
+            return 0;
+        case 10:
+            return 2;
+        case 11:
+            return 2;
+        case 13:
+            return 4;
     }
     return 1;
 }
@@ -618,12 +646,18 @@ function bombard_effect_bracket(_pct) {
 /// @desc Colour for a bombard severity label so the worst outcomes read at a glance.
 function bombard_effect_bracket_color(_label) {
     switch (_label) {
-        case "None": return c_gray;
-        case "Negligible": return #34bc75;
-        case "Low": return #34bc75;
-        case "Medium": return c_yellow;
-        case "High": return c_orange;
-        case "Massive": return c_red;
+        case "None":
+            return c_gray;
+        case "Negligible":
+            return #34bc75;
+        case "Low":
+            return #34bc75;
+        case "Medium":
+            return c_yellow;
+        case "High":
+            return c_orange;
+        case "Massive":
+            return c_red;
     }
     return c_white;
 }

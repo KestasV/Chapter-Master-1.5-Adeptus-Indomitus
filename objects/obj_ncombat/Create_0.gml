@@ -153,7 +153,7 @@ last_stand = false;
 // focus), so post-battle landing/attrition use the SAME region the assault targeted rather than
 // re-reading the focus at battle end (which can drift or reset). -1 = whole planet / not regional.
 battle_region = -1;
-bastion_bonus = 0;   // §16h: distinct Bastion fortress reinforcement (set at defend-setup; save-safe default 0)
+bastion_bonus = 0; // §16h: distinct Bastion fortress reinforcement (set at defend-setup; save-safe default 0)
 wall_destroyed = 0;
 flank_x = 0;
 

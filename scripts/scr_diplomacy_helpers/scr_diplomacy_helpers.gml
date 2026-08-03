@@ -186,9 +186,7 @@ function draw_character_diplomacy() {
         // otherwise the first character ever met stays the portrait for every later
         // audience. The unit ref is a struct, so the reflective serializer ignores
         // both fields and the cache rebuilds cleanly after loading a save.
-        if ((!variable_instance_exists(obj_controller, "diplo_image"))
-        || (!variable_instance_exists(obj_controller, "diplo_image_unit"))
-        || (obj_controller.diplo_image_unit != _diplo_unit)) {
+        if ((!variable_instance_exists(obj_controller, "diplo_image")) || (!variable_instance_exists(obj_controller, "diplo_image_unit")) || (obj_controller.diplo_image_unit != _diplo_unit)) {
             obj_controller.diplo_image = _diplo_unit.draw_unit_image();
             obj_controller.diplo_image_unit = _diplo_unit;
         }
@@ -214,9 +212,7 @@ function draw_character_diplomacy() {
 
         // Same keyed cache as diplo_image above: a new Chapter Master (succession)
         // must not inherit his predecessor's face.
-        if ((!variable_instance_exists(obj_controller, "master_image"))
-        || (!variable_instance_exists(obj_controller, "master_image_unit"))
-        || (obj_controller.master_image_unit != _master)) {
+        if ((!variable_instance_exists(obj_controller, "master_image")) || (!variable_instance_exists(obj_controller, "master_image_unit")) || (obj_controller.master_image_unit != _master)) {
             obj_controller.master_image = _master.draw_unit_image();
             obj_controller.master_image_unit = _master;
         }

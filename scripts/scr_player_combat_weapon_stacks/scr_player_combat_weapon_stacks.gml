@@ -193,7 +193,7 @@ function scr_player_combat_weapon_stacks() {
     // units with role "Guardsman" and fire through the normal weapon path below, not here.
     if (guard == 1) {
         var _gi = 0;
-        var _pg = men;    // current Guardsmen in this block
+        var _pg = men; // current Guardsmen in this block
 
         // Massed lasguns: one per man, attack 60, armour pierce 1, range 6, 30 rounds.
         _gi += 1;
@@ -613,7 +613,7 @@ function create_vehicle_ram_weapon(veh_type) {
                     spli: 6,
                     arp: 3,
                 },
-                "weapon"
+                "weapon",
             );
         case "Chimera":
             // The Guard levy's APC rams like the Rhino it parallels, not like a
@@ -627,7 +627,7 @@ function create_vehicle_ram_weapon(veh_type) {
                     spli: 6,
                     arp: 3,
                 },
-                "weapon"
+                "weapon",
             );
         case "Leman Russ":
             // The Guard's battle tank rams between the Predator and the Land Raider,
@@ -644,7 +644,7 @@ function create_vehicle_ram_weapon(veh_type) {
                     spli: 8,
                     arp: 3,
                 },
-                "weapon"
+                "weapon",
             );
         case "Land Raider":
             return new EquipmentStruct(
@@ -656,7 +656,7 @@ function create_vehicle_ram_weapon(veh_type) {
                     spli: 10,
                     arp: 4,
                 },
-                "weapon"
+                "weapon",
             );
         default:
         case "Land Speeder":
@@ -669,7 +669,7 @@ function create_vehicle_ram_weapon(veh_type) {
                     spli: 4,
                     arp: 2,
                 },
-                "weapon"
+                "weapon",
             );
     }
 }

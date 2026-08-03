@@ -22,7 +22,9 @@ function new_colony_fleet(doner_star, doner_planet, target, target_planet, missi
     try {
         var _dpd = doner_star.get_planet_data(doner_planet);
         _donor_cult = _dpd.has_feature(eP_FEATURES.HERETIC_ACTIVITY) || _dpd.has_feature(eP_FEATURES.GENE_STEALER_CULT);
-    } catch (_e) { _donor_cult = false; }
+    } catch (_e) {
+        _donor_cult = false;
+    }
 
     var new_cargo = {
         colonists: doner_volume,
@@ -107,15 +109,18 @@ function deploy_colonisers(star) {
         // corruption at the new colony (which grows its own hidden cult once past the corruption floor); a
         // heavily-corrupted-but-uninfested origin passes on a lighter dose. Clean worlds spread nothing.
         if (variable_struct_exists(data, "corruption") && variable_instance_exists(star, "p_heresy")) {
-            var _carry = (variable_struct_exists(data, "cult") && data.cult) ? round(data.corruption * 0.6)
-                       : ((data.corruption >= 25) ? round(data.corruption * 0.3) : 0);
+            var _carry = (variable_struct_exists(data, "cult") && data.cult) ? round(data.corruption * 0.6) : ((data.corruption >= 25) ? round(data.corruption * 0.3) : 0);
             if (_carry > 0) {
                 star.p_heresy[targ_planet] = min(100, star.p_heresy[targ_planet] + _carry);
-                if (player_vision) { alert_string += " Dark whispers move among the new arrivals."; }
+                if (player_vision) {
+                    alert_string += " Dark whispers move among the new arrivals.";
+                }
                 // The god spreads along the trade routes (§16r): the arriving cell carries its home world's
                 // god, so the cult that grows here later swears to the same god (unless already assigned).
                 if (variable_struct_exists(data, "chaos_god") && (data.chaos_god >= 0) && variable_instance_exists(star, "p_chaos_god")) {
-                    if (star.p_chaos_god[targ_planet] < 0) { star.p_chaos_god[targ_planet] = data.chaos_god; }
+                    if (star.p_chaos_god[targ_planet] < 0) {
+                        star.p_chaos_god[targ_planet] = data.chaos_god;
+                    }
                 }
             }
         }

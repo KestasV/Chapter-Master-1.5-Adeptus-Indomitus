@@ -35,6 +35,11 @@ if (mouse_check_button_pressed(mb_left) && keyboard_check(vk_shift) && (move_ord
 // take no firing orders.
 if (mouse_check_button_pressed(mb_right) && (move_order != "") && (move_order != "retreat") && (veh_type[1] != "Defenses") && hit()) {
     fire_target_line = (fire_target_line + 1) % 4;
-    var _fire_names = ["the nearest enemies", "the first enemy line", "the second enemy line", "the third enemy line"];
+    var _fire_names = [
+        "the nearest enemies",
+        "the first enemy line",
+        "the second enemy line",
+        "the third enemy line",
+    ];
     obj_ncombat.combat_log.push($"The {formation_display_name(formation_type)} are now firing on {_fire_names[fire_target_line]}!", eMSG_COLOR.AQUA);
 }

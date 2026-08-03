@@ -79,7 +79,8 @@ function scr_cheatcode(argument0) {
                     // spawnguard <planet> <amount>
                     var _gstar = cheat_target_star(name);
                     if (instance_exists(_gstar)) {
-                        var _gp; var _gn;
+                        var _gp;
+                        var _gn;
                         if (array_length(cheat_arguments) >= 2) {
                             _gp = cheat_target_planet(_gstar, cheat_arguments[0]);
                             _gn = max(1, real(cheat_arguments[1]));
@@ -106,14 +107,19 @@ function scr_cheatcode(argument0) {
                     // spawnbarracks [guard|pdf]  or  spawnbarracks <planet> [guard|pdf]
                     var _bstar = cheat_target_star(name);
                     if (instance_exists(_bstar)) {
-                        var _bp; var _bkind = "guard_barracks";
+                        var _bp;
+                        var _bkind = "guard_barracks";
                         var _ba = array_length(cheat_arguments);
                         if ((_ba >= 1) && ((string_lower(cheat_arguments[0]) == "pdf") || (string_lower(cheat_arguments[0]) == "guard"))) {
                             _bp = cheat_target_planet(_bstar, undefined);
-                            if (string_lower(cheat_arguments[0]) == "pdf") { _bkind = "pdf_barracks"; }
+                            if (string_lower(cheat_arguments[0]) == "pdf") {
+                                _bkind = "pdf_barracks";
+                            }
                         } else {
                             _bp = cheat_target_planet(_bstar, (_ba >= 1) ? cheat_arguments[0] : undefined);
-                            if ((_ba >= 2) && (string_lower(cheat_arguments[1]) == "pdf")) { _bkind = "pdf_barracks"; }
+                            if ((_ba >= 2) && (string_lower(cheat_arguments[1]) == "pdf")) {
+                                _bkind = "pdf_barracks";
+                            }
                         }
                         var _bregs = regions_ensure(_bstar, _bp);
                         if (array_length(_bregs) > 0) {
@@ -211,7 +217,7 @@ function scr_cheatcode(argument0) {
                     if (_xp_amt <= 1) {
                         _xp_amt = GUARD_VETERAN_XP;
                     }
-                    var _grd_all = collect_role_group("all", "", false, { roles: ["Guardsman"] });
+                    var _grd_all = collect_role_group("all", "", false, {roles: ["Guardsman"]});
                     for (var _gx = 0; _gx < array_length(_grd_all); _gx++) {
                         _grd_all[_gx].add_experience(_xp_amt);
                     }
@@ -226,7 +232,7 @@ function scr_cheatcode(argument0) {
                         global.grid_combat_enabled = true;
                     }
                     if (array_length(cheat_arguments) > 0) {
-                        global.grid_combat_enabled = (string_lower(string(cheat_arguments[0])) == "on");
+                        global.grid_combat_enabled = string_lower(string(cheat_arguments[0])) == "on";
                     } else {
                         global.grid_combat_enabled = !global.grid_combat_enabled;
                     }
@@ -266,7 +272,9 @@ function scr_cheatcode(argument0) {
                     // DEBUG: force ASCENSION DAY on the selected planet — reveal/seed a Genestealer Cult,
                     // hand the world to the Tyranids and light the Ascension Beacon (summons the Hive Fleet).
                     var _astar = noone;
-                    if (instance_exists(obj_star_select)) { _astar = obj_star_select.target; }
+                    if (instance_exists(obj_star_select)) {
+                        _astar = obj_star_select.target;
+                    }
                     if (!instance_exists(_astar) && instance_exists(obj_p_fleet)) {
                         _astar = instance_nearest(obj_p_fleet.x, obj_p_fleet.y, obj_star);
                     }
@@ -275,7 +283,9 @@ function scr_cheatcode(argument0) {
                     }
                     if (instance_exists(_astar)) {
                         var _aplanet = obj_controller.selecting_planet;
-                        if (_aplanet < 1) { _aplanet = real(cheat_arguments[0]); }
+                        if (_aplanet < 1) {
+                            _aplanet = real(cheat_arguments[0]);
+                        }
                         _aplanet = clamp(_aplanet, 1, max(1, _astar.planets));
                         force_ascension_day(_astar, _aplanet);
                     } else {
@@ -831,7 +841,7 @@ function system_debug_enemy_invasion() {
                     system_debug_enemy_invasion_spawn();
                 },
             },
-        ]
+        ],
     );
 }
 
@@ -1011,9 +1021,7 @@ function cheat_target_planet(_star, _arg_planet) {
     if (_arg_planet != undefined) {
         return clamp(real(_arg_planet), 1, max(1, _star.planets));
     }
-    if (variable_instance_exists(obj_controller, "last_selected_planet")
-    && variable_instance_exists(obj_controller, "last_selected_star")
-    && (obj_controller.last_selected_star == _star)) {
+    if (variable_instance_exists(obj_controller, "last_selected_planet") && variable_instance_exists(obj_controller, "last_selected_star") && (obj_controller.last_selected_star == _star)) {
         return clamp(obj_controller.last_selected_planet, 1, max(1, _star.planets));
     }
     return 1;

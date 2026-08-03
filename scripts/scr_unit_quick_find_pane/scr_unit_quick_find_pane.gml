@@ -965,7 +965,7 @@ function HelpfulPlaces() constructor {
             {
                 str1: "Forge Worlds",
             },
-        ]
+        ],
     );
 
     main_panel.inside_method = function() {

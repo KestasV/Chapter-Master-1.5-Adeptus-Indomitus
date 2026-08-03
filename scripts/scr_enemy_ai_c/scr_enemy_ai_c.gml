@@ -524,5 +524,5 @@ function tau_fleet_may_grow(_fleet) {
             _expeditionary += 1;
         }
     }
-    return (_expeditionary <= TAU_WAR_FLEETS_MAX);
+    return _expeditionary <= TAU_WAR_FLEETS_MAX;
 }

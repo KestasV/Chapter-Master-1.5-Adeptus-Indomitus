@@ -477,7 +477,6 @@ try {
         }
         flush_psychic_summary(_psy_log);
     }
-}
-catch (_exception) {
+} catch (_exception) {
     ERROR_HANDLER.handle_exception(_exception);
 }

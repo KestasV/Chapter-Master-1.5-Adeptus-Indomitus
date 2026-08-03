@@ -239,7 +239,7 @@ if (owner == eFACTION.ORK) {
         if (p_orks[_oi] > 0) {
             p_race_pop[_oi][eFACTION.ORK] = ork_bloom_seed(p_type[_oi]);
             add_feature(_oi, new NewPlanetFeature(eP_FEATURES.FUNGAL_BLOOM));
-            ork_seed_clans(id, _oi);   // assign the WAAAGH its clan mix (biggest clan leads) — §16e
+            ork_seed_clans(id, _oi); // assign the WAAAGH its clan mix (biggest clan leads) — §16e
         }
     }
 }
@@ -322,7 +322,7 @@ if (owner == eFACTION.TAU) {
         // people ~78-90% Tau / the rest Gue'Vesa — Tau = the p_race_pop[TAU] headcount, and p_population is
         // cut to the Gue'Vesa human minority (billions-units convention kept for p_large worlds).
         var _tau_world_head = p_large[i] ? (p_population[i] * 1000000000) : p_population[i];
-        var _gue_frac = 0.10 + random(0.12);   // Gue'Vesa humans ~10-22% of a Tau world; the Tau are the rest
+        var _gue_frac = 0.10 + random(0.12); // Gue'Vesa humans ~10-22% of a Tau world; the Tau are the rest
         // Seed the T'au caste headcount, then clamp the FIELDABLE force to the world cap so a hive
         // world does not start with billions of Fire Warriors (see tau_force_cap_for_world). The
         // human Gue'Vesa pool (p_population) is untouched: the world can still hold billions of PEOPLE.

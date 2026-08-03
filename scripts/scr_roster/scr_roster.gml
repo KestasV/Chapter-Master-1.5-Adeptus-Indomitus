@@ -1019,7 +1019,13 @@ function add_vehicle_to_battle(company, veh_index, is_local) {
 /// excluded from the Headquarters detail view.
 /// @returns {array}
 function auxilia_roles() {
-    return ["Guardsman", "Guard Squad", "Guard Sergeant", "Veteran Guard", "Heavy Weapons Team"];
+    return [
+        "Guardsman",
+        "Guard Squad",
+        "Guard Sergeant",
+        "Veteran Guard",
+        "Heavy Weapons Team",
+    ];
 }
 
 /// @description Promote one basic Guardsman to Veteran Guard: role swap plus the veteran
@@ -1030,11 +1036,7 @@ function auxilia_roles() {
 /// @param {Struct.TTRPG_stats} _unit  the Guardsman to promote
 function promote_guardsman_to_veteran(_unit) {
     _unit.update_role("Veteran Guard");
-    _unit.stat_boosts({
-        ballistic_skill: 8,
-        constitution: 6,
-        dexterity: 4
-    });
+    _unit.stat_boosts({ballistic_skill: 8, constitution: 6, dexterity: 4});
 }
 
 /// @description Promote every basic Guardsman to Veteran Guard, applying the veteran stat
@@ -1049,7 +1051,7 @@ function promote_guardsman_to_veteran(_unit) {
 /// @param {real} [_company]  optional company index to limit promotion to
 /// @returns {real} number of troopers promoted
 function promote_auxilia_to_veteran(_company = undefined) {
-    var _troops = collect_role_group("all", "", false, { roles: ["Guardsman"] });
+    var _troops = collect_role_group("all", "", false, {roles: ["Guardsman"]});
     var _count = 0;
     for (var _i = 0; _i < array_length(_troops); _i++) {
         var _unit = _troops[_i];

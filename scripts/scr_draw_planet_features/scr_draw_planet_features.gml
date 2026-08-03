@@ -38,8 +38,7 @@ function FeatureSelected(_feature, _system, _planet) constructor {
     mission_units_on_site = -1;
     mission_units_needed = 0;
     mission_garrison_ok = undefined;
-    if ((feature.f_type == eP_FEATURES.MISSION)
-    && variable_struct_exists(feature, "stage") && (feature.stage == "active")) {
+    if ((feature.f_type == eP_FEATURES.MISSION) && variable_struct_exists(feature, "stage") && (feature.stage == "active")) {
         switch (feature.problem) {
             case "hunt_beast":
                 mission_units_needed = 3;
@@ -371,8 +370,7 @@ function FeatureSelected(_feature, _system, _planet) constructor {
                         var _t_star = planet_data.system;
                         var _t_planet = planet_data.planet;
                         var _t_slot = feature.array_position;
-                        if ((_t_planet < array_length(_t_star.p_timer))
-                        && (_t_slot >= 0) && (_t_slot < array_length(_t_star.p_timer[_t_planet]))) {
+                        if ((_t_planet < array_length(_t_star.p_timer)) && (_t_slot >= 0) && (_t_slot < array_length(_t_star.p_timer[_t_planet]))) {
                             var _months = _t_star.p_timer[_t_planet][_t_slot];
                             if (_months > 0) {
                                 _status += $"\n{_months} months remain";

@@ -1100,17 +1100,19 @@ function scr_dialogue(diplo_keyphrase, data = {}) {
             }
             if ((diplo_keyphrase == "fleet_support_largest") || (diplo_keyphrase == "fleet_support_closest") || (diplo_keyphrase == "fleet_support_master")) {
                 var _fs_rule = "largest";
-                if (diplo_keyphrase == "fleet_support_closest") { _fs_rule = "closest"; }
-                if (diplo_keyphrase == "fleet_support_master") { _fs_rule = "chapter_master"; }
+                if (diplo_keyphrase == "fleet_support_closest") {
+                    _fs_rule = "closest";
+                }
+                if (diplo_keyphrase == "fleet_support_master") {
+                    _fs_rule = "chapter_master";
+                }
                 var _fs_result = navy_war_room_follow(_fs_rule);
                 switch (_fs_result) {
                     case "ok":
                         diplo_text = "It shall be done. My ships will shadow your fleet and lend their guns where you make war, until the battle is won or I have need of them elsewhere.";
                         break;
                     case "no_player_fleet":
-                        diplo_text = (_fs_rule == "chapter_master")
-                            ? "Your Chapter Master commands no fleet in the void that I can see, Chapter Master."
-                            : "I see no fleet of yours at void for my ships to join.";
+                        diplo_text = (_fs_rule == "chapter_master") ? "Your Chapter Master commands no fleet in the void that I can see, Chapter Master." : "I see no fleet of yours at void for my ships to join.";
                         break;
                     case "no_navy_fleet":
                         diplo_text = "I have no fleet at liberty to send just now. They are all committed. Return when the situation has changed.";

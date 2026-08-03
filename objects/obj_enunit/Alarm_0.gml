@@ -134,13 +134,13 @@ if (!engaged) {
                             _ap_same_rank = id;
                             break;
                         }
-                        if ((_ap_same_rank != noone) && target_block_is_valid(_ap_same_rank, obj_pnunit)
-                            && (range[i] >= get_block_distance(_ap_same_rank))) {
+                        if ((_ap_same_rank != noone) && target_block_is_valid(_ap_same_rank, obj_pnunit) && (range[i] >= get_block_distance(_ap_same_rank))) {
                             obj_ncombat.combat_debugger.add(eCOMBAT_CATEGORY.TARGETING, $"AP -> vehicle beside the front block in the same rank {resolve_block_label(_ap_same_rank)}, firing");
                             scr_shoot(i, _ap_same_rank, target_unit_index, "arp", "ranged");
                             continue;
                         }
-                        if (instance_number(obj_pnunit) > 1) { // Upstream (4bd385330): Orks look behind the front line too
+                        if (instance_number(obj_pnunit) > 1) {
+                            // Upstream (4bd385330): Orks look behind the front line too
                             var _column_size_value = enemy.column_size;
                             var x2 = enemy.x;
                             repeat (instance_number(obj_pnunit) - 1) {
@@ -247,8 +247,7 @@ if (!engaged) {
                         _same_rank = id;
                         break;
                     }
-                    if ((_same_rank != noone) && target_block_is_valid(_same_rank, obj_pnunit)
-                        && (range[i] >= get_block_distance(_same_rank))) {
+                    if ((_same_rank != noone) && target_block_is_valid(_same_rank, obj_pnunit) && (range[i] >= get_block_distance(_same_rank))) {
                         obj_ncombat.combat_debugger.add(eCOMBAT_CATEGORY.TARGETING, $"non-AP -> infantry beside the armour in the same rank {resolve_block_label(_same_rank)}, firing");
                         scr_shoot(i, _same_rank, target_unit_index, "att", "ranged");
                         continue;
@@ -384,7 +383,8 @@ if (!engaged) {
                             obj_ncombat.combat_debugger.add(eCOMBAT_CATEGORY.TARGETING, $"non-AP fallback -> armour in column {resolve_block_label(enemy)}, firing");
                             scr_shoot(i, enemy, target_unit_index, "att", "ranged");
                             continue;
-                        } else if (instance_number(obj_pnunit) > 1) { // Upstream (4bd385330): Orks retarget like everyone else
+                        } else if (instance_number(obj_pnunit) > 1) {
+                            // Upstream (4bd385330): Orks retarget like everyone else
                             // Enumerate the blocks instead of probing positions: formations
                             // share columns, so the old x2 walk could resolve the same block
                             // repeatedly and miss the armour standing beside it.

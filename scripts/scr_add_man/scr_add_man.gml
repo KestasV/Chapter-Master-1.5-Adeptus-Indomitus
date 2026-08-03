@@ -14,7 +14,7 @@ function scr_add_man(man_role, target_company, spawn_exp, spawn_name, corruption
         "Guardsman",
         "Guard Squad",
         "Guard Sergeant",
-        "Heavy Weapons Team"
+        "Heavy Weapons Team",
     ];
     var _gear = {};
     var _company_slot = 0;

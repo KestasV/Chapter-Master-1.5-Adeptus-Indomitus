@@ -28,9 +28,9 @@ enum eP_FEATURES {
     MISSION,
     ORKSTRONGHOLD,
     // Sector Governor overhaul — appended at END so existing feature indices stay save-stable (never reorder)
-    FUNGAL_BLOOM,       // Ork population engine (§16b)
-    ASCENSION_BEACON,   // GSC endgame: summons the Hive Fleet (§16b)
-    HERETIC_ACTIVITY,   // hidden Chaos cult tag (§16k)
+    FUNGAL_BLOOM, // Ork population engine (§16b)
+    ASCENSION_BEACON, // GSC endgame: summons the Hive Fleet (§16b)
+    HERETIC_ACTIVITY, // hidden Chaos cult tag (§16k)
 }
 
 enum eBASE_TYPES {
@@ -168,8 +168,8 @@ function NewPlanetFeature(feature_type, other_data = {}) constructor {
             // fleet is summoned and travels in; the swarm only makes planetfall once it ARRIVES (eta -> 0).
             planet_display = "Ascension Beacon";
             player_hidden = 0;
-            eta = 15;  // SAFETY fallback only — planetfall normally fires when the fleet actually reaches
-                       // the system; this just guarantees the ascension can't soft-lock if the fleet fails.
+            eta = 15; // SAFETY fallback only — planetfall normally fires when the fleet actually reaches
+            // the system; this just guarantees the ascension can't soft-lock if the fleet fails.
             break;
         case eP_FEATURES.MONASTERY:
             planet_display = "Fortress Monastery";
@@ -181,7 +181,7 @@ function NewPlanetFeature(feature_type, other_data = {}) constructor {
             // A Chaos cult festering below the surface (§16k). Grows in SECRET — its true strength is never
             // shown as a force count; the world only carries this WARNING tag until it revolts or is purged.
             planet_display = "Heretic Activity";
-            player_hidden = 0;   // the WARNING tag is visible; the force numbers behind it are not
+            player_hidden = 0; // the WARNING tag is visible; the force numbers behind it are not
             revolted = false;
             cult_age = 0;
             break;

@@ -352,8 +352,20 @@ function scr_shoot(weapon_index_position, target_object, target_type, damage_dat
 
                     // Armour multiplier indexed by AP rating (1..4); any AP outside that range
                     // leaves armour untouched. Infantry and vehicles scale differently.
-                    var _inf_ap = [1, 3, 2, 1.5, 0];
-                    var _veh_ap = [1, 6, 4, 2, 0];
+                    var _inf_ap = [
+                        1,
+                        3,
+                        2,
+                        1.5,
+                        0,
+                    ];
+                    var _veh_ap = [
+                        1,
+                        6,
+                        4,
+                        2,
+                        0,
+                    ];
                     var _ap_valid = (armour_pierce >= 1) && (armour_pierce <= 4);
 
                     // Never open fire on a dead rank/formation. Stale men/veh/medi (only refreshed on
@@ -363,11 +375,7 @@ function scr_shoot(weapon_index_position, target_object, target_type, damage_dat
                         exit;
                     }
                     // Shape guard (auto): skip when the target lacks dudes_num (wrong block type).
-                    if (!variable_instance_exists(target_object, "dudes_num")
-            || is_undefined(target_type)
-            || (target_type < 0)
-            || (target_type >= array_length(target_object.dudes_num))
-            || is_undefined(target_object.dudes_num[target_type])) {
+                    if (!variable_instance_exists(target_object, "dudes_num") || is_undefined(target_type) || (target_type < 0) || (target_type >= array_length(target_object.dudes_num)) || is_undefined(target_object.dudes_num[target_type])) {
                         return;
                     }
                     if (target_object.dudes_num[target_type] <= 0) {
@@ -436,7 +444,7 @@ function scr_shoot(weapon_index_position, target_object, target_type, damage_dat
                             _primary_flavour = scr_flavor(weapon_index_position, spill_block, spill_rank, shots_fired, casualties, final_hit <= 0, true, _graze_sev);
                             _first_target = false;
                         } else if (casualties > 0) {
-                            array_push(_spill_kills, { name: spill_block.dudes[spill_rank], count: casualties });
+                            array_push(_spill_kills, {name: spill_block.dudes[spill_rank], count: casualties});
                         }
 
                         if ((rank_num == 1) && (casualties == 0) && (total_damage > 0)) {
@@ -583,8 +591,20 @@ function scr_shoot_spread(weapon_index_position) {
         }
 
         // Armour multiplier indexed by AP rating (1..4), matching scr_shoot's normal path.
-        var _inf_ap = [1, 3, 2, 1.5, 0];
-        var _veh_ap = [1, 6, 4, 2, 0];
+        var _inf_ap = [
+            1,
+            3,
+            2,
+            1.5,
+            0,
+        ];
+        var _veh_ap = [
+            1,
+            6,
+            4,
+            2,
+            0,
+        ];
         var _ap_valid = (_ap >= 1) && (_ap <= 4);
 
         // Total living models across every formation on the field.
@@ -630,7 +650,7 @@ function scr_shoot_spread(weapon_index_position) {
                 if (_kills > 0) {
                     _f.dudes_num[r] -= _kills;
                     obj_ncombat.enemy_forces -= _kills;
-                    array_push(_hits, { name: _f.dudes[r], kills: _kills, bounced: (_final_hit <= 0), block: _f, rank: r });
+                    array_push(_hits, {name: _f.dudes[r], kills: _kills, bounced: (_final_hit <= 0), block: _f, rank: r});
                 }
             }
         }
@@ -649,7 +669,7 @@ function scr_shoot_spread(weapon_index_position) {
                 if (i == _best) {
                     continue;
                 }
-                array_push(_spill, { name: _hits[i].name, count: _hits[i].kills });
+                array_push(_spill, {name: _hits[i].name, count: _hits[i].kills});
             }
             var _p = _hits[_best];
             if (instance_exists(_p.block)) {

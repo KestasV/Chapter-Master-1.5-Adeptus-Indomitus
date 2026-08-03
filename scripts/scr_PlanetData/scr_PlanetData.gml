@@ -191,8 +191,12 @@ function PlanetData(_planet, _system) constructor {
     // handles the legacy loyalist p_population and deliberately SKIPS Tau/Craftworld worlds — so the
     // Gue'Vesa human pop on Tau worlds is grown here instead). See POPULATIONS_FORCE_PLAN §14 / growth.
     static end_turn_race_population_growth = function() {
-        if (planet_type == "Dead") { return; }
-        if (!variable_instance_exists(system, "p_race_pop")) { return; } // old save without the layer
+        if (planet_type == "Dead") {
+            return;
+        }
+        if (!variable_instance_exists(system, "p_race_pop")) {
+            return;
+        } // old save without the layer
 
         // Carrying capacity as a REAL headcount. Note p_race_pop is stored in raw headcount, unlike the
         // legacy p_population which is in "billions" units on large worlds — so grow it multiplicatively.
@@ -274,10 +278,12 @@ function PlanetData(_planet, _system) constructor {
         var _necron_active = (current_owner == eFACTION.NECRONS) || ((array_length(features) > 0) && (awake_tomb_world(features) == 1));
         if (_necron_active) {
             var _nec = system.p_race_pop[planet][eFACTION.NECRONS];
-            if (_nec <= 0) { _nec = necron_awaken_seed(planet_type); }   // an active tomb always has some
+            if (_nec <= 0) {
+                _nec = necron_awaken_seed(planet_type);
+            } // an active tomb always has some
             var _nec_cap_head = large_population ? (max_population * 1000000000) : max_population;
             var _nec_cap = max(round(_nec_cap_head * 0.001), necron_awaken_seed(planet_type) * 15);
-            system.p_race_pop[planet][eFACTION.NECRONS] = min(_nec_cap, round(_nec * 1.04));   // +4 %/turn — slow
+            system.p_race_pop[planet][eFACTION.NECRONS] = min(_nec_cap, round(_nec * 1.04)); // +4 %/turn — slow
             system.p_necrons[planet] = count_to_level(eFACTION.NECRONS, system.p_race_pop[planet][eFACTION.NECRONS]);
         }
 
@@ -307,13 +313,15 @@ function PlanetData(_planet, _system) constructor {
             var _her = system.p_race_pop[planet][eFACTION.HERETICS];
             // A Chaos-held world with no host yet gets its garrison SEEDED straight to the ceiling (no slow
             // ramp from 0), so it fields the heretics holding it immediately instead of reading 0.
-            if (_her_chaos_held && _her <= 0) { _her = _her_cap; }
+            if (_her_chaos_held && _her <= 0) {
+                _her = _her_cap;
+            }
             // The host converges on the corruption-set ceiling — closing ~10% of the gap each turn, so it
             // tracks corruption as it rises, regrows after a battle suppresses it, and recedes if cleansed.
             system.p_race_pop[planet][eFACTION.HERETICS] = round(_her + (_her_cap - _her) * 0.1);
             system.p_traitors[planet] = count_to_level(eFACTION.HERETICS, system.p_race_pop[planet][eFACTION.HERETICS]);
         } else if (system.p_race_pop[planet][eFACTION.HERETICS] > 0) {
-            system.p_race_pop[planet][eFACTION.HERETICS] = 0;   // not corrupt enough -> no heretic host
+            system.p_race_pop[planet][eFACTION.HERETICS] = 0; // not corrupt enough -> no heretic host
         }
 
         // Tyranids — the Hive Fleet answers the beacon (§16b), then works off the BIOMASS SYSTEM: the swarm
@@ -330,12 +338,11 @@ function PlanetData(_planet, _system) constructor {
             var _fleet_here = variable_instance_exists(system, "present_fleet") && (system.present_fleet[eFACTION.TYRANIDS] > 0);
             var _eta = variable_struct_exists(_beacon, "eta") ? _beacon.eta : 0;
             if (!_fleet_here && _eta > 0) {
-                _beacon.eta = _eta - 1;   // Hive Fleet still crossing the sector
+                _beacon.eta = _eta - 1; // Hive Fleet still crossing the sector
             } else {
                 _nid_active = true;
             }
-        } else if (current_owner == eFACTION.TYRANIDS && !has_feature(eP_FEATURES.GENE_STEALER_CULT)
-                && (planet_type != "Space Hulk") && (planet_type != "Dead") && (planet_type != "")) {
+        } else if (current_owner == eFACTION.TYRANIDS && !has_feature(eP_FEATURES.GENE_STEALER_CULT) && (planet_type != "Space Hulk") && (planet_type != "Dead") && (planet_type != "")) {
             // ANY Tyranid-held world is being devoured, however the Hive Fleet took it. Ascension is only
             // one route in: a fleet that simply conquers a world strips it exactly the same way. (A still-
             // infiltrating Genestealer Cult does NOT devour yet — that waits for Ascension above, so its
@@ -397,8 +404,11 @@ function PlanetData(_planet, _system) constructor {
                 // The populace is PART of that biomass — people vanish in step with the reserve draining.
                 if (population > 0) {
                     var _keep = clamp(system.p_biomass[planet] / _bio, 0, 1);
-                    if (large_population) { edit_population(-(population * (1 - _keep))); }
-                    else { set_population(max(0, round(population * _keep))); }
+                    if (large_population) {
+                        edit_population(-(population * (1 - _keep)));
+                    } else {
+                        set_population(max(0, round(population * _keep)));
+                    }
                 }
                 // DEVOURING WARNINGS. Consumption compounds, so a world reads as healthy right up to the
                 // point it collapses. Measure how long the reserve lasts at the CURRENT feeding rate and
@@ -418,7 +428,9 @@ function PlanetData(_planet, _system) constructor {
                         _warn_stage = 1;
                     }
                     var _warn_seen = system.p_biomass_warn[planet];
-                    if (!is_real(_warn_seen)) { _warn_seen = 0; }
+                    if (!is_real(_warn_seen)) {
+                        _warn_seen = 0;
+                    }
                     if (_warn_stage > _warn_seen) {
                         system.p_biomass_warn[planet] = _warn_stage;
                         switch (_warn_stage) {
@@ -450,12 +462,12 @@ function PlanetData(_planet, _system) constructor {
                     set_population(0);
                     system.p_pdf[planet] = 0;
                     system.p_guardsmen[planet] = 0;
-                    system.p_race_pop[planet][eFACTION.TYRANIDS] = 0;   // swarm re-embarks; level sync below clears it
+                    system.p_race_pop[planet][eFACTION.TYRANIDS] = 0; // swarm re-embarks; level sync below clears it
                     if (_hive_fleet != noone) {
                         _hive_fleet.capital_number += 1;
                         _hive_fleet.escort_number += 3;
                         if ((_was_type == "Death") || (_was_type == "Hive")) {
-                            _hive_fleet.capital_number += choose(0, 1, 1);   // a rich world feeds it better
+                            _hive_fleet.capital_number += choose(0, 1, 1); // a rich world feeds it better
                         }
                         _hive_fleet.image_index = floor(_hive_fleet.capital_number + (_hive_fleet.frigate_number / 2) + (_hive_fleet.escort_number / 4));
                     }
@@ -465,7 +477,9 @@ function PlanetData(_planet, _system) constructor {
             // read as level 0 and hand the world straight back to its former owner while it is being eaten.
             // Any surviving swarm holds the world at level 1 or better.
             var _nid_lvl = count_to_level(eFACTION.TYRANIDS, system.p_race_pop[planet][eFACTION.TYRANIDS]);
-            if ((system.p_race_pop[planet][eFACTION.TYRANIDS] > 0) && (_nid_lvl < 1)) { _nid_lvl = 1; }
+            if ((system.p_race_pop[planet][eFACTION.TYRANIDS] > 0) && (_nid_lvl < 1)) {
+                _nid_lvl = 1;
+            }
             system.p_tyranids[planet] = _nid_lvl;
         }
     };
@@ -1743,10 +1757,20 @@ function PlanetData(_planet, _system) constructor {
             // blurb always tracks the number. Anchors sized to the T'au force cap (~2M ceiling).
             if ((faction_efaction[t] == eFACTION.TAU) && (level >= 1)) {
                 var _tau_head = planet_faction_force_total(system, current_planet, eFACTION.TAU);
-                var _tau_anchors = [1, 40000, 150000, 400000, 800000, 1500000];  // 6 tiers -> blurbs[0..5]
+                var _tau_anchors = [
+                    1,
+                    40000,
+                    150000,
+                    400000,
+                    800000,
+                    1500000,
+                ]; // 6 tiers -> blurbs[0..5]
                 var _tau_lv = 1;
                 for (var _ta = array_length(_tau_anchors) - 1; _ta >= 0; _ta--) {
-                    if (_tau_head >= _tau_anchors[_ta]) { _tau_lv = _ta + 1; break; }
+                    if (_tau_head >= _tau_anchors[_ta]) {
+                        _tau_lv = _ta + 1;
+                        break;
+                    }
                 }
                 blurb = blurbs[clamp(_tau_lv, 1, 6) - 1];
             }
@@ -1757,9 +1781,13 @@ function PlanetData(_planet, _system) constructor {
             var _owner_side = br_side_of_faction(current_owner);
             var _hide_row = ((_owner_side == "IMP") || (_owner_side == "CHAOS")) && (br_side_of_faction(faction_efaction[t]) == _owner_side);
             // A SECRET heretic cult shows NO force line: only the Heretic Activity tag.
-            if (!_hide_row && (faction_efaction[t] == eFACTION.HERETICS) && heretic_is_hidden(system, current_planet)) { _hide_row = true; }
+            if (!_hide_row && (faction_efaction[t] == eFACTION.HERETICS) && heretic_is_hidden(system, current_planet)) {
+                _hide_row = true;
+            }
             // Likewise a still-hidden Genestealer Cult: the tag shows, not its numbers.
-            if (!_hide_row && (faction_efaction[t] == eFACTION.TYRANIDS) && genestealer_is_hidden(system, current_planet)) { _hide_row = true; }
+            if (!_hide_row && (faction_efaction[t] == eFACTION.TYRANIDS) && genestealer_is_hidden(system, current_planet)) {
+                _hide_row = true;
+            }
 
             if (faction != "" && level > 0 && !_hide_row) {
                 var _p_total = planet_faction_force_total(system, current_planet, faction_efaction[t]);
@@ -1774,8 +1802,7 @@ function PlanetData(_planet, _system) constructor {
                 // active, this world's line can be pinned so the sector Guard concentrate
                 // their background attrition here. A leading > marks the current target.
                 var _dir_faction = faction_efaction[t];
-                var _can_direct = (sector_directive_for_faction(_dir_faction) != "")
-                    && (sector_directive_get() == sector_directive_for_faction(_dir_faction));
+                var _can_direct = (sector_directive_for_faction(_dir_faction) != "") && (sector_directive_get() == sector_directive_for_faction(_dir_faction));
                 var _is_dir_target = _can_direct && sector_directive_is_target(system, current_planet, _dir_faction);
                 if (_is_dir_target) {
                     _p_lbl = "> " + _p_lbl;
@@ -2046,7 +2073,7 @@ function PlanetData(_planet, _system) constructor {
             if (mouse_check_button_pressed(mb_right)) {
                 var _rc = planet_region_count(system, planet);
                 var _cur = region_focus_get(system, planet);
-                region_focus_set(system, planet, (_cur + 1) mod _rc);
+                region_focus_set(system, planet, (_cur + 1) % _rc);
                 return;
             }
             // Hint the control while hovering a multi-region world in the unload flow.
@@ -2137,7 +2164,32 @@ function PlanetData(_planet, _system) constructor {
                 draw_text(xx + 45, _lp_y, $"{_human_label}: {scr_display_number(_human_pop)}");
                 _lp_y += 18;
             }
-            var _lp_races = [[eFACTION.TAU, "Tau"], [eFACTION.ELDAR, "Eldar"], [eFACTION.ORK, "Ork"], [eFACTION.TYRANIDS, "Tyranid"], [eFACTION.NECRONS, "Necron"], [eFACTION.HERETICS, "Cultist"]];
+            var _lp_races = [
+                [
+                    eFACTION.TAU,
+                    "Tau",
+                ],
+                [
+                    eFACTION.ELDAR,
+                    "Eldar",
+                ],
+                [
+                    eFACTION.ORK,
+                    "Ork",
+                ],
+                [
+                    eFACTION.TYRANIDS,
+                    "Tyranid",
+                ],
+                [
+                    eFACTION.NECRONS,
+                    "Necron",
+                ],
+                [
+                    eFACTION.HERETICS,
+                    "Cultist",
+                ],
+            ];
             for (var _lr = 0; _lr < array_length(_lp_races); _lr++) {
                 var _rpop = planet_race_pop(system, planet, _lp_races[_lr][0]);
                 if (_rpop > 0) {
@@ -2161,8 +2213,7 @@ function PlanetData(_planet, _system) constructor {
                 // button draws 200 of them out per click for 50 req. Player worlds only.
                 // The draw() gate (barracks present AND >=200 in the pool) mirrors the
                 // bind_method check, so a click can never spend the 50 with no pool to draw.
-                var _has_guard_barracks = (current_owner == eFACTION.PLAYER)
-                    && (region_planet_building_count(system, planet, "guard_barracks") > 0);
+                var _has_guard_barracks = (current_owner == eFACTION.PLAYER) && (region_planet_building_count(system, planet, "guard_barracks") > 0);
                 if (_has_guard_barracks) {
                     var _guard_button = obj_star_select.guard_recruit_button;
                     _guard_button.update({x1: xx + 35, y1: _half_way + spacing_y, allow_click: true});
@@ -2425,11 +2476,12 @@ function PlanetData(_planet, _system) constructor {
             // at its own rolled age (100-200), but the whole SECTOR shares a beacon
             // cooldown, so at most ~1-2 Hive Fleets are summoned per ~200 turns even if
             // a dozen cults are ripe. Ripe cults simply wait their window.
-            if (!variable_global_exists("last_ascension_turn")) { global.last_ascension_turn = -9999; }
+            if (!variable_global_exists("last_ascension_turn")) {
+                global.last_ascension_turn = -9999;
+            }
             var _asc_age = variable_struct_exists(cult, "ascension_age") ? cult.ascension_age : 150;
             var _beacon_cooldown = 140;
-            if ((cult.cult_age >= _asc_age) && !has_feature(eP_FEATURES.ASCENSION_BEACON)
-                && ((obj_controller.turn - global.last_ascension_turn) >= _beacon_cooldown)) {
+            if ((cult.cult_age >= _asc_age) && !has_feature(eP_FEATURES.ASCENSION_BEACON) && ((obj_controller.turn - global.last_ascension_turn) >= _beacon_cooldown)) {
                 global.last_ascension_turn = obj_controller.turn;
                 cult.hiding = false;
                 set_new_owner(eFACTION.TYRANIDS);

@@ -135,10 +135,7 @@ function check_dead_marines(unit_struct, unit_index) {
 /// role grouping in scr_marine_struct. Used to pick the cover-save rate (Guardsmen use
 /// cover well; bulky Astartes do not).
 function unit_role_is_guard(_role) {
-    return (_role == "Guardsman")
-        || (_role == "Guard Sergeant")
-        || (_role == "Veteran Guard")
-        || (_role == "Heavy Weapons Team");
+    return (_role == "Guardsman") || (_role == "Guard Sergeant") || (_role == "Veteran Guard") || (_role == "Heavy Weapons Team");
 }
 
 /// @desc Penetration (critical-hit) chance for a capable anti-tank shot, keyed to the
@@ -151,14 +148,22 @@ function unit_role_is_guard(_role) {
 /// 120) and are the balance knob.
 function vehicle_penetration_chance(_veh_type) {
     switch (_veh_type) {
-        case "Land Raider":  return 0.05; // value 500, tankiest hull
-        case "Leman Russ":   return 0.10; // Guard heavy battle tank
-        case "Predator":     return 0.15; // value 240
-        case "Whirlwind":    return 0.22; // value 180, armoured artillery
-        case "Basilisk":     return 0.28; // Guard artillery, thin armour
-        case "Chimera":      return 0.40; // Guard APC
-        case "Rhino":        return 0.45; // value 120, light APC
-        case "Land Speeder": return 0.55; // value 120, fast and lightly armoured
+        case "Land Raider":
+            return 0.05; // value 500, tankiest hull
+        case "Leman Russ":
+            return 0.10; // Guard heavy battle tank
+        case "Predator":
+            return 0.15; // value 240
+        case "Whirlwind":
+            return 0.22; // value 180, armoured artillery
+        case "Basilisk":
+            return 0.28; // Guard artillery, thin armour
+        case "Chimera":
+            return 0.40; // Guard APC
+        case "Rhino":
+            return 0.45; // value 120, light APC
+        case "Land Speeder":
+            return 0.55; // value 120, fast and lightly armoured
     }
     return 0.35; // any unlisted vehicle
 }
@@ -497,7 +502,10 @@ function damage_infantry(_damage_data, _shots, _damage, _weapon_index, _splash, 
             var _arole = marine.role();
             var _aidx = -1;
             for (var _ai = 0; _ai < array_length(_killed_roles); _ai++) {
-                if (_killed_roles[_ai] == _arole) { _aidx = _ai; break; }
+                if (_killed_roles[_ai] == _arole) {
+                    _aidx = _ai;
+                    break;
+                }
             }
             if (_aidx == -1) {
                 array_push(_killed_roles, _arole);
@@ -535,7 +543,10 @@ function damage_infantry(_damage_data, _shots, _damage, _weapon_index, _splash, 
                         var _brole = _next.role();
                         var _bidx = -1;
                         for (var _bi = 0; _bi < array_length(_killed_roles); _bi++) {
-                            if (_killed_roles[_bi] == _brole) { _bidx = _bi; break; }
+                            if (_killed_roles[_bi] == _brole) {
+                                _bidx = _bi;
+                                break;
+                            }
                         }
                         if (_bidx == -1) {
                             array_push(_killed_roles, _brole);

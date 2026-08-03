@@ -87,7 +87,7 @@ function UIEventComponent(owner, name) : UIComponent(owner, name) constructor {
             is_canceled = false;
         },
         [],
-        -1
+        -1,
     );
     time_source_start(event_time_source);
 

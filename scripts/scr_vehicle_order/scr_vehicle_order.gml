@@ -78,9 +78,7 @@ function scr_vehicle_order(company_number) {
             // Carry the vehicle's last-ship record through the compaction. It was dropped
             // here, so after any battle with vehicle losses every surviving vehicle's
             // Reembark record pointed at the wrong slot (or a cleared one).
-            temp_last_ship[company_number][vehicle_count] = ((company_number < array_length(last_ship)) && (i < array_length(last_ship[company_number])))
-                ? last_ship[company_number][i]
-                : {uid: "", name: ""};
+            temp_last_ship[company_number][vehicle_count] = ((company_number < array_length(last_ship)) && (i < array_length(last_ship[company_number]))) ? last_ship[company_number][i] : {uid: "", name: ""};
             vehicle_count++;
         }
         reset_vehicle_variable_arrays(company_number, i);

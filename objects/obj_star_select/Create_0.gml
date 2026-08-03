@@ -101,9 +101,7 @@ guard_recruit_button.bind_method = function() {
     var _p = obj_controller.selecting_planet;
     // Draw from the world's Guardsmen POOL (p_guardsmen), the same pool the Guard
     // Barracks fills, not the PDF. Fixed element of 200 per click for 50 req.
-    if (target.p_owner[_p] == eFACTION.PLAYER
-    && (region_planet_building_count(target, _p, "guard_barracks") > 0)
-    && target.p_guardsmen[_p] >= 200) {
+    if (target.p_owner[_p] == eFACTION.PLAYER && (region_planet_building_count(target, _p, "guard_barracks") > 0) && target.p_guardsmen[_p] >= 200) {
         target.p_guardsmen[_p] -= 200;
         with (obj_controller) {
             repeat (200) {

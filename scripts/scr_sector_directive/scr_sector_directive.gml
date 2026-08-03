@@ -77,11 +77,16 @@ function sector_directive_can_change() {
 
 function sector_directive_label(_d = sector_directive_get()) {
     switch (_d) {
-        case "reclaim": return "reclaiming the worlds the Imperium has lost";
-        case "contain_ork": return "containing the Ork menace";
-        case "contain_tau": return "containing the T'au expansion";
-        case "contain_eldar": return "containing the Eldar raids";
-        case "contain_chaos": return "containing the forces of Chaos";
+        case "reclaim":
+            return "reclaiming the worlds the Imperium has lost";
+        case "contain_ork":
+            return "containing the Ork menace";
+        case "contain_tau":
+            return "containing the T'au expansion";
+        case "contain_eldar":
+            return "containing the Eldar raids";
+        case "contain_chaos":
+            return "containing the forces of Chaos";
     }
     return "holding and garrisoning the sector's core worlds";
 }
@@ -129,11 +134,15 @@ function sector_directive_apply_choice(_directive) {
 /// The contain-directive string that campaigns against a faction, or "" if none does.
 function sector_directive_for_faction(_faction) {
     switch (_faction) {
-        case eFACTION.ORK:   return "contain_ork";
-        case eFACTION.TAU:   return "contain_tau";
-        case eFACTION.ELDAR: return "contain_eldar";
+        case eFACTION.ORK:
+            return "contain_ork";
+        case eFACTION.TAU:
+            return "contain_tau";
+        case eFACTION.ELDAR:
+            return "contain_eldar";
         case eFACTION.CHAOS:
-        case eFACTION.HERETICS: return "contain_chaos";
+        case eFACTION.HERETICS:
+            return "contain_chaos";
     }
     return "";
 }
@@ -141,9 +150,7 @@ function sector_directive_for_faction(_faction) {
 /// True if this world+faction is the Guard offensive's current directed target.
 function sector_directive_is_target(_star, _planet, _faction) {
     sector_directive_ensure();
-    return (obj_controller.sector_directive_target_star == _star.name)
-        && (obj_controller.sector_directive_target_planet == _planet)
-        && (sector_directive_get() == sector_directive_for_faction(_faction));
+    return (obj_controller.sector_directive_target_star == _star.name) && (obj_controller.sector_directive_target_planet == _planet) && (sector_directive_get() == sector_directive_for_faction(_faction));
 }
 
 /// Force level a faction holds on a planet. Explicit per-array mapping: Chaos and
@@ -152,11 +159,16 @@ function sector_directive_is_target(_star, _planet, _faction) {
 function sector_directive_force_get(_star, _planet, _faction) {
     with (_star) {
         switch (_faction) {
-            case eFACTION.ORK: return p_orks[_planet];
-            case eFACTION.TAU: return p_tau[_planet];
-            case eFACTION.ELDAR: return p_eldar[_planet];
-            case eFACTION.TYRANIDS: return p_tyranids[_planet];
-            case eFACTION.NECRONS: return p_necrons[_planet];
+            case eFACTION.ORK:
+                return p_orks[_planet];
+            case eFACTION.TAU:
+                return p_tau[_planet];
+            case eFACTION.ELDAR:
+                return p_eldar[_planet];
+            case eFACTION.TYRANIDS:
+                return p_tyranids[_planet];
+            case eFACTION.NECRONS:
+                return p_necrons[_planet];
             case eFACTION.CHAOS:
             case eFACTION.HERETICS:
                 return max(p_chaos[_planet], p_traitors[_planet]);
@@ -168,11 +180,24 @@ function sector_directive_force_get(_star, _planet, _faction) {
 function sector_directive_force_reduce(_star, _planet, _faction) {
     with (_star) {
         switch (_faction) {
-            case eFACTION.ORK: p_orks[_planet] = max(0, p_orks[_planet] - 1); faction_pop_clamp_to_level(_star, _planet, eFACTION.ORK); return true;
-            case eFACTION.TAU: p_tau[_planet] = max(0, p_tau[_planet] - 1); return true;
-            case eFACTION.ELDAR: p_eldar[_planet] = max(0, p_eldar[_planet] - 1); return true;
-            case eFACTION.TYRANIDS: p_tyranids[_planet] = max(0, p_tyranids[_planet] - 1); faction_pop_clamp_to_level(_star, _planet, eFACTION.TYRANIDS); return true;
-            case eFACTION.NECRONS: p_necrons[_planet] = max(0, p_necrons[_planet] - 1); faction_pop_clamp_to_level(_star, _planet, eFACTION.NECRONS); return true;
+            case eFACTION.ORK:
+                p_orks[_planet] = max(0, p_orks[_planet] - 1);
+                faction_pop_clamp_to_level(_star, _planet, eFACTION.ORK);
+                return true;
+            case eFACTION.TAU:
+                p_tau[_planet] = max(0, p_tau[_planet] - 1);
+                return true;
+            case eFACTION.ELDAR:
+                p_eldar[_planet] = max(0, p_eldar[_planet] - 1);
+                return true;
+            case eFACTION.TYRANIDS:
+                p_tyranids[_planet] = max(0, p_tyranids[_planet] - 1);
+                faction_pop_clamp_to_level(_star, _planet, eFACTION.TYRANIDS);
+                return true;
+            case eFACTION.NECRONS:
+                p_necrons[_planet] = max(0, p_necrons[_planet] - 1);
+                faction_pop_clamp_to_level(_star, _planet, eFACTION.NECRONS);
+                return true;
             case eFACTION.CHAOS:
             case eFACTION.HERETICS:
                 if (p_traitors[_planet] >= p_chaos[_planet]) {
@@ -201,8 +226,7 @@ function sector_directive_strike(_faction) {
     var _tgt_planet = obj_controller.sector_directive_target_planet;
     if ((_tgt_name != "") && (_tgt_planet > 0)) {
         var _tgt_star = find_star_by_name(_tgt_name);
-        if (instance_exists(_tgt_star) && (_tgt_planet <= _tgt_star.planets)
-        && (sector_directive_force_get(_tgt_star, _tgt_planet, _faction) > 0)) {
+        if (instance_exists(_tgt_star) && (_tgt_planet <= _tgt_star.planets) && (sector_directive_force_get(_tgt_star, _tgt_planet, _faction) > 0)) {
             _best_star = _tgt_star;
             _best_planet = _tgt_planet;
         }
@@ -296,10 +320,18 @@ function sector_directive_tick() {
     }
     var _faction = -1;
     switch (_d) {
-        case "contain_ork": _faction = eFACTION.ORK; break;
-        case "contain_tau": _faction = eFACTION.TAU; break;
-        case "contain_eldar": _faction = eFACTION.ELDAR; break;
-        case "contain_chaos": _faction = eFACTION.CHAOS; break;
+        case "contain_ork":
+            _faction = eFACTION.ORK;
+            break;
+        case "contain_tau":
+            _faction = eFACTION.TAU;
+            break;
+        case "contain_eldar":
+            _faction = eFACTION.ELDAR;
+            break;
+        case "contain_chaos":
+            _faction = eFACTION.CHAOS;
+            break;
     }
     if (_faction == -1) {
         return;
@@ -321,8 +353,12 @@ function sector_background_guard_tier(_star, _planet) {
     // PDF are counted at a fraction of guardsmen: PDF are a defensive militia, not line
     // troops, so a large PDF is worth a modest number of Guard for offensive attrition.
     var _g = 0;
-    if (variable_instance_exists(_star, "p_guardsmen")) { _g += _star.p_guardsmen[_planet]; }
-    if (variable_instance_exists(_star, "p_pdf")) { _g += _star.p_pdf[_planet] * 0.1; }
+    if (variable_instance_exists(_star, "p_guardsmen")) {
+        _g += _star.p_guardsmen[_planet];
+    }
+    if (variable_instance_exists(_star, "p_pdf")) {
+        _g += _star.p_pdf[_planet] * 0.1;
+    }
     // An Imperial battlefleet in orbit joins the grind: orbital bombardment and Navy landing parties
     // do the work a planetary garrison otherwise would. Without this, a world whose Guard had been
     // wiped out scored tier 0 and could NEVER be ground back, however large the fleet overhead - so
@@ -331,17 +367,29 @@ function sector_background_guard_tier(_star, _planet) {
     if (_navy != noone) {
         _g += _navy.capital_number * SECTOR_NAVY_CAPITAL_GUARD;
         _g += _navy.frigate_number * SECTOR_NAVY_FRIGATE_GUARD;
-        _g += _navy.escort_number  * SECTOR_NAVY_ESCORT_GUARD;
+        _g += _navy.escort_number * SECTOR_NAVY_ESCORT_GUARD;
     }
-    if (_g < SECTOR_BACKGROUND_GUARD_MIN) { return 0; }
+    if (_g < SECTOR_BACKGROUND_GUARD_MIN) {
+        return 0;
+    }
     // Bands calibrated to real garrison numbers (thousands to hundreds of thousands when
     // reinforced from orbit), NOT the PDF-defence score table. This is what lets a
     // properly reinforced sector actually grind a bloom down over time.
-    if (_g >= 500000) { return 6; }
-    if (_g >= 150000) { return 5; }
-    if (_g >= 50000)  { return 4; }
-    if (_g >= 20000)  { return 3; }
-    if (_g >= 8000)   { return 2; }
+    if (_g >= 500000) {
+        return 6;
+    }
+    if (_g >= 150000) {
+        return 5;
+    }
+    if (_g >= 50000) {
+        return 4;
+    }
+    if (_g >= 20000) {
+        return 3;
+    }
+    if (_g >= 8000) {
+        return 2;
+    }
     return 1;
 }
 
@@ -351,11 +399,17 @@ function sector_background_guard_tier(_star, _planet) {
 /// reliably erodes a weak enemy and a token garrison rarely dents a horde. The player's
 /// own forces are not consulted anywhere here.
 function sector_background_war_planet(_star, _planet, _faction) {
-    if (count_to_level_anchors(_faction) == -1) { return false; }
+    if (count_to_level_anchors(_faction) == -1) {
+        return false;
+    }
     var _enemy_tier = faction_planet_level(_star, _planet, _faction);
-    if (_enemy_tier <= 0) { return false; }
+    if (_enemy_tier <= 0) {
+        return false;
+    }
     var _guard_tier = sector_background_guard_tier(_star, _planet);
-    if (_guard_tier <= 0) { return false; }
+    if (_guard_tier <= 0) {
+        return false;
+    }
 
     // HoI4-flavoured resolution: strength difference sets the base odds, plus a swing.
     // Positive means the Guard press their advantage this pass. The +15 bias means an
@@ -364,7 +418,9 @@ function sector_background_war_planet(_star, _planet, _faction) {
     // impossible. A clear Guard edge grinds reliably.
     var _delta = _guard_tier - _enemy_tier;
     var _roll = _delta * 25 + irandom(100) - 50 + 15;
-    if (_roll <= 0) { return false; }
+    if (_roll <= 0) {
+        return false;
+    }
 
     // The enemy headcount falls toward the next tier down; the clamp re-tiers it. A big
     // Guard edge can knock a whole level, a marginal one shaves the population.
@@ -382,12 +438,24 @@ function sector_background_apply_pop(_star, _planet, _faction, _new_pop) {
     var _new_lvl = count_to_level(_faction, _new_pop);
     with (_star) {
         switch (_faction) {
-            case eFACTION.ORK:      p_orks[_planet] = _new_lvl; break;
-            case eFACTION.TAU:      p_tau[_planet] = _new_lvl; break;
-            case eFACTION.ELDAR:    p_eldar[_planet] = _new_lvl; break;
-            case eFACTION.TYRANIDS: p_tyranids[_planet] = _new_lvl; break;
-            case eFACTION.NECRONS:  p_necrons[_planet] = _new_lvl; break;
-            case eFACTION.HERETICS: p_traitors[_planet] = _new_lvl; break;
+            case eFACTION.ORK:
+                p_orks[_planet] = _new_lvl;
+                break;
+            case eFACTION.TAU:
+                p_tau[_planet] = _new_lvl;
+                break;
+            case eFACTION.ELDAR:
+                p_eldar[_planet] = _new_lvl;
+                break;
+            case eFACTION.TYRANIDS:
+                p_tyranids[_planet] = _new_lvl;
+                break;
+            case eFACTION.NECRONS:
+                p_necrons[_planet] = _new_lvl;
+                break;
+            case eFACTION.HERETICS:
+                p_traitors[_planet] = _new_lvl;
+                break;
         }
     }
     if (variable_instance_exists(_star, "p_race_pop")) {
@@ -400,8 +468,17 @@ function sector_background_apply_pop(_star, _planet, _faction, _new_pop) {
 /// For each world, the Guard grind whichever level-modelled enemy is present. Logs a
 /// concise notice per world that lost ground so the player sees the tide moving.
 function sector_background_war_tick() {
-    if ((obj_controller.turn % SECTOR_BACKGROUND_WAR_INTERVAL) != 0) { return; }
-    var _factions = [eFACTION.ORK, eFACTION.TAU, eFACTION.ELDAR, eFACTION.TYRANIDS, eFACTION.NECRONS, eFACTION.HERETICS];
+    if ((obj_controller.turn % SECTOR_BACKGROUND_WAR_INTERVAL) != 0) {
+        return;
+    }
+    var _factions = [
+        eFACTION.ORK,
+        eFACTION.TAU,
+        eFACTION.ELDAR,
+        eFACTION.TYRANIDS,
+        eFACTION.NECRONS,
+        eFACTION.HERETICS,
+    ];
     with (obj_star) {
         for (var p = 1; p <= planets; p++) {
             for (var f = 0; f < array_length(_factions); f++) {

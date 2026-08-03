@@ -194,30 +194,420 @@
 /// art swaps over with no other change.
 function grid_unit_def(_key) {
     var _t = {
-        tactical:      { disp: "Tacticals",       men: 10, hp_man: 12, armour: 12, mel: 10, bal: 13, rng: 6, spd: 1.0, cost: 2, glyph: "infantry",  ascii: "T",  vehicle: false, melee: false, tele: false, jump: false, sprite: -1 },
-        assault:       { disp: "Assaults",        men: 10, hp_man: 12, armour: 11, mel: 15, bal: 7,  rng: 3, spd: 1.0, cost: 2, glyph: "jump",      ascii: "A",  vehicle: false, melee: true,  tele: false, jump: true,  sprite: -1 },
-        devastator:    { disp: "Devastators",     men: 10, hp_man: 12, armour: 12, mel: 8,  bal: 18, rng: 9, spd: 1.0, cost: 3, glyph: "heavy",     ascii: "D",  vehicle: false, melee: false, tele: false, jump: false, sprite: -1 },
-        veteran:       { disp: "Veterans",        men: 10, hp_man: 14, armour: 13, mel: 14, bal: 15, rng: 6, spd: 1.0, cost: 3, glyph: "infantry",  ascii: "V",  vehicle: false, melee: false, tele: false, jump: false, sprite: -1 },
-        terminator:    { disp: "Terminators",     men: 5,  hp_man: 26, armour: 20, mel: 16, bal: 16, rng: 5, spd: 0.9, cost: 4, glyph: "term",      ascii: "TR", vehicle: false, melee: false, tele: true,  jump: false, sprite: -1 },
-        assault_term:  { disp: "Asslt Terms",     men: 5,  hp_man: 26, armour: 20, mel: 22, bal: 5,  rng: 2, spd: 0.9, cost: 4, glyph: "term",      ascii: "AT", vehicle: false, melee: true,  tele: true,  jump: false, sprite: -1 },
-        scout:         { disp: "Scouts",          men: 10, hp_man: 9,  armour: 7,  mel: 8,  bal: 11, rng: 7, spd: 1.0, cost: 1, glyph: "scout",     ascii: "S",  vehicle: false, melee: false, tele: false, jump: false, sprite: -1 },
-        hq:            { disp: "Command",         men: 5,  hp_man: 20, armour: 15, mel: 20, bal: 15, rng: 5, spd: 1.0, cost: 3, glyph: "hq",        ascii: "HQ", vehicle: false, melee: false, tele: false, jump: false, sprite: -1 },
-        guardsmen:     { disp: "Guardsmen",       men: 20, hp_man: 5,  armour: 5,  mel: 4,  bal: 7,  rng: 6, spd: 1.0, cost: 1, glyph: "guard",     ascii: "G",  vehicle: false, melee: false, tele: false, jump: false, sprite: -1 },
-        heavy_weapons: { disp: "Heavy Weapons",   men: 12, hp_man: 5,  armour: 5,  mel: 3,  bal: 15, rng: 9, spd: 0.5, cost: 2, glyph: "heavy",     ascii: "HW", vehicle: false, melee: false, tele: false, jump: false, sprite: -1 },
-        dreadnought:   { disp: "Dreadnoughts",    men: 1,  hp_man: 180, armour: 26, mel: 26, bal: 20, rng: 7, spd: 1.0, cost: 5, glyph: "walker",   ascii: "DN", vehicle: true,  melee: false, tele: false, jump: false, sprite: -1 },
-        predator:      { disp: "Predators",       men: 1,  hp_man: 210, armour: 30, mel: 6,  bal: 26, rng: 9, spd: 1.0, cost: 4, glyph: "tank",     ascii: "PR", vehicle: true,  melee: false, tele: false, jump: false, sprite: -1 },
-        land_raider:   { disp: "Land Raiders",    men: 1,  hp_man: 320, armour: 38, mel: 8,  bal: 28, rng: 9, spd: 0.5, cost: 6, glyph: "tank",     ascii: "LR", vehicle: true,  melee: false, tele: false, jump: false, sprite: -1 },
-        rhino:         { disp: "Rhinos",          men: 1,  hp_man: 140, armour: 22, mel: 4,  bal: 8,  rng: 5, spd: 2.0, cost: 2, glyph: "transport",ascii: "RH", vehicle: true,  melee: false, tele: false, jump: false, sprite: -1 },
-        chimera:       { disp: "Chimeras",        men: 1,  hp_man: 120, armour: 18, mel: 4,  bal: 12, rng: 7, spd: 2.0, cost: 2, glyph: "transport",ascii: "CH", vehicle: true,  melee: false, tele: false, jump: false, sprite: -1 },
-        land_speeder:  { disp: "Land Speeders",   men: 1,  hp_man: 90,  armour: 16, mel: 6,  bal: 20, rng: 8, spd: 3.0, cost: 3, glyph: "speeder",  ascii: "LS", vehicle: true,  melee: false, tele: false, jump: false, sprite: -1 },
-        whirlwind:     { disp: "Whirlwinds",      men: 1,  hp_man: 130, armour: 20, mel: 4,  bal: 30, rng: 12, spd: 1.0, cost: 4, glyph: "tank",    ascii: "WW", vehicle: true,  melee: false, tele: false, jump: false, sprite: -1 },
-        ork_shoota:    { disp: "Shoota Boyz",     men: 30, hp_man: 4,  armour: 3,  mel: 8,  bal: 6,  rng: 5, spd: 1.0, cost: 0, glyph: "ork",       ascii: "S",  vehicle: false, melee: false, tele: false, jump: false, sprite: -1 },
-        ork_slugga:    { disp: "Slugga Boyz",     men: 30, hp_man: 4,  armour: 3,  mel: 11, bal: 3,  rng: 2, spd: 1.0, cost: 0, glyph: "ork",       ascii: "B",  vehicle: false, melee: true,  tele: false, jump: false, sprite: -1 },
-        ork_nob:       { disp: "Nobz",            men: 10, hp_man: 14, armour: 9,  mel: 20, bal: 8,  rng: 4, spd: 1.0, cost: 0, glyph: "orkbig",    ascii: "N",  vehicle: false, melee: true,  tele: false, jump: false, sprite: -1 },
-        ork_weirdboy:  { disp: "Weirdboy",        men: 4,  hp_man: 12, armour: 4,  mel: 10, bal: 4,  rng: 3, spd: 1.0, cost: 0, glyph: "psyker",    ascii: "WB", vehicle: false, melee: false, tele: false, jump: false, sprite: -1 },
-        ork_dread:     { disp: "Deff Dread",      men: 1,  hp_man: 170, armour: 20, mel: 24, bal: 12, rng: 4, spd: 1.0, cost: 0, glyph: "orkwalker",ascii: "DD", vehicle: true,  melee: true,  tele: false, jump: false, sprite: -1 },
-        ork_wagon:     { disp: "Battlewagon",     men: 1,  hp_man: 200, armour: 22, mel: 10, bal: 16, rng: 6, spd: 2.0, cost: 0, glyph: "transport",ascii: "BW", vehicle: true,  melee: false, tele: false, jump: false, sprite: -1 },
-
+        tactical: {
+            disp: "Tacticals",
+            men: 10,
+            hp_man: 12,
+            armour: 12,
+            mel: 10,
+            bal: 13,
+            rng: 6,
+            spd: 1.0,
+            cost: 2,
+            glyph: "infantry",
+            ascii: "T",
+            vehicle: false,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        assault: {
+            disp: "Assaults",
+            men: 10,
+            hp_man: 12,
+            armour: 11,
+            mel: 15,
+            bal: 7,
+            rng: 3,
+            spd: 1.0,
+            cost: 2,
+            glyph: "jump",
+            ascii: "A",
+            vehicle: false,
+            melee: true,
+            tele: false,
+            jump: true,
+            sprite: -1,
+        },
+        devastator: {
+            disp: "Devastators",
+            men: 10,
+            hp_man: 12,
+            armour: 12,
+            mel: 8,
+            bal: 18,
+            rng: 9,
+            spd: 1.0,
+            cost: 3,
+            glyph: "heavy",
+            ascii: "D",
+            vehicle: false,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        veteran: {
+            disp: "Veterans",
+            men: 10,
+            hp_man: 14,
+            armour: 13,
+            mel: 14,
+            bal: 15,
+            rng: 6,
+            spd: 1.0,
+            cost: 3,
+            glyph: "infantry",
+            ascii: "V",
+            vehicle: false,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        terminator: {
+            disp: "Terminators",
+            men: 5,
+            hp_man: 26,
+            armour: 20,
+            mel: 16,
+            bal: 16,
+            rng: 5,
+            spd: 0.9,
+            cost: 4,
+            glyph: "term",
+            ascii: "TR",
+            vehicle: false,
+            melee: false,
+            tele: true,
+            jump: false,
+            sprite: -1,
+        },
+        assault_term: {
+            disp: "Asslt Terms",
+            men: 5,
+            hp_man: 26,
+            armour: 20,
+            mel: 22,
+            bal: 5,
+            rng: 2,
+            spd: 0.9,
+            cost: 4,
+            glyph: "term",
+            ascii: "AT",
+            vehicle: false,
+            melee: true,
+            tele: true,
+            jump: false,
+            sprite: -1,
+        },
+        scout: {
+            disp: "Scouts",
+            men: 10,
+            hp_man: 9,
+            armour: 7,
+            mel: 8,
+            bal: 11,
+            rng: 7,
+            spd: 1.0,
+            cost: 1,
+            glyph: "scout",
+            ascii: "S",
+            vehicle: false,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        hq: {
+            disp: "Command",
+            men: 5,
+            hp_man: 20,
+            armour: 15,
+            mel: 20,
+            bal: 15,
+            rng: 5,
+            spd: 1.0,
+            cost: 3,
+            glyph: "hq",
+            ascii: "HQ",
+            vehicle: false,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        guardsmen: {
+            disp: "Guardsmen",
+            men: 20,
+            hp_man: 5,
+            armour: 5,
+            mel: 4,
+            bal: 7,
+            rng: 6,
+            spd: 1.0,
+            cost: 1,
+            glyph: "guard",
+            ascii: "G",
+            vehicle: false,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        heavy_weapons: {
+            disp: "Heavy Weapons",
+            men: 12,
+            hp_man: 5,
+            armour: 5,
+            mel: 3,
+            bal: 15,
+            rng: 9,
+            spd: 0.5,
+            cost: 2,
+            glyph: "heavy",
+            ascii: "HW",
+            vehicle: false,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        dreadnought: {
+            disp: "Dreadnoughts",
+            men: 1,
+            hp_man: 180,
+            armour: 26,
+            mel: 26,
+            bal: 20,
+            rng: 7,
+            spd: 1.0,
+            cost: 5,
+            glyph: "walker",
+            ascii: "DN",
+            vehicle: true,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        predator: {
+            disp: "Predators",
+            men: 1,
+            hp_man: 210,
+            armour: 30,
+            mel: 6,
+            bal: 26,
+            rng: 9,
+            spd: 1.0,
+            cost: 4,
+            glyph: "tank",
+            ascii: "PR",
+            vehicle: true,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        land_raider: {
+            disp: "Land Raiders",
+            men: 1,
+            hp_man: 320,
+            armour: 38,
+            mel: 8,
+            bal: 28,
+            rng: 9,
+            spd: 0.5,
+            cost: 6,
+            glyph: "tank",
+            ascii: "LR",
+            vehicle: true,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        rhino: {
+            disp: "Rhinos",
+            men: 1,
+            hp_man: 140,
+            armour: 22,
+            mel: 4,
+            bal: 8,
+            rng: 5,
+            spd: 2.0,
+            cost: 2,
+            glyph: "transport",
+            ascii: "RH",
+            vehicle: true,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        chimera: {
+            disp: "Chimeras",
+            men: 1,
+            hp_man: 120,
+            armour: 18,
+            mel: 4,
+            bal: 12,
+            rng: 7,
+            spd: 2.0,
+            cost: 2,
+            glyph: "transport",
+            ascii: "CH",
+            vehicle: true,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        land_speeder: {
+            disp: "Land Speeders",
+            men: 1,
+            hp_man: 90,
+            armour: 16,
+            mel: 6,
+            bal: 20,
+            rng: 8,
+            spd: 3.0,
+            cost: 3,
+            glyph: "speeder",
+            ascii: "LS",
+            vehicle: true,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        whirlwind: {
+            disp: "Whirlwinds",
+            men: 1,
+            hp_man: 130,
+            armour: 20,
+            mel: 4,
+            bal: 30,
+            rng: 12,
+            spd: 1.0,
+            cost: 4,
+            glyph: "tank",
+            ascii: "WW",
+            vehicle: true,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ork_shoota: {
+            disp: "Shoota Boyz",
+            men: 30,
+            hp_man: 4,
+            armour: 3,
+            mel: 8,
+            bal: 6,
+            rng: 5,
+            spd: 1.0,
+            cost: 0,
+            glyph: "ork",
+            ascii: "S",
+            vehicle: false,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ork_slugga: {
+            disp: "Slugga Boyz",
+            men: 30,
+            hp_man: 4,
+            armour: 3,
+            mel: 11,
+            bal: 3,
+            rng: 2,
+            spd: 1.0,
+            cost: 0,
+            glyph: "ork",
+            ascii: "B",
+            vehicle: false,
+            melee: true,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ork_nob: {
+            disp: "Nobz",
+            men: 10,
+            hp_man: 14,
+            armour: 9,
+            mel: 20,
+            bal: 8,
+            rng: 4,
+            spd: 1.0,
+            cost: 0,
+            glyph: "orkbig",
+            ascii: "N",
+            vehicle: false,
+            melee: true,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ork_weirdboy: {
+            disp: "Weirdboy",
+            men: 4,
+            hp_man: 12,
+            armour: 4,
+            mel: 10,
+            bal: 4,
+            rng: 3,
+            spd: 1.0,
+            cost: 0,
+            glyph: "psyker",
+            ascii: "WB",
+            vehicle: false,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ork_dread: {
+            disp: "Deff Dread",
+            men: 1,
+            hp_man: 170,
+            armour: 20,
+            mel: 24,
+            bal: 12,
+            rng: 4,
+            spd: 1.0,
+            cost: 0,
+            glyph: "orkwalker",
+            ascii: "DD",
+            vehicle: true,
+            melee: true,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ork_wagon: {
+            disp: "Battlewagon",
+            men: 1,
+            hp_man: 200,
+            armour: 22,
+            mel: 10,
+            bal: 16,
+            rng: 6,
+            spd: 2.0,
+            cost: 0,
+            glyph: "transport",
+            ascii: "BW",
+            vehicle: true,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
         // ------------------------------------------------------------------
         // Enemy rosters. Every profile below is derived from that unit's own
         // vanilla stats rather than invented: armour and hit points come from
@@ -235,63 +625,1032 @@ function grid_unit_def(_key) {
         // Multi-Laster, Melee2), the same class of bug as the old Melee1. Those
         // are marked with an explicit value here instead of deriving to zero.
         // ------------------------------------------------------------------
-        ig_guardsman:   { disp: "Guardsmen",           men: 20 , hp_man: 3   , armour: 3  , mel: 4  , bal: 5  , rng: 5 , spd: 1.0, cost: 0, glyph: "guard",      ascii: "IG",  vehicle: false , melee: false , tele: false , jump: false , sprite: -1 },
-        ig_ogryn:       { disp: "Ogryns",              men: 10 , hp_man: 10  , armour: 9  , mel: 9  , bal: 10 , rng: 3 , spd: 1.0, cost: 0, glyph: "orkbig",     ascii: "OG",  vehicle: false , melee: true  , tele: false , jump: false , sprite: -1 },
-        ig_hwt:         { disp: "Heavy Wpn Teams",     men: 12 , hp_man: 7   , armour: 6  , mel: 2  , bal: 10 , rng: 8 , spd: 0.5, cost: 0, glyph: "heavy",      ascii: "HW",  vehicle: false , melee: false , tele: false , jump: false , sprite: -1 },
-        ig_russ:        { disp: "Leman Russ",          men: 1  , hp_man: 150 , armour: 28 , mel: 2  , bal: 30 , rng: 8 , spd: 1.0, cost: 0, glyph: "tank",       ascii: "LR",  vehicle: true  , melee: false , tele: false , jump: false , sprite: -1 },
-        ig_chimera:     { disp: "Chimeras",            men: 1  , hp_man: 120 , armour: 21 , mel: 2  , bal: 10 , rng: 8 , spd: 2.0, cost: 0, glyph: "transport",  ascii: "CM",  vehicle: true  , melee: false , tele: false , jump: false , sprite: -1 },
-        ig_basilisk:    { disp: "Basilisks",           men: 1  , hp_man: 90  , armour: 21 , mel: 2  , bal: 21 , rng: 7 , spd: 0.5, cost: 0, glyph: "tank",       ascii: "BA",  vehicle: true  , melee: false , tele: false , jump: false , sprite: -1 },
-        ad_thallax:     { disp: "Thallax",             men: 10 , hp_man: 8   , armour: 16 , mel: 8  , bal: 7  , rng: 5 , spd: 1.0, cost: 0, glyph: "term",       ascii: "TX",  vehicle: false , melee: false , tele: false , jump: false , sprite: -1 },
-        ig_sentinel:    { disp: "Sentinels",          men: 1  , hp_man: 60  , armour: 14 , mel: 8  , bal: 10 , rng: 5 , spd: 2.0, cost: 0, glyph: "walker",    ascii: "SE", vehicle: true , melee: false , tele: false , jump: false , sprite: -1 },
-        ad_servitor:    { disp: "Praetorians",         men: 8  , hp_man: 12  , armour: 9  , mel: 2  , bal: 7  , rng: 5 , spd: 0.5, cost: 0, glyph: "heavy",      ascii: "PS",  vehicle: false , melee: false , tele: false , jump: false , sprite: -1 },
-        ec_sister:      { disp: "Battle Sisters",      men: 10 , hp_man: 5   , armour: 9  , mel: 6  , bal: 10 , rng: 7 , spd: 1.0, cost: 0, glyph: "infantry",   ascii: "SI",  vehicle: false , melee: false , tele: false , jump: false , sprite: -1 },
-        ec_repentia:    { disp: "Repentia",            men: 10 , hp_man: 6   , armour: 3  , mel: 20 , bal: 1  , rng: 1 , spd: 1.0, cost: 0, glyph: "infantry",   ascii: "RP",  vehicle: false , melee: true  , tele: false , jump: false , sprite: -1 },
-        ec_celestian:   { disp: "Celestians",          men: 10 , hp_man: 5   , armour: 9  , mel: 12 , bal: 10 , rng: 7 , spd: 1.0, cost: 0, glyph: "infantry",   ascii: "CL",  vehicle: false , melee: false , tele: false , jump: false , sprite: -1 },
-        ec_penitent:    { disp: "Penitent Engines",    men: 1  , hp_man: 72  , armour: 14 , mel: 22 , bal: 17 , rng: 2 , spd: 1.0, cost: 0, glyph: "walker",     ascii: "PE",  vehicle: true  , melee: true  , tele: false , jump: false , sprite: -1 },
-        ec_immolator:   { disp: "Immolators",          men: 1  , hp_man: 162 , armour: 28 , mel: 4  , bal: 17 , rng: 2 , spd: 2.0, cost: 0, glyph: "transport",  ascii: "IM",  vehicle: true  , melee: false , tele: false , jump: false , sprite: -1 },
-        ec_arco:        { disp: "Arco-Flagellants",    men: 10 , hp_man: 13  , armour: 3  , mel: 12 , bal: 1  , rng: 1 , spd: 1.0, cost: 0, glyph: "infantry",   ascii: "AF",  vehicle: false , melee: true  , tele: false , jump: false , sprite: -1 },
-        el_guardian:    { disp: "Guardians",           men: 20 , hp_man: 2   , armour: 3  , mel: 4  , bal: 4  , rng: 3 , spd: 1.0, cost: 0, glyph: "infantry",   ascii: "GD",  vehicle: false , melee: false , tele: false , jump: false , sprite: -1 },
-        el_banshee:     { disp: "Howling Banshees",    men: 10 , hp_man: 3   , armour: 6  , mel: 12 , bal: 4  , rng: 3 , spd: 1.0, cost: 0, glyph: "infantry",   ascii: "HB",  vehicle: false , melee: true  , tele: false , jump: false , sprite: -1 },
-        el_avenger:     { disp: "Dire Avengers",       men: 10 , hp_man: 3   , armour: 6  , mel: 4  , bal: 8  , rng: 3 , spd: 1.0, cost: 0, glyph: "infantry",   ascii: "DA",  vehicle: false , melee: false , tele: false , jump: false , sprite: -1 },
-        el_wraithlord:  { disp: "Wraithlords",         men: 1  , hp_man: 112 , armour: 21 , mel: 28 , bal: 21 , rng: 5 , spd: 1.0, cost: 0, glyph: "walker",     ascii: "WL",  vehicle: true  , melee: false , tele: false , jump: false , sprite: -1 },
-        el_falcon:      { disp: "Falcons",             men: 1  , hp_man: 112 , armour: 21 , mel: 2  , bal: 17 , rng: 5 , spd: 3.0, cost: 0, glyph: "speeder",    ascii: "FA",  vehicle: true  , melee: false , tele: false , jump: false , sprite: -1 },
-        el_warlock:     { disp: "Warlocks",            men: 5  , hp_man: 7   , armour: 6  , mel: 13 , bal: 7  , rng: 3 , spd: 1.0, cost: 0, glyph: "psyker",     ascii: "WK",  vehicle: false , melee: false , tele: false , jump: false , sprite: -1 },
-        tau_firewarrior:{ disp: "Fire Warriors",       men: 20 , hp_man: 3   , armour: 6  , mel: 2  , bal: 7  , rng: 7 , spd: 1.0, cost: 0, glyph: "infantry",   ascii: "FW",  vehicle: false , melee: false , tele: false , jump: false , sprite: -1 },
-        tau_kroot:      { disp: "Kroot",               men: 20 , hp_man: 3   , armour: 3  , mel: 8  , bal: 8  , rng: 5 , spd: 1.0, cost: 0, glyph: "infantry",   ascii: "KR",  vehicle: false , melee: true  , tele: false , jump: false , sprite: -1 },
-        tau_crisis:     { disp: "XV8 Crisis",          men: 5  , hp_man: 12  , armour: 9  , mel: 2  , bal: 12 , rng: 7 , spd: 1.0, cost: 0, glyph: "term",       ascii: "XV",  vehicle: false , melee: false , tele: false , jump: false , sprite: -1 },
-        tau_broadside:  { disp: "XV88 Broadsides",     men: 5  , hp_man: 22  , armour: 16 , mel: 2  , bal: 12 , rng: 7 , spd: 0.5, cost: 0, glyph: "heavy",      ascii: "BS",  vehicle: false , melee: false , tele: false , jump: false , sprite: -1 },
-        tau_devilfish:  { disp: "Devilfish",           men: 1  , hp_man: 84  , armour: 21 , mel: 2  , bal: 12 , rng: 7 , spd: 2.0, cost: 0, glyph: "transport",  ascii: "DF",  vehicle: true  , melee: false , tele: false , jump: false , sprite: -1 },
-        tau_hammerhead: { disp: "Hammerheads",         men: 1  , hp_man: 84  , armour: 21 , mel: 2  , bal: 21 , rng: 8 , spd: 1.0, cost: 0, glyph: "tank",       ascii: "HH",  vehicle: true  , melee: false , tele: false , jump: false , sprite: -1 },
-        ty_termagaunt:  { disp: "Termagaunts",         men: 30 , hp_man: 2   , armour: 3  , mel: 2  , bal: 6  , rng: 3 , spd: 1.0, cost: 0, glyph: "infantry",   ascii: "TG",  vehicle: false , melee: false , tele: false , jump: false , sprite: -1 },
-        ty_hormagaunt:  { disp: "Hormagaunts",         men: 30 , hp_man: 2   , armour: 3  , mel: 4  , bal: 1  , rng: 1 , spd: 1.0, cost: 0, glyph: "infantry",   ascii: "HG",  vehicle: false , melee: true  , tele: false , jump: false , sprite: -1 },
-        ty_warrior:     { disp: "Tyranid Warriors",    men: 10 , hp_man: 7   , armour: 9  , mel: 8  , bal: 8  , rng: 4 , spd: 1.0, cost: 0, glyph: "orkbig",     ascii: "TW",  vehicle: false , melee: false , tele: false , jump: false , sprite: -1 },
-        ty_carnifex:    { disp: "Carnifexes",          men: 1  , hp_man: 168 , armour: 21 , mel: 25 , bal: 8  , rng: 4 , spd: 1.0, cost: 0, glyph: "orkwalker",  ascii: "CX",  vehicle: true  , melee: true  , tele: false , jump: false , sprite: -1 },
-        ty_lictor:      { disp: "Lictors",             men: 3  , hp_man: 26  , armour: 9  , mel: 28 , bal: 8  , rng: 3 , spd: 1.0, cost: 0, glyph: "orkbig",     ascii: "LI",  vehicle: false , melee: true  , tele: false , jump: false , sprite: -1 },
-        ty_zoanthrope:  { disp: "Zoanthropes",         men: 3  , hp_man: 30  , armour: 6  , mel: 2  , bal: 21 , rng: 5 , spd: 1.0, cost: 0, glyph: "psyker",     ascii: "ZO",  vehicle: false , melee: false , tele: false , jump: false , sprite: -1 },
-        ch_marine:      { disp: "Chaos Marines",       men: 10 , hp_man: 7   , armour: 9  , mel: 12 , bal: 10 , rng: 7 , spd: 1.0, cost: 0, glyph: "infantry",   ascii: "CS",  vehicle: false , melee: false , tele: false , jump: false , sprite: -1 },
-        ch_berzerker:   { disp: "Khorne Berzerkers",   men: 10 , hp_man: 18  , armour: 9  , mel: 14 , bal: 8  , rng: 3 , spd: 1.0, cost: 0, glyph: "infantry",   ascii: "KB",  vehicle: false , melee: true  , tele: false , jump: false , sprite: -1 },
-        ch_terminator:  { disp: "Chaos Terminators",   men: 5  , hp_man: 12  , armour: 22 , mel: 25 , bal: 13 , rng: 3 , spd: 0.9, cost: 0, glyph: "term",       ascii: "CT",  vehicle: false , melee: false , tele: true  , jump: false , sprite: -1 },
-        ch_hellbrute:   { disp: "Hellbrutes",          men: 1  , hp_man: 168 , armour: 28 , mel: 28 , bal: 17 , rng: 2 , spd: 1.0, cost: 0, glyph: "walker",     ascii: "HL",  vehicle: true  , melee: false , tele: false , jump: false , sprite: -1 },
-        ch_rhino:       { disp: "Chaos Rhinos",        men: 1  , hp_man: 100 , armour: 21 , mel: 2  , bal: 15 , rng: 5 , spd: 2.0, cost: 0, glyph: "transport",  ascii: "RH",  vehicle: true  , melee: false , tele: false , jump: false , sprite: -1 },
-        ch_sorcerer:    { disp: "Chaos Sorcerers",     men: 5  , hp_man: 15  , armour: 16 , mel: 10 , bal: 8  , rng: 3 , spd: 1.0, cost: 0, glyph: "psyker",     ascii: "SO",  vehicle: false , melee: false , tele: false , jump: false , sprite: -1 },
-        he_cultist:     { disp: "Cultists",            men: 30 , hp_man: 2   , armour: 6  , mel: 6  , bal: 5  , rng: 5 , spd: 1.0, cost: 0, glyph: "infantry",   ascii: "CU",  vehicle: false , melee: false , tele: false , jump: false , sprite: -1 },
-        he_mutant:      { disp: "Mutants",             men: 20 , hp_man: 3   , armour: 3  , mel: 8  , bal: 8  , rng: 3 , spd: 1.0, cost: 0, glyph: "infantry",   ascii: "MU",  vehicle: false , melee: true  , tele: false , jump: false , sprite: -1 },
-        he_elite:       { disp: "Cultist Elites",      men: 15 , hp_man: 3   , armour: 6  , mel: 14 , bal: 5  , rng: 5 , spd: 1.0, cost: 0, glyph: "infantry",   ascii: "CE",  vehicle: false , melee: false , tele: false , jump: false , sprite: -1 },
-        he_russ:        { disp: "Chaos Leman Russ",    men: 1  , hp_man: 150 , armour: 28 , mel: 2  , bal: 25 , rng: 7 , spd: 1.0, cost: 0, glyph: "tank",       ascii: "CR",  vehicle: true  , melee: false , tele: false , jump: false , sprite: -1 },
-        he_technical:   { disp: "Technicals",          men: 1  , hp_man: 50  , armour: 14 , mel: 2  , bal: 10 , rng: 8 , spd: 3.0, cost: 0, glyph: "transport",  ascii: "TC",  vehicle: true  , melee: false , tele: false , jump: false , sprite: -1 },
-        he_possessed:   { disp: "Possessed",           men: 8  , hp_man: 8   , armour: 6  , mel: 15 , bal: 1  , rng: 1 , spd: 1.0, cost: 0, glyph: "psyker",     ascii: "PO",  vehicle: false , melee: true  , tele: false , jump: false , sprite: -1 },
-        gs_hybrid:      { disp: "Hybrids",             men: 20 , hp_man: 3   , armour: 6  , mel: 5  , bal: 5  , rng: 5 , spd: 1.0, cost: 0, glyph: "infantry",   ascii: "HY",  vehicle: false , melee: false , tele: false , jump: false , sprite: -1 },
-        gs_stealer:     { disp: "Genestealers",        men: 15 , hp_man: 5   , armour: 6  , mel: 7  , bal: 1  , rng: 1 , spd: 1.0, cost: 0, glyph: "infantry",   ascii: "GS",  vehicle: false , melee: true  , tele: false , jump: false , sprite: -1 },
-        gs_aberrant:    { disp: "Aberrants",           men: 10 , hp_man: 7   , armour: 3  , mel: 8  , bal: 1  , rng: 1 , spd: 1.0, cost: 0, glyph: "orkbig",     ascii: "AB",  vehicle: false , melee: true  , tele: false , jump: false , sprite: -1 },
-        gs_rockgrinder: { disp: "Rockgrinders",        men: 1  , hp_man: 150 , armour: 21 , mel: 14 , bal: 8  , rng: 4 , spd: 1.0, cost: 0, glyph: "walker",     ascii: "RG",  vehicle: true  , melee: true  , tele: false , jump: false , sprite: -1 },
-        gs_truck:       { disp: "Goliath Trucks",      men: 1  , hp_man: 117 , armour: 21 , mel: 2  , bal: 8  , rng: 5 , spd: 3.0, cost: 0, glyph: "transport",  ascii: "GT",  vehicle: true  , melee: false , tele: false , jump: false , sprite: -1 },
-        gs_magus:       { disp: "Magus",               men: 4  , hp_man: 7   , armour: 6  , mel: 10 , bal: 5  , rng: 5 , spd: 1.0, cost: 0, glyph: "psyker",     ascii: "MG",  vehicle: false , melee: false , tele: false , jump: false , sprite: -1 },
-        ne_warrior:     { disp: "Necron Warriors",     men: 20 , hp_man: 6   , armour: 6  , mel: 6  , bal: 4  , rng: 5 , spd: 1.0, cost: 0, glyph: "infantry",   ascii: "NW",  vehicle: false , melee: false , tele: false , jump: false , sprite: -1 },
-        ne_flayed:      { disp: "Flayed Ones",         men: 15 , hp_man: 6   , armour: 6  , mel: 6  , bal: 1  , rng: 1 , spd: 1.0, cost: 0, glyph: "infantry",   ascii: "FO",  vehicle: false , melee: true  , tele: false , jump: false , sprite: -1 },
-        ne_lychguard:   { disp: "Lychguard",           men: 10 , hp_man: 8   , armour: 16 , mel: 20 , bal: 1  , rng: 1 , spd: 1.0, cost: 0, glyph: "term",       ascii: "LG",  vehicle: false , melee: true  , tele: false , jump: false , sprite: -1 },
-        ne_stalker:     { disp: "Tomb Stalkers",       men: 1  , hp_man: 162 , armour: 21 , mel: 28 , bal: 21 , rng: 6 , spd: 1.0, cost: 0, glyph: "orkwalker",  ascii: "TS",  vehicle: true  , melee: false , tele: false , jump: false , sprite: -1 },
-        ne_spyder:      { disp: "Canoptek Spyders",    men: 1  , hp_man: 96  , armour: 14 , mel: 17 , bal: 1  , rng: 1 , spd: 2.0, cost: 0, glyph: "walker",     ascii: "SP",  vehicle: true  , melee: true  , tele: false , jump: false , sprite: -1 },
-        ne_destroyer:   { disp: "Necron Destroyers",   men: 5  , hp_man: 21  , armour: 16 , mel: 6  , bal: 10 , rng: 6 , spd: 3.0, cost: 0, glyph: "speeder",    ascii: "ND",  vehicle: false , melee: false , tele: false , jump: false , sprite: -1 },
+        ig_guardsman: {
+            disp: "Guardsmen",
+            men: 20,
+            hp_man: 3,
+            armour: 3,
+            mel: 4,
+            bal: 5,
+            rng: 5,
+            spd: 1.0,
+            cost: 0,
+            glyph: "guard",
+            ascii: "IG",
+            vehicle: false,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ig_ogryn: {
+            disp: "Ogryns",
+            men: 10,
+            hp_man: 10,
+            armour: 9,
+            mel: 9,
+            bal: 10,
+            rng: 3,
+            spd: 1.0,
+            cost: 0,
+            glyph: "orkbig",
+            ascii: "OG",
+            vehicle: false,
+            melee: true,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ig_hwt: {
+            disp: "Heavy Wpn Teams",
+            men: 12,
+            hp_man: 7,
+            armour: 6,
+            mel: 2,
+            bal: 10,
+            rng: 8,
+            spd: 0.5,
+            cost: 0,
+            glyph: "heavy",
+            ascii: "HW",
+            vehicle: false,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ig_russ: {
+            disp: "Leman Russ",
+            men: 1,
+            hp_man: 150,
+            armour: 28,
+            mel: 2,
+            bal: 30,
+            rng: 8,
+            spd: 1.0,
+            cost: 0,
+            glyph: "tank",
+            ascii: "LR",
+            vehicle: true,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ig_chimera: {
+            disp: "Chimeras",
+            men: 1,
+            hp_man: 120,
+            armour: 21,
+            mel: 2,
+            bal: 10,
+            rng: 8,
+            spd: 2.0,
+            cost: 0,
+            glyph: "transport",
+            ascii: "CM",
+            vehicle: true,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ig_basilisk: {
+            disp: "Basilisks",
+            men: 1,
+            hp_man: 90,
+            armour: 21,
+            mel: 2,
+            bal: 21,
+            rng: 7,
+            spd: 0.5,
+            cost: 0,
+            glyph: "tank",
+            ascii: "BA",
+            vehicle: true,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ad_thallax: {
+            disp: "Thallax",
+            men: 10,
+            hp_man: 8,
+            armour: 16,
+            mel: 8,
+            bal: 7,
+            rng: 5,
+            spd: 1.0,
+            cost: 0,
+            glyph: "term",
+            ascii: "TX",
+            vehicle: false,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ig_sentinel: {
+            disp: "Sentinels",
+            men: 1,
+            hp_man: 60,
+            armour: 14,
+            mel: 8,
+            bal: 10,
+            rng: 5,
+            spd: 2.0,
+            cost: 0,
+            glyph: "walker",
+            ascii: "SE",
+            vehicle: true,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ad_servitor: {
+            disp: "Praetorians",
+            men: 8,
+            hp_man: 12,
+            armour: 9,
+            mel: 2,
+            bal: 7,
+            rng: 5,
+            spd: 0.5,
+            cost: 0,
+            glyph: "heavy",
+            ascii: "PS",
+            vehicle: false,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ec_sister: {
+            disp: "Battle Sisters",
+            men: 10,
+            hp_man: 5,
+            armour: 9,
+            mel: 6,
+            bal: 10,
+            rng: 7,
+            spd: 1.0,
+            cost: 0,
+            glyph: "infantry",
+            ascii: "SI",
+            vehicle: false,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ec_repentia: {
+            disp: "Repentia",
+            men: 10,
+            hp_man: 6,
+            armour: 3,
+            mel: 20,
+            bal: 1,
+            rng: 1,
+            spd: 1.0,
+            cost: 0,
+            glyph: "infantry",
+            ascii: "RP",
+            vehicle: false,
+            melee: true,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ec_celestian: {
+            disp: "Celestians",
+            men: 10,
+            hp_man: 5,
+            armour: 9,
+            mel: 12,
+            bal: 10,
+            rng: 7,
+            spd: 1.0,
+            cost: 0,
+            glyph: "infantry",
+            ascii: "CL",
+            vehicle: false,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ec_penitent: {
+            disp: "Penitent Engines",
+            men: 1,
+            hp_man: 72,
+            armour: 14,
+            mel: 22,
+            bal: 17,
+            rng: 2,
+            spd: 1.0,
+            cost: 0,
+            glyph: "walker",
+            ascii: "PE",
+            vehicle: true,
+            melee: true,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ec_immolator: {
+            disp: "Immolators",
+            men: 1,
+            hp_man: 162,
+            armour: 28,
+            mel: 4,
+            bal: 17,
+            rng: 2,
+            spd: 2.0,
+            cost: 0,
+            glyph: "transport",
+            ascii: "IM",
+            vehicle: true,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ec_arco: {
+            disp: "Arco-Flagellants",
+            men: 10,
+            hp_man: 13,
+            armour: 3,
+            mel: 12,
+            bal: 1,
+            rng: 1,
+            spd: 1.0,
+            cost: 0,
+            glyph: "infantry",
+            ascii: "AF",
+            vehicle: false,
+            melee: true,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        el_guardian: {
+            disp: "Guardians",
+            men: 20,
+            hp_man: 2,
+            armour: 3,
+            mel: 4,
+            bal: 4,
+            rng: 3,
+            spd: 1.0,
+            cost: 0,
+            glyph: "infantry",
+            ascii: "GD",
+            vehicle: false,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        el_banshee: {
+            disp: "Howling Banshees",
+            men: 10,
+            hp_man: 3,
+            armour: 6,
+            mel: 12,
+            bal: 4,
+            rng: 3,
+            spd: 1.0,
+            cost: 0,
+            glyph: "infantry",
+            ascii: "HB",
+            vehicle: false,
+            melee: true,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        el_avenger: {
+            disp: "Dire Avengers",
+            men: 10,
+            hp_man: 3,
+            armour: 6,
+            mel: 4,
+            bal: 8,
+            rng: 3,
+            spd: 1.0,
+            cost: 0,
+            glyph: "infantry",
+            ascii: "DA",
+            vehicle: false,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        el_wraithlord: {
+            disp: "Wraithlords",
+            men: 1,
+            hp_man: 112,
+            armour: 21,
+            mel: 28,
+            bal: 21,
+            rng: 5,
+            spd: 1.0,
+            cost: 0,
+            glyph: "walker",
+            ascii: "WL",
+            vehicle: true,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        el_falcon: {
+            disp: "Falcons",
+            men: 1,
+            hp_man: 112,
+            armour: 21,
+            mel: 2,
+            bal: 17,
+            rng: 5,
+            spd: 3.0,
+            cost: 0,
+            glyph: "speeder",
+            ascii: "FA",
+            vehicle: true,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        el_warlock: {
+            disp: "Warlocks",
+            men: 5,
+            hp_man: 7,
+            armour: 6,
+            mel: 13,
+            bal: 7,
+            rng: 3,
+            spd: 1.0,
+            cost: 0,
+            glyph: "psyker",
+            ascii: "WK",
+            vehicle: false,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        tau_firewarrior: {
+            disp: "Fire Warriors",
+            men: 20,
+            hp_man: 3,
+            armour: 6,
+            mel: 2,
+            bal: 7,
+            rng: 7,
+            spd: 1.0,
+            cost: 0,
+            glyph: "infantry",
+            ascii: "FW",
+            vehicle: false,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        tau_kroot: {
+            disp: "Kroot",
+            men: 20,
+            hp_man: 3,
+            armour: 3,
+            mel: 8,
+            bal: 8,
+            rng: 5,
+            spd: 1.0,
+            cost: 0,
+            glyph: "infantry",
+            ascii: "KR",
+            vehicle: false,
+            melee: true,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        tau_crisis: {
+            disp: "XV8 Crisis",
+            men: 5,
+            hp_man: 12,
+            armour: 9,
+            mel: 2,
+            bal: 12,
+            rng: 7,
+            spd: 1.0,
+            cost: 0,
+            glyph: "term",
+            ascii: "XV",
+            vehicle: false,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        tau_broadside: {
+            disp: "XV88 Broadsides",
+            men: 5,
+            hp_man: 22,
+            armour: 16,
+            mel: 2,
+            bal: 12,
+            rng: 7,
+            spd: 0.5,
+            cost: 0,
+            glyph: "heavy",
+            ascii: "BS",
+            vehicle: false,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        tau_devilfish: {
+            disp: "Devilfish",
+            men: 1,
+            hp_man: 84,
+            armour: 21,
+            mel: 2,
+            bal: 12,
+            rng: 7,
+            spd: 2.0,
+            cost: 0,
+            glyph: "transport",
+            ascii: "DF",
+            vehicle: true,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        tau_hammerhead: {
+            disp: "Hammerheads",
+            men: 1,
+            hp_man: 84,
+            armour: 21,
+            mel: 2,
+            bal: 21,
+            rng: 8,
+            spd: 1.0,
+            cost: 0,
+            glyph: "tank",
+            ascii: "HH",
+            vehicle: true,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ty_termagaunt: {
+            disp: "Termagaunts",
+            men: 30,
+            hp_man: 2,
+            armour: 3,
+            mel: 2,
+            bal: 6,
+            rng: 3,
+            spd: 1.0,
+            cost: 0,
+            glyph: "infantry",
+            ascii: "TG",
+            vehicle: false,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ty_hormagaunt: {
+            disp: "Hormagaunts",
+            men: 30,
+            hp_man: 2,
+            armour: 3,
+            mel: 4,
+            bal: 1,
+            rng: 1,
+            spd: 1.0,
+            cost: 0,
+            glyph: "infantry",
+            ascii: "HG",
+            vehicle: false,
+            melee: true,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ty_warrior: {
+            disp: "Tyranid Warriors",
+            men: 10,
+            hp_man: 7,
+            armour: 9,
+            mel: 8,
+            bal: 8,
+            rng: 4,
+            spd: 1.0,
+            cost: 0,
+            glyph: "orkbig",
+            ascii: "TW",
+            vehicle: false,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ty_carnifex: {
+            disp: "Carnifexes",
+            men: 1,
+            hp_man: 168,
+            armour: 21,
+            mel: 25,
+            bal: 8,
+            rng: 4,
+            spd: 1.0,
+            cost: 0,
+            glyph: "orkwalker",
+            ascii: "CX",
+            vehicle: true,
+            melee: true,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ty_lictor: {
+            disp: "Lictors",
+            men: 3,
+            hp_man: 26,
+            armour: 9,
+            mel: 28,
+            bal: 8,
+            rng: 3,
+            spd: 1.0,
+            cost: 0,
+            glyph: "orkbig",
+            ascii: "LI",
+            vehicle: false,
+            melee: true,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ty_zoanthrope: {
+            disp: "Zoanthropes",
+            men: 3,
+            hp_man: 30,
+            armour: 6,
+            mel: 2,
+            bal: 21,
+            rng: 5,
+            spd: 1.0,
+            cost: 0,
+            glyph: "psyker",
+            ascii: "ZO",
+            vehicle: false,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ch_marine: {
+            disp: "Chaos Marines",
+            men: 10,
+            hp_man: 7,
+            armour: 9,
+            mel: 12,
+            bal: 10,
+            rng: 7,
+            spd: 1.0,
+            cost: 0,
+            glyph: "infantry",
+            ascii: "CS",
+            vehicle: false,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ch_berzerker: {
+            disp: "Khorne Berzerkers",
+            men: 10,
+            hp_man: 18,
+            armour: 9,
+            mel: 14,
+            bal: 8,
+            rng: 3,
+            spd: 1.0,
+            cost: 0,
+            glyph: "infantry",
+            ascii: "KB",
+            vehicle: false,
+            melee: true,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ch_terminator: {
+            disp: "Chaos Terminators",
+            men: 5,
+            hp_man: 12,
+            armour: 22,
+            mel: 25,
+            bal: 13,
+            rng: 3,
+            spd: 0.9,
+            cost: 0,
+            glyph: "term",
+            ascii: "CT",
+            vehicle: false,
+            melee: false,
+            tele: true,
+            jump: false,
+            sprite: -1,
+        },
+        ch_hellbrute: {
+            disp: "Hellbrutes",
+            men: 1,
+            hp_man: 168,
+            armour: 28,
+            mel: 28,
+            bal: 17,
+            rng: 2,
+            spd: 1.0,
+            cost: 0,
+            glyph: "walker",
+            ascii: "HL",
+            vehicle: true,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ch_rhino: {
+            disp: "Chaos Rhinos",
+            men: 1,
+            hp_man: 100,
+            armour: 21,
+            mel: 2,
+            bal: 15,
+            rng: 5,
+            spd: 2.0,
+            cost: 0,
+            glyph: "transport",
+            ascii: "RH",
+            vehicle: true,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ch_sorcerer: {
+            disp: "Chaos Sorcerers",
+            men: 5,
+            hp_man: 15,
+            armour: 16,
+            mel: 10,
+            bal: 8,
+            rng: 3,
+            spd: 1.0,
+            cost: 0,
+            glyph: "psyker",
+            ascii: "SO",
+            vehicle: false,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        he_cultist: {
+            disp: "Cultists",
+            men: 30,
+            hp_man: 2,
+            armour: 6,
+            mel: 6,
+            bal: 5,
+            rng: 5,
+            spd: 1.0,
+            cost: 0,
+            glyph: "infantry",
+            ascii: "CU",
+            vehicle: false,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        he_mutant: {
+            disp: "Mutants",
+            men: 20,
+            hp_man: 3,
+            armour: 3,
+            mel: 8,
+            bal: 8,
+            rng: 3,
+            spd: 1.0,
+            cost: 0,
+            glyph: "infantry",
+            ascii: "MU",
+            vehicle: false,
+            melee: true,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        he_elite: {
+            disp: "Cultist Elites",
+            men: 15,
+            hp_man: 3,
+            armour: 6,
+            mel: 14,
+            bal: 5,
+            rng: 5,
+            spd: 1.0,
+            cost: 0,
+            glyph: "infantry",
+            ascii: "CE",
+            vehicle: false,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        he_russ: {
+            disp: "Chaos Leman Russ",
+            men: 1,
+            hp_man: 150,
+            armour: 28,
+            mel: 2,
+            bal: 25,
+            rng: 7,
+            spd: 1.0,
+            cost: 0,
+            glyph: "tank",
+            ascii: "CR",
+            vehicle: true,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        he_technical: {
+            disp: "Technicals",
+            men: 1,
+            hp_man: 50,
+            armour: 14,
+            mel: 2,
+            bal: 10,
+            rng: 8,
+            spd: 3.0,
+            cost: 0,
+            glyph: "transport",
+            ascii: "TC",
+            vehicle: true,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        he_possessed: {
+            disp: "Possessed",
+            men: 8,
+            hp_man: 8,
+            armour: 6,
+            mel: 15,
+            bal: 1,
+            rng: 1,
+            spd: 1.0,
+            cost: 0,
+            glyph: "psyker",
+            ascii: "PO",
+            vehicle: false,
+            melee: true,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        gs_hybrid: {
+            disp: "Hybrids",
+            men: 20,
+            hp_man: 3,
+            armour: 6,
+            mel: 5,
+            bal: 5,
+            rng: 5,
+            spd: 1.0,
+            cost: 0,
+            glyph: "infantry",
+            ascii: "HY",
+            vehicle: false,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        gs_stealer: {
+            disp: "Genestealers",
+            men: 15,
+            hp_man: 5,
+            armour: 6,
+            mel: 7,
+            bal: 1,
+            rng: 1,
+            spd: 1.0,
+            cost: 0,
+            glyph: "infantry",
+            ascii: "GS",
+            vehicle: false,
+            melee: true,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        gs_aberrant: {
+            disp: "Aberrants",
+            men: 10,
+            hp_man: 7,
+            armour: 3,
+            mel: 8,
+            bal: 1,
+            rng: 1,
+            spd: 1.0,
+            cost: 0,
+            glyph: "orkbig",
+            ascii: "AB",
+            vehicle: false,
+            melee: true,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        gs_rockgrinder: {
+            disp: "Rockgrinders",
+            men: 1,
+            hp_man: 150,
+            armour: 21,
+            mel: 14,
+            bal: 8,
+            rng: 4,
+            spd: 1.0,
+            cost: 0,
+            glyph: "walker",
+            ascii: "RG",
+            vehicle: true,
+            melee: true,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        gs_truck: {
+            disp: "Goliath Trucks",
+            men: 1,
+            hp_man: 117,
+            armour: 21,
+            mel: 2,
+            bal: 8,
+            rng: 5,
+            spd: 3.0,
+            cost: 0,
+            glyph: "transport",
+            ascii: "GT",
+            vehicle: true,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        gs_magus: {
+            disp: "Magus",
+            men: 4,
+            hp_man: 7,
+            armour: 6,
+            mel: 10,
+            bal: 5,
+            rng: 5,
+            spd: 1.0,
+            cost: 0,
+            glyph: "psyker",
+            ascii: "MG",
+            vehicle: false,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ne_warrior: {
+            disp: "Necron Warriors",
+            men: 20,
+            hp_man: 6,
+            armour: 6,
+            mel: 6,
+            bal: 4,
+            rng: 5,
+            spd: 1.0,
+            cost: 0,
+            glyph: "infantry",
+            ascii: "NW",
+            vehicle: false,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ne_flayed: {
+            disp: "Flayed Ones",
+            men: 15,
+            hp_man: 6,
+            armour: 6,
+            mel: 6,
+            bal: 1,
+            rng: 1,
+            spd: 1.0,
+            cost: 0,
+            glyph: "infantry",
+            ascii: "FO",
+            vehicle: false,
+            melee: true,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ne_lychguard: {
+            disp: "Lychguard",
+            men: 10,
+            hp_man: 8,
+            armour: 16,
+            mel: 20,
+            bal: 1,
+            rng: 1,
+            spd: 1.0,
+            cost: 0,
+            glyph: "term",
+            ascii: "LG",
+            vehicle: false,
+            melee: true,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ne_stalker: {
+            disp: "Tomb Stalkers",
+            men: 1,
+            hp_man: 162,
+            armour: 21,
+            mel: 28,
+            bal: 21,
+            rng: 6,
+            spd: 1.0,
+            cost: 0,
+            glyph: "orkwalker",
+            ascii: "TS",
+            vehicle: true,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ne_spyder: {
+            disp: "Canoptek Spyders",
+            men: 1,
+            hp_man: 96,
+            armour: 14,
+            mel: 17,
+            bal: 1,
+            rng: 1,
+            spd: 2.0,
+            cost: 0,
+            glyph: "walker",
+            ascii: "SP",
+            vehicle: true,
+            melee: true,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
+        ne_destroyer: {
+            disp: "Necron Destroyers",
+            men: 5,
+            hp_man: 21,
+            armour: 16,
+            mel: 6,
+            bal: 10,
+            rng: 6,
+            spd: 3.0,
+            cost: 0,
+            glyph: "speeder",
+            ascii: "ND",
+            vehicle: false,
+            melee: false,
+            tele: false,
+            jump: false,
+            sprite: -1,
+        },
     };
     if (variable_struct_exists(_t, _key)) {
         return _t[$ _key];
@@ -310,14 +1669,42 @@ function grid_unit_def(_key) {
 function grid_head_art(_key) {
     switch (_key) {
         case "tactical":
-            return { spr: spr_ba_mk7_helm, sub: 0, x1: 67, y1: 12, x2: 99, y2: 43 };
+            return {
+                spr: spr_ba_mk7_helm,
+                sub: 0,
+                x1: 67,
+                y1: 12,
+                x2: 99,
+                y2: 43,
+            };
         case "assault":
-            return { spr: spr_ba_mk6_helm, sub: 0, x1: 66, y1: 14, x2: 100, y2: 47 };
+            return {
+                spr: spr_ba_mk6_helm,
+                sub: 0,
+                x1: 66,
+                y1: 14,
+                x2: 100,
+                y2: 47,
+            };
         case "devastator":
-            return { spr: spr_ba_mk5_helm, sub: 0, x1: 68, y1: 13, x2: 98, y2: 43 };
+            return {
+                spr: spr_ba_mk5_helm,
+                sub: 0,
+                x1: 68,
+                y1: 13,
+                x2: 98,
+                y2: 43,
+            };
         case "scout":
             // Frame 0 is the full head; frame 1 is the bare face underneath it.
-            return { spr: spr_scout_heads, sub: 0, x1: 73, y1: 28, x2: 97, y2: 62 };
+            return {
+                spr: spr_scout_heads,
+                sub: 0,
+                x1: 73,
+                y1: 28,
+                x2: 97,
+                y2: 62,
+            };
         case "guardsmen":
             return grid_guardsman_head();
         // Runtime art, loaded from images\units and cropped to the drawn pixels.
@@ -359,7 +1746,14 @@ function grid_runtime_art(_file, _x1, _y1, _x2, _y2) {
     if (!sprite_exists(_spr)) {
         return undefined;
     }
-    return { spr: _spr, sub: 0, x1: _x1, y1: _y1, x2: _x2, y2: _y2 };
+    return {
+        spr: _spr,
+        sub: 0,
+        x1: _x1,
+        y1: _y1,
+        x2: _x2,
+        y2: _y2,
+    };
 }
 
 /// @function grid_guardsman_head
@@ -372,8 +1766,7 @@ function grid_guardsman_head() {
         global.grid_guardsman_head_spr = -1;
     }
     if (!sprite_exists(global.grid_guardsman_head_spr)) {
-        global.grid_guardsman_head_spr = sprite_add(
-            working_directory + "/images/units/guardsman_head.png", 1, false, false, 0, 0);
+        global.grid_guardsman_head_spr = sprite_add(working_directory + "/images/units/guardsman_head.png", 1, false, false, 0, 0);
     }
     if (!sprite_exists(global.grid_guardsman_head_spr)) {
         return undefined;
@@ -393,9 +1786,23 @@ function grid_guardsman_head() {
 /// @description Player deployable types, in the order the left bar lists them.
 function grid_type_list() {
     return [
-        "tactical", "assault", "devastator", "veteran", "terminator", "assault_term",
-        "scout", "hq", "guardsmen", "heavy_weapons", "dreadnought", "rhino",
-        "chimera", "predator", "land_raider", "land_speeder", "whirlwind",
+        "tactical",
+        "assault",
+        "devastator",
+        "veteran",
+        "terminator",
+        "assault_term",
+        "scout",
+        "hq",
+        "guardsmen",
+        "heavy_weapons",
+        "dreadnought",
+        "rhino",
+        "chimera",
+        "predator",
+        "land_raider",
+        "land_speeder",
+        "whirlwind",
     ];
 }
 
@@ -416,9 +1823,28 @@ function grid_form_palette() {
 /// @function grid_sgt_names
 function grid_sgt_names() {
     return [
-        "Aeschus", "Bardan", "Corvane", "Dreux", "Eleon", "Faustus", "Gaius",
-        "Helion", "Ithuriel", "Jorel", "Kaeso", "Lucian", "Marcus", "Nikaen",
-        "Orbec", "Pellas", "Quintus", "Ravan", "Solon", "Tiberon", "Ulmar", "Varro",
+        "Aeschus",
+        "Bardan",
+        "Corvane",
+        "Dreux",
+        "Eleon",
+        "Faustus",
+        "Gaius",
+        "Helion",
+        "Ithuriel",
+        "Jorel",
+        "Kaeso",
+        "Lucian",
+        "Marcus",
+        "Nikaen",
+        "Orbec",
+        "Pellas",
+        "Quintus",
+        "Ravan",
+        "Solon",
+        "Tiberon",
+        "Ulmar",
+        "Varro",
     ];
 }
 
@@ -491,9 +1917,7 @@ function GridSquad(_side, _type, _name) constructor {
     lib_powers = [];
     // Warp ward: ticks remaining of the protective cast.
     ward = 0;
-    ammo = _d.vehicle
-        ? (grid_is_artillery(_type) ? GRIDC_AMMO_ARTY : GRIDC_AMMO_VEH)
-        : (grid_is_heavy_weapon(_type) ? GRIDC_AMMO_HEAVY : GRIDC_AMMO_INF);
+    ammo = _d.vehicle ? (grid_is_artillery(_type) ? GRIDC_AMMO_ARTY : GRIDC_AMMO_VEH) : (grid_is_heavy_weapon(_type) ? GRIDC_AMMO_HEAVY : GRIDC_AMMO_INF);
     ammo_out = false;
     kills = 0;
     // Worst thing that happened to this squad this tick, so the floating text
@@ -556,15 +1980,7 @@ function grid_log(ctrl, _txt, _col = eMSG_COLOR.DEFAULT) {
 /// @description Short lived combat text above a tile, Caves of Qud style. Stored
 /// in world tile coordinates so it stays glued to the ground while the view pans.
 function grid_floater(ctrl, _c, _r, _txt, _col) {
-    array_push(ctrl.floaters, {
-        fc: _c,
-        fr: _r,
-        fjit: irandom_range(-7, 7),
-        frise: 0,
-        ftxt: _txt,
-        fcol: _col,
-        flife: round(GRIDC_FLOAT_LIFE / max(0.125, ctrl.speed_mult)),
-    });
+    array_push(ctrl.floaters, {fc: _c, fr: _r, fjit: irandom_range(-7, 7), frise: 0, ftxt: _txt, fcol: _col, flife: round(GRIDC_FLOAT_LIFE / max(0.125, ctrl.speed_mult))});
     if (array_length(ctrl.floaters) > 120) {
         array_delete(ctrl.floaters, 0, 1);
     }
@@ -577,7 +1993,7 @@ function grid_dist(_c1, _r1, _c2, _r2) {
 
 /// @function grid_in_bounds
 function grid_in_bounds(ctrl, _c, _r) {
-    return ((_c >= 0) && (_c < ctrl.cols) && (_r >= 0) && (_r < ctrl.rows));
+    return (_c >= 0) && (_c < ctrl.cols) && (_r >= 0) && (_r < ctrl.rows);
 }
 
 /// @function grid_squad_at
@@ -660,10 +2076,14 @@ function grid_in_viewport(_mx, _my) {
 /// @function grid_size_width
 function grid_size_width(_size) {
     switch (string_lower(_size)) {
-        case "small": return 8;
-        case "large": return 18;
-        case "huge": return 26;
-        default: return 12;
+        case "small":
+            return 8;
+        case "large":
+            return 18;
+        case "huge":
+            return 26;
+        default:
+            return 12;
     }
 }
 
@@ -692,7 +2112,7 @@ function grid_setup_field(ctrl, _width) {
 /// @description Indirect fire pieces, which reach across the field rather than
 /// down a lane. Everything else with a hull is handled by the tank rule.
 function grid_is_artillery(_key) {
-    return ((_key == "whirlwind") || (_key == "ig_basilisk"));
+    return (_key == "whirlwind") || (_key == "ig_basilisk");
 }
 
 /// @function grid_is_heavy_weapon
@@ -741,43 +2161,93 @@ function grid_range_bonus(_key) {
 /// out of the key, so an unknown roster key still reads sensibly.
 function grid_weapon_name(_key) {
     switch (_key) {
-        case "tactical": return "Bolters";
-        case "veteran": return "Stalker Pattern Bolters";
-        case "terminator": return "Storm Bolters";
-        case "assault_term": return "Lightning Claws";
-        case "assault": return "Bolt Pistols";
-        case "devastator": return "Heavy Bolters";
-        case "scout": return "Sniper Rifles";
-        case "hq": return "Plasma Pistols";
-        case "guardsmen": case "ig_guardsman": return "Lasguns";
-        case "heavy_weapons": case "ig_hwt": return "Lascannons";
-        case "whirlwind": return "Whirlwind Missiles";
-        case "dreadnought": return "Twin Linked Lascannons";
-        case "predator": return "Predator Autocannons";
-        case "land_raider": return "Godhammer Lascannons";
-        case "land_speeder": return "Heavy Bolters";
-        case "rhino": case "chimera": case "ig_chimera": return "Multi-Lasers";
-        case "ig_russ": case "he_russ": return "Battle Cannon shells";
-        case "ig_basilisk": return "Earthshaker shells";
-        case "ig_sentinel": return "Multi-Lasers";
+        case "tactical":
+            return "Bolters";
+        case "veteran":
+            return "Stalker Pattern Bolters";
+        case "terminator":
+            return "Storm Bolters";
+        case "assault_term":
+            return "Lightning Claws";
+        case "assault":
+            return "Bolt Pistols";
+        case "devastator":
+            return "Heavy Bolters";
+        case "scout":
+            return "Sniper Rifles";
+        case "hq":
+            return "Plasma Pistols";
+        case "guardsmen":
+        case "ig_guardsman":
+            return "Lasguns";
+        case "heavy_weapons":
+        case "ig_hwt":
+            return "Lascannons";
+        case "whirlwind":
+            return "Whirlwind Missiles";
+        case "dreadnought":
+            return "Twin Linked Lascannons";
+        case "predator":
+            return "Predator Autocannons";
+        case "land_raider":
+            return "Godhammer Lascannons";
+        case "land_speeder":
+            return "Heavy Bolters";
+        case "rhino":
+        case "chimera":
+        case "ig_chimera":
+            return "Multi-Lasers";
+        case "ig_russ":
+        case "he_russ":
+            return "Battle Cannon shells";
+        case "ig_basilisk":
+            return "Earthshaker shells";
+        case "ig_sentinel":
+            return "Multi-Lasers";
     }
     var _p = string_copy(_key, 1, 3);
     if (_p == "ork") {
-        if (string_pos("rokkit", _key) > 0) return "Rokkitz";
-        if (string_pos("kannon", _key) > 0) return "Kannonz";
-        if (string_pos("snazz", _key) > 0) return "Snazzgunz";
-        if (string_pos("big", _key) > 0) return "Big Shootaz";
-        if (string_pos("slugga", _key) > 0) return "Sluggaz";
+        if (string_pos("rokkit", _key) > 0) {
+            return "Rokkitz";
+        }
+        if (string_pos("kannon", _key) > 0) {
+            return "Kannonz";
+        }
+        if (string_pos("snazz", _key) > 0) {
+            return "Snazzgunz";
+        }
+        if (string_pos("big", _key) > 0) {
+            return "Big Shootaz";
+        }
+        if (string_pos("slugga", _key) > 0) {
+            return "Sluggaz";
+        }
         return "Shootaz";
     }
-    if (_p == "tau") return (string_pos("broadside", _key) > 0) ? "Railguns" : "Pulse Rifles";
-    if (_p == "el_") return "Shuriken Catapults";
-    if (_p == "ne_") return "Gauss Flayers";
-    if (_p == "ty_") return "Bio-weapons";
-    if (_p == "gs_") return "Autoguns";
-    if (_p == "he_") return "Autoguns";
-    if (_p == "ad_") return "Volkite Chargers";
-    if (_p == "ch_") return "Bolters";
+    if (_p == "tau") {
+        return (string_pos("broadside", _key) > 0) ? "Railguns" : "Pulse Rifles";
+    }
+    if (_p == "el_") {
+        return "Shuriken Catapults";
+    }
+    if (_p == "ne_") {
+        return "Gauss Flayers";
+    }
+    if (_p == "ty_") {
+        return "Bio-weapons";
+    }
+    if (_p == "gs_") {
+        return "Autoguns";
+    }
+    if (_p == "he_") {
+        return "Autoguns";
+    }
+    if (_p == "ad_") {
+        return "Volkite Chargers";
+    }
+    if (_p == "ch_") {
+        return "Bolters";
+    }
     return "guns";
 }
 
@@ -831,11 +2301,10 @@ function grid_apply_range_class(ctrl, _sq) {
 /// a Tyranid does not use them at all.
 function grid_cover_skill(_key) {
     var _p = string_copy(_key, 1, 3);
-    if ((_p == "tau")) {
+    if (_p == "tau") {
         return 1.20;
     }
-    if ((_p == "ig_") || (_p == "he_") || (_p == "gs_") || (_p == "ec_") || (_p == "ad_")
-        || (_key == "guardsmen") || (_key == "heavy_weapons")) {
+    if ((_p == "ig_") || (_p == "he_") || (_p == "gs_") || (_p == "ec_") || (_p == "ad_") || (_key == "guardsmen") || (_key == "heavy_weapons")) {
         return 1.00;
     }
     if (_p == "el_") {
@@ -863,8 +2332,7 @@ function grid_cover_urge(_key) {
     if (_p == "tau") {
         return 0.85;
     }
-    if ((_p == "ig_") || (_p == "he_") || (_p == "gs_") || (_p == "ec_") || (_p == "el_")
-        || (_p == "ad_") || (_key == "guardsmen") || (_key == "heavy_weapons")) {
+    if ((_p == "ig_") || (_p == "he_") || (_p == "gs_") || (_p == "ec_") || (_p == "el_") || (_p == "ad_") || (_key == "guardsmen") || (_key == "heavy_weapons")) {
         return 0.55;
     }
     if (_p == "ne_") {
@@ -939,7 +2407,7 @@ function grid_passable(ctrl, _c, _r) {
         return false;
     }
     var _t = ctrl.blk[_c][_r];
-    return ((_t == GRIDT_OPEN) || (_t == GRIDT_LIGHT));
+    return (_t == GRIDT_OPEN) || (_t == GRIDT_LIGHT);
 }
 
 /// @function grid_line_block
@@ -979,7 +2447,11 @@ function grid_line_block(ctrl, _c0, _r0, _c1, _r1) {
         }
         var _t = ctrl.blk[_c][_r];
         if (_t == GRIDT_WALL) {
-            return [true, _bars, _light];
+            return [
+                true,
+                _bars,
+                _light,
+            ];
         }
         if (_t == GRIDT_BARRIER) {
             _bars += 1;
@@ -987,7 +2459,11 @@ function grid_line_block(ctrl, _c0, _r0, _c1, _r1) {
             _light += 1;
         }
     }
-    return [false, _bars, _light];
+    return [
+        false,
+        _bars,
+        _light,
+    ];
 }
 
 /// @function grid_build_rect
@@ -1001,7 +2477,7 @@ function grid_build_rect(ctrl, _c0, _r0, _w, _h) {
             if (!grid_in_bounds(ctrl, _c, _r)) {
                 continue;
             }
-            var _edge = ((_c == _c0) || (_c == _c1) || (_r == _r0) || (_r == _r1));
+            var _edge = (_c == _c0) || (_c == _c1) || (_r == _r0) || (_r == _r1);
             if (!_edge) {
                 // Interior: open floor, and good cover to fight from.
                 ctrl.blk[_c][_r] = GRIDT_OPEN;
@@ -1010,7 +2486,7 @@ function grid_build_rect(ctrl, _c0, _r0, _w, _h) {
             }
             // The western face is what the Chapter sees first, so that is where
             // the windows and firing slits go.
-            if ((_c == _c0) && ((_r mod 2) == 0)) {
+            if ((_c == _c0) && ((_r % 2) == 0)) {
                 ctrl.blk[_c][_r] = GRIDT_BARRIER;
             } else {
                 ctrl.blk[_c][_r] = GRIDT_WALL;
@@ -1037,7 +2513,14 @@ function grid_terrain_from_region_name(_name) {
     // Marsh is a real worldgen terrain and was missing here, so every marsh
     // region resolved to open ground. Order matters only for names in two pools,
     // which does not happen.
-    var _kinds = ["urban", "forest", "mountain", "coastal", "marsh", "open"];
+    var _kinds = [
+        "urban",
+        "forest",
+        "mountain",
+        "coastal",
+        "marsh",
+        "open",
+    ];
     for (var _i = 0; _i < array_length(_kinds); _i++) {
         if (array_contains(region_terrain_name_pool(_kinds[_i]), _name)) {
             return _kinds[_i];
@@ -1067,7 +2550,7 @@ function grid_gen_structures(ctrl) {
         // Outworks: a barrier line the attackers have to cross first.
         var _ow = max(_west, _fc - 4);
         for (var _r = _fr; _r < (_fr + _fh); _r++) {
-            if (grid_in_bounds(ctrl, _ow, _r) && ((_r mod 3) != 0)) {
+            if (grid_in_bounds(ctrl, _ow, _r) && ((_r % 3) != 0)) {
                 ctrl.blk[_ow][_r] = GRIDT_BARRIER;
             }
         }
@@ -1202,7 +2685,7 @@ function grid_gen_cover(ctrl) {
 function grid_in_deploy_zone(ctrl, _c, _r) {
     // Full height, not the front-width band. The player deploys along the whole
     // western edge; the band only decides where auto deploy starts laying out.
-    return ((_c >= 0) && (_c < GRIDC_DEPLOY_COLS) && (_r >= 0) && (_r < ctrl.rows));
+    return (_c >= 0) && (_c < GRIDC_DEPLOY_COLS) && (_r >= 0) && (_r < ctrl.rows);
 }
 
 /// @function grid_gen_player_pool
@@ -1211,23 +2694,74 @@ function grid_in_deploy_zone(ctrl, _c, _r) {
 function grid_gen_player_pool(ctrl) {
     var _w = ctrl.combat_width;
     var _mix = [
-        ["tactical", max(3, round(_w * 0.55))],
-        ["assault", max(1, round(_w * 0.22))],
-        ["devastator", max(1, round(_w * 0.22))],
-        ["scout", max(1, round(_w * 0.18))],
-        ["veteran", max(1, round(_w * 0.14))],
-        ["guardsmen", max(2, round(_w * 0.5))],
-        ["heavy_weapons", max(1, round(_w * 0.14))],
-        ["terminator", max(1, round(_w * 0.12))],
-        ["assault_term", max(1, round(_w * 0.1))],
-        ["hq", 1],
-        ["dreadnought", max(1, round(_w * 0.1))],
-        ["rhino", max(1, round(_w * 0.2))],
-        ["chimera", max(1, round(_w * 0.14))],
-        ["predator", max(1, round(_w * 0.1))],
-        ["land_raider", max(1, round(_w * 0.06))],
-        ["land_speeder", max(1, round(_w * 0.12))],
-        ["whirlwind", max(1, round(_w * 0.08))],
+        [
+            "tactical",
+            max(3, round(_w * 0.55)),
+        ],
+        [
+            "assault",
+            max(1, round(_w * 0.22)),
+        ],
+        [
+            "devastator",
+            max(1, round(_w * 0.22)),
+        ],
+        [
+            "scout",
+            max(1, round(_w * 0.18)),
+        ],
+        [
+            "veteran",
+            max(1, round(_w * 0.14)),
+        ],
+        [
+            "guardsmen",
+            max(2, round(_w * 0.5)),
+        ],
+        [
+            "heavy_weapons",
+            max(1, round(_w * 0.14)),
+        ],
+        [
+            "terminator",
+            max(1, round(_w * 0.12)),
+        ],
+        [
+            "assault_term",
+            max(1, round(_w * 0.1)),
+        ],
+        [
+            "hq",
+            1,
+        ],
+        [
+            "dreadnought",
+            max(1, round(_w * 0.1)),
+        ],
+        [
+            "rhino",
+            max(1, round(_w * 0.2)),
+        ],
+        [
+            "chimera",
+            max(1, round(_w * 0.14)),
+        ],
+        [
+            "predator",
+            max(1, round(_w * 0.1)),
+        ],
+        [
+            "land_raider",
+            max(1, round(_w * 0.06)),
+        ],
+        [
+            "land_speeder",
+            max(1, round(_w * 0.12)),
+        ],
+        [
+            "whirlwind",
+            max(1, round(_w * 0.08)),
+        ],
     ];
     for (var _i = 0; _i < array_length(_mix); _i++) {
         var _key = _mix[_i][0];
@@ -1316,7 +2850,14 @@ function grid_spawn_enemy_force(ctrl) {
     var _t = clamp(ctrl.pending_threat, 1, 7);
     var _tm = 0.40 + (_t * 0.23);
     var _set = grid_enemy_set(ctrl.pending_enemy);
-    var _wt = [0.70, 0.55, 0.20, 0.12, 0.08, 0.04];
+    var _wt = [
+        0.70,
+        0.55,
+        0.20,
+        0.12,
+        0.08,
+        0.04,
+    ];
 
     // Flatten the roll into one list, each entry remembering the slot it came
     // from so the shape can tell a leader from a rifleman.
@@ -1326,13 +2867,13 @@ function grid_spawn_enemy_force(ctrl) {
         var _weight = (_m < array_length(_wt)) ? _wt[_m] : 0.05;
         var _count = max(_floor, round(_w * _weight * _tm));
         for (var _q = 0; _q < _count; _q++) {
-            array_push(_units, { key: _set[_m], role: _m });
+            array_push(_units, {key: _set[_m], role: _m});
         }
     }
 
     var _shape = grid_enemy_shape(ctrl.pending_enemy);
     var _slots = grid_shape_slots(ctrl, _shape, _units);
-    var _shaped = (array_length(_slots) >= array_length(_units));
+    var _shaped = array_length(_slots) >= array_length(_units);
 
     // One formation per unit type, so the horde advances in blocks and only
     // scatters into individual fights once it reaches the line.
@@ -1366,7 +2907,7 @@ function grid_spawn_wave(ctrl) {
     var _n = max(3, round(ctrl.combat_width * 0.4));
     var _base = array_length(ctrl.squads);
     for (var _i = 0; _i < _n; _i++) {
-        grid_spawn_enemy_squad(ctrl, (_i mod 2 == 0) ? "ork_shoota" : "ork_slugga", _base + _i);
+        grid_spawn_enemy_squad(ctrl, (_i % 2 == 0) ? "ork_shoota" : "ork_slugga", _base + _i);
     }
     ctrl.waves_left -= 1;
     grid_log(ctrl, "More greenskins pour onto the field!", eMSG_COLOR.YELLOW);
@@ -1418,7 +2959,12 @@ function grid_picked_stats(ctrl) {
         _pow += grid_squad_power(_s);
         _mv = min(_mv, _s.spd);
     }
-    return { n: _n, cost: _cost, pow: round(_pow), mv: (_n > 0) ? _mv : 0 };
+    return {
+        n: _n,
+        cost: _cost,
+        pow: round(_pow),
+        mv: (_n > 0) ? _mv : 0,
+    };
 }
 
 /// @function grid_reserve_count
@@ -1473,7 +3019,7 @@ function grid_new_formation(ctrl, _type, _side = 0) {
     }
     ctrl.form_counters[$ _letters] = _cnt;
     var _pal = grid_form_palette();
-    var _f = new GridFormation(_side, $"{_letters}{_cnt}", _pal[ctrl.form_color_idx mod array_length(_pal)]);
+    var _f = new GridFormation(_side, $"{_letters}{_cnt}", _pal[ctrl.form_color_idx % array_length(_pal)]);
     ctrl.form_color_idx += 1;
     array_push(ctrl.formations, _f);
     return array_length(ctrl.formations) - 1;
@@ -1485,7 +3031,10 @@ function grid_new_formation(ctrl, _type, _side = 0) {
 function grid_footprint(ctrl, _n) {
     var _fw = clamp(ctrl.placing_w, 1, max(1, _n));
     var _fh = max(1, ceil(_n / _fw));
-    return [_fw, _fh];
+    return [
+        _fw,
+        _fh,
+    ];
 }
 
 /// @function grid_placement_valid
@@ -1614,10 +3163,7 @@ function grid_drag_slots(ctrl, _c0, _r0, _c1, _r1, _n, _depth = 1) {
     var _rank = 0;
     while ((array_length(_slots) < _n) && (_rank <= (ctrl.cols + ctrl.rows))) {
         for (var _i = 0; (_i < _front) && (array_length(_slots) < _n); _i++) {
-            array_push(_slots, [
-                round(_c0 + (_sx * _i) + (_bx * _rank)),
-                round(_r0 + (_sy * _i) + (_by * _rank)),
-            ]);
+            array_push(_slots, [round(_c0 + (_sx * _i) + (_bx * _rank)), round(_r0 + (_sy * _i) + (_by * _rank))]);
         }
         _rank += 1;
     }
@@ -1806,7 +3352,7 @@ function grid_column_slots(ctrl, _col, _n) {
     for (var _c = _col; (_c >= 0) && (array_length(_slots) < _n); _c--) {
         for (var _step = 0; (_step < ctrl.rows) && (array_length(_slots) < _n); _step++) {
             // 0, -1, +1, -2, +2 ... outward from the centre line.
-            var _off = ((_step + 1) div 2) * (((_step mod 2) == 0) ? 1 : -1);
+            var _off = ((_step + 1) div 2) * (((_step % 2) == 0) ? 1 : -1);
             var _r = _mid + _off;
             if (!grid_in_bounds(ctrl, _c, _r)) {
                 continue;
@@ -1850,16 +3396,28 @@ function grid_hq_aura(ctrl, _s) {
 /// Returns [stopped, residual multiplier].
 function grid_roll_event(_mult, _share) {
     if (_mult >= 1) {
-        return [false, _mult];
+        return [
+            false,
+            _mult,
+        ];
     }
     var _stop = clamp((1 - _mult) * _share, 0, 0.85);
     if (_stop <= 0) {
-        return [false, _mult];
+        return [
+            false,
+            _mult,
+        ];
     }
     if (random(1) < _stop) {
-        return [true, 0];
+        return [
+            true,
+            0,
+        ];
     }
-    return [false, _mult / (1 - _stop)];
+    return [
+        false,
+        _mult / (1 - _stop),
+    ];
 }
 
 /// @function grid_mark_outcome
@@ -1882,14 +3440,23 @@ function grid_mark_outcome(ctrl, _di, _kind) {
 /// own blood: bright for a graze, dark for a real wound. The enemy's losses read
 /// green, keeping the log's rule that green is good news for the Chapter.
 function grid_hit_label(_s) {
-    var _mine = (_s.side == 0);
+    var _mine = _s.side == 0;
     switch (_s.hit_kind) {
         case GRIDHIT_MISS:
-            return ["MISS", GRIDC_COL_GREY];
+            return [
+                "MISS",
+                GRIDC_COL_GREY,
+            ];
         case GRIDHIT_DEFLECT:
-            return ["DEFLECTED", GRIDC_COL_GREY];
+            return [
+                "DEFLECTED",
+                GRIDC_COL_GREY,
+            ];
         case GRIDHIT_DODGE:
-            return ["DODGED", GRIDC_COL_DODGE];
+            return [
+                "DODGED",
+                GRIDC_COL_DODGE,
+            ];
         // The label is built into a local first. An array literal that opens
         // straight onto a template string is a compile error: GameMaker lexes
         // the two characters [$ as the struct accessor, not as an array bracket
@@ -1897,13 +3464,22 @@ function grid_hit_label(_s) {
         case GRIDHIT_GRAZE:
             var _chip = _s.is_vehicle ? $" -{round(_s.hit_dmg)}" : "";
             var _graze_txt = $"GRAZED{_chip}";
-            return [_graze_txt, _mine ? GRIDC_COL_GRAZE : GRIDC_COL_FEED];
+            return [
+                _graze_txt,
+                _mine ? GRIDC_COL_GRAZE : GRIDC_COL_FEED,
+            ];
         case GRIDHIT_WOUND:
             var _n = _s.is_vehicle ? round(_s.hit_dmg) : _s.hit_kills;
             var _wound_txt = $"WOUNDED -{_n}";
-            return [_wound_txt, _mine ? GRIDC_COL_WOUND : GRIDC_COL_KILL];
+            return [
+                _wound_txt,
+                _mine ? GRIDC_COL_WOUND : GRIDC_COL_KILL,
+            ];
     }
-    return ["", GRIDC_COL_GREY];
+    return [
+        "",
+        GRIDC_COL_GREY,
+    ];
 }
 
 /// @function grid_apply_damage
@@ -1994,9 +3570,7 @@ function grid_apply_damage(ctrl, _di, _dmg, _ai) {
 /// faction's whole roster shoots in its own colour without 79 table edits.
 function grid_shot_style(_key) {
     // Anything that lobs rather than aims arcs in and bursts.
-    if (grid_is_artillery(_key) || (_key == "devastator") || (_key == "heavy_weapons")
-        || (_key == "ig_hwt") || (_key == "tau_broadside") || (_key == "ty_zoanthrope")
-        || (_key == "el_wraithlord") || (_key == "ch_hellbrute")) {
+    if (grid_is_artillery(_key) || (_key == "devastator") || (_key == "heavy_weapons") || (_key == "ig_hwt") || (_key == "tau_broadside") || (_key == "ty_zoanthrope") || (_key == "el_wraithlord") || (_key == "ch_hellbrute")) {
         return {
             kind: GRIDFX_MISSILE,
             col: make_color_rgb(255, 178, 72),
@@ -2006,29 +3580,61 @@ function grid_shot_style(_key) {
     var _p = string_copy(_key, 1, 3);
     // Lasguns: the Guard's red.
     if ((_p == "ig_") || (_key == "he_elite")) {
-        return { kind: GRIDFX_BEAM, col: make_color_rgb(255, 62, 48), blast: 0 };
+        return {
+            kind: GRIDFX_BEAM,
+            col: make_color_rgb(255, 62, 48),
+            blast: 0,
+        };
     }
     // Sluggas, autoguns, cultist rifles and everything Chaos: dirty yellow.
     if ((_p == "ork") || (_p == "he_") || (_p == "ch_") || (_p == "gs_")) {
-        return { kind: GRIDFX_TRACER, col: make_color_rgb(248, 214, 84), blast: 0 };
+        return {
+            kind: GRIDFX_TRACER,
+            col: make_color_rgb(248, 214, 84),
+            blast: 0,
+        };
     }
     if (_p == "tau") {
-        return { kind: GRIDFX_BEAM, col: make_color_rgb(96, 190, 255), blast: 0 };
+        return {
+            kind: GRIDFX_BEAM,
+            col: make_color_rgb(96, 190, 255),
+            blast: 0,
+        };
     }
     if (_p == "el_") {
-        return { kind: GRIDFX_TRACER, col: make_color_rgb(226, 240, 255), blast: 0 };
+        return {
+            kind: GRIDFX_TRACER,
+            col: make_color_rgb(226, 240, 255),
+            blast: 0,
+        };
     }
     if (_p == "ne_") {
-        return { kind: GRIDFX_BEAM, col: make_color_rgb(110, 255, 130), blast: 0 };
+        return {
+            kind: GRIDFX_BEAM,
+            col: make_color_rgb(110, 255, 130),
+            blast: 0,
+        };
     }
     if (_p == "ty_") {
-        return { kind: GRIDFX_TRACER, col: make_color_rgb(186, 226, 96), blast: 0 };
+        return {
+            kind: GRIDFX_TRACER,
+            col: make_color_rgb(186, 226, 96),
+            blast: 0,
+        };
     }
     if (_p == "ad_") {
-        return { kind: GRIDFX_BEAM, col: make_color_rgb(180, 220, 255), blast: 0 };
+        return {
+            kind: GRIDFX_BEAM,
+            col: make_color_rgb(180, 220, 255),
+            blast: 0,
+        };
     }
     // Bolt weapons, ours and the Sororitas': a heavy orange slug.
-    return { kind: GRIDFX_TRACER, col: make_color_rgb(255, 156, 60), blast: 0 };
+    return {
+        kind: GRIDFX_TRACER,
+        col: make_color_rgb(255, 156, 60),
+        blast: 0,
+    };
 }
 
 /// @function grid_shot_fx
@@ -2047,11 +3653,7 @@ function grid_shot_fx(ctrl, _c0, _r0, _c1, _r1, _kind, _col, _blast) {
     // living ten frames vanishes long before anything else happens. Scaling with
     // the clock makes the field read the same at every speed.
     _life = round(_life / max(0.125, ctrl.speed_mult));
-    array_push(ctrl.shots, {
-        c0: _c0, r0: _r0, c1: _c1, r1: _r1,
-        kind: _kind, col: _col, blast: _blast,
-        life: _life, maxlife: _life,
-    });
+    array_push(ctrl.shots, {c0: _c0, r0: _r0, c1: _c1, r1: _r1, kind: _kind, col: _col, blast: _blast, life: _life, maxlife: _life});
     if (array_length(ctrl.shots) > GRIDC_FX_MAX) {
         array_delete(ctrl.shots, 0, 1);
     }
@@ -2122,7 +3724,10 @@ function grid_attack(ctrl, _ai, _di, _melee) {
     }
     // Nothing shoots through a wall. No tracer, no reload spent: the shot was
     // never taken, and the absence of fire through a building reads correctly.
-    var _los = [false, 0];
+    var _los = [
+        false,
+        0,
+    ];
     if (!_melee) {
         _los = grid_line_block(ctrl, _a.col, _a.row, _d.col, _d.row);
         if (_los[0]) {
@@ -2193,9 +3798,7 @@ function grid_attack(ctrl, _ai, _di, _melee) {
         // marker shows what the position is doing for them.
         if ((_los[1] > 0) || (_los[2] > 0)) {
             var _skill = grid_cover_skill(_d.type);
-            var _soak = max(GRIDC_BARRIER_FLOOR,
-                power(1 - (GRIDC_BARRIER_SOAK * _skill), _los[1])
-                    * power(1 - (GRIDC_LIGHT_SOAK * _skill), _los[2]));
+            var _soak = max(GRIDC_BARRIER_FLOOR, power(1 - (GRIDC_BARRIER_SOAK * _skill), _los[1]) * power(1 - (GRIDC_LIGHT_SOAK * _skill), _los[2]));
             _ev = grid_roll_event(_soak, min(0.95, GRIDC_EVENT_SHARE * 1.5));
             if (_ev[0]) {
                 grid_mark_outcome(ctrl, _di, GRIDHIT_DODGE);
@@ -2213,9 +3816,9 @@ function grid_attack(ctrl, _ai, _di, _melee) {
             _ev = grid_roll_event(GRIDC_COVER_HULL, GRIDC_EVENT_SHARE);
             if (_ev[0]) {
                 grid_mark_outcome(ctrl, _di, GRIDHIT_DEFLECT);
-    if (_ai >= 0) {
-        combat_tally_add(_d.disp, ctrl.squads[_ai].wep, false, 0, _d.is_vehicle);
-    }
+                if (_ai >= 0) {
+                    combat_tally_add(_d.disp, ctrl.squads[_ai].wep, false, 0, _d.is_vehicle);
+                }
                 return 0;
             }
             _raw *= _ev[1];
@@ -2225,7 +3828,7 @@ function grid_attack(ctrl, _ai, _di, _melee) {
     // The target's own plate, the reduction that reads as a deflection.
     // A warp ward turns a share of everything while it holds.
     if (_d.ward > 0) {
-        _raw *= (1 - GRIDC_PSY_WARD_SOAK);
+        _raw *= 1 - GRIDC_PSY_WARD_SOAK;
     }
     // Armour piercing eats armour before the deflect roll, so a plasma volley
     // treats Terminator plate very differently from a lasgun volley.
@@ -2267,7 +3870,7 @@ function grid_hull_cover(ctrl, _di, _ai) {
         return false;
     }
     var _o = ctrl.squads[_oi];
-    return (_o.alive && _o.is_vehicle && (_o.side == _d.side));
+    return _o.alive && _o.is_vehicle && (_o.side == _d.side);
 }
 
 /// @function grid_slot_target
@@ -2276,7 +3879,10 @@ function grid_hull_cover(ctrl, _di, _ai) {
 function grid_slot_target(ctrl, _s, _f) {
     var _c = clamp(_f.dest_col + _s.off_c, 0, ctrl.cols - 1);
     var _r = clamp(_f.dest_row + _s.off_r, 0, ctrl.rows - 1);
-    return [_c, _r];
+    return [
+        _c,
+        _r,
+    ];
 }
 
 /// @function grid_form_speed
@@ -2378,7 +3984,7 @@ function grid_form_advance(ctrl, _fi) {
     // instant, but a block has no reason to notice the enemy has gone the very
     // frame it happens, and this is the hottest test in the tick.
     var _was = _f.engaged;
-    if (!_was || ((ctrl.ticks mod 3) == 0)) {
+    if (!_was || ((ctrl.ticks % 3) == 0)) {
         _f.engaged = grid_form_contact(ctrl, _f);
     }
     if (!_was && _f.engaged && _f.hold_on_contact) {
@@ -2610,11 +4216,17 @@ function grid_free_tile_near(ctrl, _tc, _tr) {
             var _c = _tc + _dx;
             var _r = _tr + _dy;
             if (grid_passable(ctrl, _c, _r)) {
-                return [_c, _r];
+                return [
+                    _c,
+                    _r,
+                ];
             }
         }
     }
-    return [-1, -1];
+    return [
+        -1,
+        -1,
+    ];
 }
 
 /// @function grid_try_jump
@@ -2657,11 +4269,26 @@ function grid_step_toward(ctrl, _si, _tc, _tr) {
         return false;
     }
     var _opts = [
-        [_dc, _dr],
-        [_dc, 0],
-        [0, _dr],
-        [_dc, -_dr],
-        [-_dc, _dr],
+        [
+            _dc,
+            _dr,
+        ],
+        [
+            _dc,
+            0,
+        ],
+        [
+            0,
+            _dr,
+        ],
+        [
+            _dc,
+            -_dr,
+        ],
+        [
+            -_dc,
+            _dr,
+        ],
     ];
     // Buildings exist now, so the five direct options can all be blocked while
     // the way round is one tile to the side. Those sidesteps are appended last,
@@ -2711,7 +4338,20 @@ function grid_step_away(ctrl, _si, _fc, _fr) {
     if ((_dc == 0) && (_dr == 0)) {
         _dc = -1;
     }
-    var _opts = [[_dc, _dr], [_dc, 0], [0, _dr]];
+    var _opts = [
+        [
+            _dc,
+            _dr,
+        ],
+        [
+            _dc,
+            0,
+        ],
+        [
+            0,
+            _dr,
+        ],
+    ];
     var _cd = grid_dist(_s.col, _s.row, _fc, _fr);
     for (var _k = 0; _k < array_length(_opts); _k++) {
         var _nc = _s.col + _opts[_k][0];
@@ -2764,7 +4404,7 @@ function grid_wants_melee(_s) {
     if (_s.bal <= 0) {
         return true;
     }
-    return (_s.mel > _s.bal);
+    return _s.mel > _s.bal;
 }
 
 /// @function grid_should_back_off
@@ -2776,7 +4416,7 @@ function grid_should_back_off(_s, _t) {
     if (grid_wants_melee(_s) || (_s.bal <= 0) || _s.is_vehicle) {
         return false;
     }
-    return (_t.mel > (_s.mel * 1.5));
+    return _t.mel > (_s.mel * 1.5);
 }
 
 /// @function grid_pace_budget
@@ -2881,8 +4521,7 @@ function grid_act_player(ctrl, _si) {
     // Hold is Hold Position, not Hold Fire. A melee squad ordered to hold cannot
     // charge, so it must be allowed to shoot instead; without this exemption it
     // seeks a charge it is forbidden to make and spends the whole battle idle.
-    var _seek = (_ord != GRIDORD_HOLD)
-        && ((_stance == 1) || ((_stance == 0) && grid_wants_melee(_s)));
+    var _seek = (_ord != GRIDORD_HOLD) && ((_stance == 1) || ((_stance == 0) && grid_wants_melee(_s)));
 
     if (_stance == 2) {
         if (_dd <= 1) {
@@ -2907,8 +4546,7 @@ function grid_act_player(ctrl, _si) {
         // Fighting withdrawal: gunners pull back out of a losing melee and keep
         // shooting rather than standing there being cut down. Held ground is
         // held, so an explicit Hold order overrides the instinct.
-        if ((_stance == 0) && (_ord != GRIDORD_HOLD) && grid_should_back_off(_s, _t)
-            && grid_step_away(ctrl, _si, _t.col, _t.row)) {
+        if ((_stance == 0) && (_ord != GRIDORD_HOLD) && grid_should_back_off(_s, _t) && grid_step_away(ctrl, _si, _t.col, _t.row)) {
             if (grid_dist(_s.col, _s.row, _t.col, _t.row) <= _s.rng) {
                 grid_attack(ctrl, _si, _ti, false);
             }
@@ -3018,8 +4656,22 @@ function grid_act_enemy(ctrl, _si) {
 /// passing through maximum speed, which is the worst possible moment to be at
 /// maximum speed.
 function grid_speed_step(ctrl, _dir) {
-    var _ladder = [0.125, 0.25, 0.5, 1, 2, 4];
-    var _names = ["Glacial", "Crawl", "Slow", "Normal", "Fast", "Very Fast"];
+    var _ladder = [
+        0.125,
+        0.25,
+        0.5,
+        1,
+        2,
+        4,
+    ];
+    var _names = [
+        "Glacial",
+        "Crawl",
+        "Slow",
+        "Normal",
+        "Fast",
+        "Very Fast",
+    ];
     var _at = 2;
     for (var _i = 0; _i < array_length(_ladder); _i++) {
         if (abs(ctrl.speed_mult - _ladder[_i]) < 0.001) {
@@ -3098,11 +4750,21 @@ function grid_battle_plan(ctrl, _plan) {
     }
     var _name = "Advance";
     switch (_plan) {
-        case "hold": _name = "Hold Position"; break;
-        case "line": _name = "Form Fire Line"; break;
-        case "advhold": _name = "Advance and Hold"; break;
-        case "charge": _name = "Full Assault"; break;
-        case "fallback": _name = "Fall Back"; break;
+        case "hold":
+            _name = "Hold Position";
+            break;
+        case "line":
+            _name = "Form Fire Line";
+            break;
+        case "advhold":
+            _name = "Advance and Hold";
+            break;
+        case "charge":
+            _name = "Full Assault";
+            break;
+        case "fallback":
+            _name = "Fall Back";
+            break;
     }
     grid_log(ctrl, $"Chapter order: {_name}. {_n} formations acknowledge.", eMSG_COLOR.AQUA);
     return _n;
@@ -3212,13 +4874,9 @@ function grid_psy_bolt(ctrl, _si, _ti) {
     if ((_pw != undefined) && (_pw.fl != "")) {
         _line = $"{_cast} manifests {_pw.nm}! {_pw.fl}";
     } else if (_pw != undefined) {
-        _line = (_killed > 0)
-            ? $"{_cast} manifests {_pw.nm}, killing {_killed} of the {_d.disp}!"
-            : $"{_cast} manifests {_pw.nm} against the {_d.disp}!";
+        _line = (_killed > 0) ? $"{_cast} manifests {_pw.nm}, killing {_killed} of the {_d.disp}!" : $"{_cast} manifests {_pw.nm} against the {_d.disp}!";
     } else {
-        _line = (_killed > 0)
-            ? $"{_cast} draws on {_dn} and smites the {_d.disp}, killing {_killed}!"
-            : $"{_cast} draws on {_dn} and scours the {_d.disp}!";
+        _line = (_killed > 0) ? $"{_cast} draws on {_dn} and smites the {_d.disp}, killing {_killed}!" : $"{_cast} draws on {_dn} and scours the {_d.disp}!";
     }
     add_battle_log_message(_line, (_d.side == 1) ? eMSG_COLOR.LIGHTGREEN : eMSG_COLOR.RED);
     grid_floater(ctrl, _d.col, _d.row, "PSYCHIC", GRIDC_PURPLE);
@@ -3245,9 +4903,7 @@ function grid_psy_tick(ctrl) {
             _s.hp_pool = max(1, _s.hp_pool - _self);
             grid_floater(ctrl, _s.col, _s.row, "PERILS!", GRIDC_RED);
             grid_shot_fx(ctrl, _s.col, _s.row, _s.col, _s.row, GRIDFX_PSY, GRIDC_PURPLE, 0.7);
-            add_battle_log_message((_s.side == 0)
-                ? $"The warp lashes back at {_s.name}'s Librarian!"
-                : $"The warp lashes back at the {_s.disp}!", eMSG_COLOR.YELLOW);
+            add_battle_log_message((_s.side == 0) ? $"The warp lashes back at {_s.name}'s Librarian!" : $"The warp lashes back at the {_s.disp}!", eMSG_COLOR.YELLOW);
             continue;
         }
         var _t = grid_nearest_foe(ctrl, _i, GRIDC_PSY_RANGE, true);
@@ -3262,11 +4918,7 @@ function grid_psy_tick(ctrl) {
                 _wnm = _s.lib_powers[irandom(array_length(_s.lib_powers) - 1)].nm;
             }
             var _dn2 = (_s.lib_disc != "") ? _s.lib_disc : "the warp";
-            add_battle_log_message((_s.side == 0)
-                ? ((_wnm != "")
-                    ? $"{_s.name}'s Librarian manifests {_wnm}, warding his brothers."
-                    : $"{_s.name}'s Librarian weaves {_dn2} into a protective ward.")
-                : $"The {_s.disp} wreathes itself in warp-light.", eMSG_COLOR.BRIGHT_BLUE);
+            add_battle_log_message((_s.side == 0) ? ((_wnm != "") ? $"{_s.name}'s Librarian manifests {_wnm}, warding his brothers." : $"{_s.name}'s Librarian weaves {_dn2} into a protective ward.") : $"The {_s.disp} wreathes itself in warp-light.", eMSG_COLOR.BRIGHT_BLUE);
         }
     }
 }
@@ -3287,7 +4939,7 @@ function grid_battle_tick(ctrl) {
     }
     // Post the buffered volley lines in vanilla's own voice, then the running
     // strength readouts the old screen always showed.
-    if ((ctrl.ticks mod GRIDC_LOG_FLUSH) == 0) {
+    if ((ctrl.ticks % GRIDC_LOG_FLUSH) == 0) {
         combat_kill_tally_flush();
         combat_tally_flush();
     }
@@ -3297,7 +4949,7 @@ function grid_battle_tick(ctrl) {
             ctrl.squads[_wd].ward -= 1;
         }
     }
-    if ((ctrl.ticks mod GRIDC_STR_TALLY) == 0) {
+    if ((ctrl.ticks % GRIDC_STR_TALLY) == 0) {
         var _se = 0;
         var _sp = 0;
         for (var _st = 0; _st < array_length(ctrl.squads); _st++) {
@@ -3364,7 +5016,7 @@ function grid_battle_tick(ctrl) {
         _fq.hit_dmg = 0;
     }
 
-    if ((ctrl.ticks mod 5) == 0) {
+    if ((ctrl.ticks % 5) == 0) {
         grid_log(ctrl, $"Exchange: {ctrl.agg_ekills} of the enemy slain, {ctrl.agg_pkills} of ours lost.", eMSG_COLOR.BRIGHT_BLUE);
         // The same events the floating text showed, gathered up, so the log and
         // the field are always telling one story.
@@ -3396,8 +5048,8 @@ function grid_battle_tick(ctrl) {
         if (!_q.alive || !_q.deployed) {
             continue;
         }
-        _pl += (_q.side == 0);
-        _en += (_q.side != 0);
+        _pl += _q.side == 0;
+        _en += _q.side != 0;
     }
     if (_pl <= 0) {
         ctrl.phase = GRIDPH_END;
@@ -3885,8 +5537,7 @@ function grid_draw_unit(_s, _cx, _cy, _tp, _col) {
         // the tile, and centre the cropped piece rather than the sprite origin,
         // which on these sheets is the far corner of an empty canvas.
         var _sc = (_tp * 0.86) / max(1, max(_pw, _ph));
-        draw_sprite_part_ext(_h.spr, _h.sub, _h.x1, _h.y1, _pw, _ph,
-            _cx - (_pw * _sc * 0.5), _cy - (_ph * _sc * 0.5), _sc, _sc, c_white, 1);
+        draw_sprite_part_ext(_h.spr, _h.sub, _h.x1, _h.y1, _pw, _ph, _cx - (_pw * _sc * 0.5), _cy - (_ph * _sc * 0.5), _sc, _sc, c_white, 1);
         return;
     }
     if ((_s.sprite_hook != -1) && sprite_exists(_s.sprite_hook)) {
@@ -3913,14 +5564,19 @@ function grid_draw_unit(_s, _cx, _cy, _tp, _col) {
 
 /// @function grid_popup_rect
 function grid_popup_rect() {
-    return [420, 120, 1000, 700];
+    return [
+        420,
+        120,
+        1000,
+        700,
+    ];
 }
 
 /// @function grid_buttons
 function grid_buttons(ctrl) {
     var _b = [];
-    var _deploy = (ctrl.phase == GRIDPH_DEPLOY);
-    var _battle = (ctrl.phase == GRIDPH_BATTLE);
+    var _deploy = ctrl.phase == GRIDPH_DEPLOY;
+    var _battle = ctrl.phase == GRIDPH_BATTLE;
     var _field = _deploy || _battle;
 
     var _types = grid_type_list();
@@ -3929,27 +5585,22 @@ function grid_buttons(ctrl) {
         var _key = _types[_i];
         var _d = grid_unit_def(_key);
         var _cnt = grid_pool_count(ctrl, _key);
-        array_push(_b, {
-            bx: GRIDC_LP_X1 + 8, by: _y, bw: 240, bh: 24,
-            bid: "type:" + _key,
-            blabel: $"{_d.disp} ({_cnt})",
-            benabled: _field && (_cnt > 0),
-        });
+        array_push(_b, {bx: GRIDC_LP_X1 + 8, by: _y, bw: 240, bh: 24, bid: "type:" + _key, blabel: $"{_d.disp} ({_cnt})", benabled: _field && (_cnt > 0)});
         _y += 27;
     }
-    array_push(_b, { bx: GRIDC_LP_X1 + 8, by: GRIDC_PANEL_Y2 - 46, bw: 240, bh: 34, bid: "deployall", blabel: "Deploy All", benabled: _field });
+    array_push(_b, {bx: GRIDC_LP_X1 + 8, by: GRIDC_PANEL_Y2 - 46, bw: 240, bh: 34, bid: "deployall", blabel: "Deploy All", benabled: _field});
 
     var _zl = (ctrl.zoom_mode == 0) ? "Zoom: Battle" : "Zoom: Overview";
 
     if (_battle && (array_length(ctrl.selected) > 0)) {
         var _stn = ctrl.formations[ctrl.selected[0]].stance;
         var _stl = (_stn == 1) ? "Charge" : ((_stn == 2) ? "Avoid" : "Auto");
-        array_push(_b, { bx: 1336, by: 556, bw: 122, bh: 32, bid: "ord_adv", blabel: "Advance", benabled: true });
-        array_push(_b, { bx: 1464, by: 556, bw: 120, bh: 32, bid: "ord_hold", blabel: "Hold", benabled: true });
-        array_push(_b, { bx: 1336, by: 512, bw: 248, bh: 32, bid: "stance", blabel: $"Melee: {_stl}", benabled: true });
+        array_push(_b, {bx: 1336, by: 556, bw: 122, bh: 32, bid: "ord_adv", blabel: "Advance", benabled: true});
+        array_push(_b, {bx: 1464, by: 556, bw: 120, bh: 32, bid: "ord_hold", blabel: "Hold", benabled: true});
+        array_push(_b, {bx: 1336, by: 512, bw: 248, bh: 32, bid: "stance", blabel: $"Melee: {_stl}", benabled: true});
     }
-    array_push(_b, { bx: 1336, by: 646, bw: 248, bh: 34, bid: "zoom", blabel: _zl, benabled: true });
-    array_push(_b, { bx: 1336, by: 686, bw: 122, bh: 34, bid: "pause", blabel: ctrl.paused ? "Resume" : "Pause", benabled: _battle });
+    array_push(_b, {bx: 1336, by: 646, bw: 248, bh: 34, bid: "zoom", blabel: _zl, benabled: true});
+    array_push(_b, {bx: 1336, by: 686, bw: 122, bh: 34, bid: "pause", blabel: ctrl.paused ? "Resume" : "Pause", benabled: _battle});
     var _spd_label = "Speed: Normal";
     if (ctrl.speed_mult <= 0.125) {
         _spd_label = "Speed: Glacial";
@@ -3962,23 +5613,21 @@ function grid_buttons(ctrl) {
     } else if (ctrl.speed_mult >= 2) {
         _spd_label = "Speed: Fast";
     }
-    array_push(_b, { bx: 1464, by: 686, bw: 120, bh: 34, bid: "speed", blabel: _spd_label, benabled: _battle });
+    array_push(_b, {bx: 1464, by: 686, bw: 120, bh: 34, bid: "speed", blabel: _spd_label, benabled: _battle});
     if (_deploy) {
-        array_push(_b, { bx: 1336, by: 726, bw: 248, bh: 40, bid: "start", blabel: "Begin Battle", benabled: grid_any_deployed(ctrl) });
+        array_push(_b, {bx: 1336, by: 726, bw: 248, bh: 40, bid: "start", blabel: "Begin Battle", benabled: grid_any_deployed(ctrl)});
     }
     // In a live battle leaving early is a withdrawal, and a withdrawal is a
     // defeat, so the button says so rather than reading like a way out.
     // Full width above the zoom button. It shared a row with Zoom and the two
     // labels overlapped; the panel above it is empty.
-    array_push(_b, { bx: 1336, by: 552, bw: 248, bh: 32, bid: "auto",
-        blabel: ctrl.auto_battle ? "Auto: ON" : "Auto: OFF", benabled: _battle });
-    array_push(_b, { bx: 1336, by: 812, bw: 248, bh: 30, bid: "legend",
-        blabel: ctrl.show_legend ? "Hide Legend (L)" : "Legend (L)", benabled: true });
+    array_push(_b, {bx: 1336, by: 552, bw: 248, bh: 32, bid: "auto", blabel: ctrl.auto_battle ? "Auto: ON" : "Auto: OFF", benabled: _battle});
+    array_push(_b, {bx: 1336, by: 812, bw: 248, bh: 30, bid: "legend", blabel: ctrl.show_legend ? "Hide Legend (L)" : "Legend (L)", benabled: true});
     var _exit_label = (ctrl.exit_arm > 0) ? "Confirm Exit" : "Exit Battle";
     if (ctrl.pending_live) {
         _exit_label = (ctrl.exit_arm > 0) ? "Confirm Withdrawal" : "Withdraw";
     }
-    array_push(_b, { bx: 1336, by: 772, bw: 248, bh: 36, bid: "exit", blabel: _exit_label, benabled: true });
+    array_push(_b, {bx: 1336, by: 772, bw: 248, bh: 36, bid: "exit", blabel: _exit_label, benabled: true});
     return _b;
 }
 
@@ -4068,12 +5717,7 @@ function grid_role_to_type(_role) {
         return "chimera";
     }
     // Command roles: everything with rank folds into the Command profile.
-    if ((string_count("captain", _r) > 0) || (string_count("chapter master", _r) > 0)
-        || (string_count("chaplain", _r) > 0) || (string_count("librarian", _r) > 0)
-        || (string_count("apothecary", _r) > 0) || (string_count("techmarine", _r) > 0)
-        || (string_count("honour guard", _r) > 0) || (string_count("lexicanum", _r) > 0)
-        || (string_count("codicier", _r) > 0) || (string_count("champion", _r) > 0)
-        || (string_count("ancient", _r) > 0) || (string_count("consul", _r) > 0)) {
+    if ((string_count("captain", _r) > 0) || (string_count("chapter master", _r) > 0) || (string_count("chaplain", _r) > 0) || (string_count("librarian", _r) > 0) || (string_count("apothecary", _r) > 0) || (string_count("techmarine", _r) > 0) || (string_count("honour guard", _r) > 0) || (string_count("lexicanum", _r) > 0) || (string_count("codicier", _r) > 0) || (string_count("champion", _r) > 0) || (string_count("ancient", _r) > 0) || (string_count("consul", _r) > 0)) {
         return "hq";
     }
     return "tactical";
@@ -4102,9 +5746,11 @@ function grid_collect_blocks() {
         // counts how many, so a block split across grid squads divides its
         // firepower proportionally instead of duplicating it.
         var _gear = undefined;
-        if (variable_instance_exists(id, "wep") && is_array(wep)
-            && variable_instance_exists(id, "att") && is_array(att)) {
-            _gear = { stacks: [], src_men: 0 };
+        if (variable_instance_exists(id, "wep") && is_array(wep) && variable_instance_exists(id, "att") && is_array(att)) {
+            _gear = {
+                stacks: [],
+                src_men: 0,
+            };
             for (var _w = 0; _w < array_length(wep); _w++) {
                 if ((wep[_w] == "") || (_w >= array_length(att))) {
                     continue;
@@ -4113,14 +5759,7 @@ function grid_collect_blocks() {
                 if (_wn <= 0) {
                     continue;
                 }
-                array_push(_gear.stacks, {
-                    w: wep[_w],
-                    n: _wn,
-                    att: att[_w],
-                    ap: (variable_instance_exists(id, "apa") && (_w < array_length(apa))) ? apa[_w] : 0,
-                    rng: (variable_instance_exists(id, "range") && (_w < array_length(range))) ? range[_w] : 1,
-                    amm: (variable_instance_exists(id, "ammo") && is_array(ammo) && (_w < array_length(ammo))) ? ammo[_w] : 0,
-                });
+                array_push(_gear.stacks, {w: wep[_w], n: _wn, att: att[_w], ap: (variable_instance_exists(id, "apa") && (_w < array_length(apa))) ? apa[_w] : 0, rng: (variable_instance_exists(id, "range") && (_w < array_length(range))) ? range[_w] : 1, amm: (variable_instance_exists(id, "ammo") && is_array(ammo) && (_w < array_length(ammo))) ? ammo[_w] : 0});
             }
             if (array_length(_gear.stacks) <= 0) {
                 _gear = undefined;
@@ -4195,7 +5834,7 @@ function grid_collect_blocks() {
                                         _paoe = _pdd.radius;
                                     }
                                 }
-                                array_push(_out[_ri].mpowers, { nm: _pnm, fl: _pfl, aoe: clamp(_paoe, 0, 2) });
+                                array_push(_out[_ri].mpowers, {nm: _pnm, fl: _pfl, aoe: clamp(_paoe, 0, 2)});
                             }
                         }
                     }
@@ -4216,17 +5855,7 @@ function grid_collect_blocks() {
             if (veh_type[_v] == "") {
                 continue;
             }
-            array_push(_out, {
-                gtype: grid_role_to_type(veh_type[_v]),
-                uid: "",
-                co: veh_co[_v],
-                slot: veh_id[_v],
-                veh: true,
-                ally: veh_ally[_v],
-                gear: _gear,
-                vac: (variable_instance_exists(id, "veh_ac") && (_v < array_length(veh_ac))) ? veh_ac[_v] : -1,
-                vhp: (variable_instance_exists(id, "veh_hp") && (_v < array_length(veh_hp))) ? veh_hp[_v] : -1,
-            });
+            array_push(_out, {gtype: grid_role_to_type(veh_type[_v]), uid: "", co: veh_co[_v], slot: veh_id[_v], veh: true, ally: veh_ally[_v], gear: _gear, vac: (variable_instance_exists(id, "veh_ac") && (_v < array_length(veh_ac))) ? veh_ac[_v] : -1, vhp: (variable_instance_exists(id, "veh_hp") && (_v < array_length(veh_hp))) ? veh_hp[_v] : -1});
             if (_gear != undefined) {
                 _gear.src_men += 1;
             }
@@ -4242,10 +5871,23 @@ function grid_collect_blocks() {
 /// boot and cannot read it afterwards. Falls back to the game's own defaults.
 function grid_formation_columns() {
     var _c = {
-        tactical: 4, assault: 5, devastator: 3, veteran: 3, terminator: 5,
-        assault_term: 5, scout: 3, hq: 2, guardsmen: 3, heavy_weapons: 3,
-        dreadnought: 6, rhino: 6, chimera: 6, predator: 6, land_raider: 6,
-        land_speeder: 5, whirlwind: 1,
+        tactical: 4,
+        assault: 5,
+        devastator: 3,
+        veteran: 3,
+        terminator: 5,
+        assault_term: 5,
+        scout: 3,
+        hq: 2,
+        guardsmen: 3,
+        heavy_weapons: 3,
+        dreadnought: 6,
+        rhino: 6,
+        chimera: 6,
+        predator: 6,
+        land_raider: 6,
+        land_speeder: 5,
+        whirlwind: 1,
     };
     if (!instance_exists(obj_controller)) {
         return _c;
@@ -4293,9 +5935,7 @@ function grid_take_over(_nc) {
         _loc = string(_nc.battle_object.name);
     }
     var _threat = clamp(_nc.threat, 1, 7);
-    var _width = variable_instance_exists(_nc, "grid_width")
-        ? _nc.grid_width
-        : clamp(6 + (_threat * 3), 8, 32);
+    var _width = variable_instance_exists(_nc, "grid_width") ? _nc.grid_width : clamp(6 + (_threat * 3), 8, 32);
     with (_nc) {
         for (var _ga = 0; _ga < 12; _ga++) {
             alarm[_ga] = -1;
@@ -4351,28 +5991,52 @@ function grid_enemy_ap(_key) {
         return (string_pos("broadside", _key) > 0) ? [10, 0] : [3, 0];
     }
     if (_p == "el_") {
-        return [3, 6];
+        return [
+            3,
+            6,
+        ];
     }
     if (_p == "ork") {
         if (string_pos("rokkit", _key) > 0 || string_pos("kannon", _key) > 0) {
-            return [10, 0];
+            return [
+                10,
+                0,
+            ];
         }
         if (string_pos("nob", _key) > 0 || string_pos("boss", _key) > 0) {
-            return [0, 6];
+            return [
+                0,
+                6,
+            ];
         }
         if (string_pos("snazz", _key) > 0) {
-            return [3, 0];
+            return [
+                3,
+                0,
+            ];
         }
-        return [0, 0];
+        return [
+            0,
+            0,
+        ];
     }
     if (_p == "ty_") {
         if (string_pos("zoan", _key) > 0) {
-            return [10, 0];
+            return [
+                10,
+                0,
+            ];
         }
-        return [3, 6];
+        return [
+            3,
+            6,
+        ];
     }
     if (_p == "gs_") {
-        return [0, 6];
+        return [
+            0,
+            6,
+        ];
     }
     if (_p == "ad_") {
         return (string_pos("thallax", _key) > 0) ? [10, 0] : [3, 3];
@@ -4382,20 +6046,38 @@ function grid_enemy_ap(_key) {
     }
     if (_p == "ig_" || _key == "guardsmen" || _key == "heavy_weapons") {
         if (string_pos("hwt", _key) > 0 || _key == "heavy_weapons" || string_pos("russ", _key) > 0) {
-            return [10, 0];
+            return [
+                10,
+                0,
+            ];
         }
         if (string_pos("basilisk", _key) > 0) {
-            return [6, 0];
+            return [
+                6,
+                0,
+            ];
         }
         if (string_pos("chimera", _key) > 0 || string_pos("sentinel", _key) > 0) {
-            return [3, 0];
+            return [
+                3,
+                0,
+            ];
         }
-        return [0, 0];
+        return [
+            0,
+            0,
+        ];
     }
     if (_p == "he_") {
-        return [0, 3];
+        return [
+            0,
+            3,
+        ];
     }
-    return [0, 0];
+    return [
+        0,
+        0,
+    ];
 }
 
 /// @function grid_enemy_psy
@@ -4702,7 +6384,10 @@ function grid_block_slot_for_uid(_uid) {
     var _hit_blk = noone;
     var _hit_idx = -1;
     if (_uid == "") {
-        return [noone, -1];
+        return [
+            noone,
+            -1,
+        ];
     }
     with (obj_pnunit) {
         if (_hit_idx >= 0) {
@@ -4724,7 +6409,10 @@ function grid_block_slot_for_uid(_uid) {
             break;
         }
     }
-    return [_hit_blk, _hit_idx];
+    return [
+        _hit_blk,
+        _hit_idx,
+    ];
 }
 
 /// @function grid_block_slot_for_vehicle
@@ -4751,7 +6439,10 @@ function grid_block_slot_for_vehicle(_co, _vid) {
             }
         }
     }
-    return [_hit_blk, _hit_idx];
+    return [
+        _hit_blk,
+        _hit_idx,
+    ];
 }
 
 /// @function grid_kill_block_man
@@ -4938,7 +6629,7 @@ function grid_handoff_result(ctrl) {
     // Anything short of a clear win is a withdrawal, which is the same defeat
     // vanilla records when the last block walks off the field. Leaving it at 0
     // would read as a victory and quietly pay out the enemy power reduction.
-    var _lost_field = (ctrl.result <= 0);
+    var _lost_field = ctrl.result <= 0;
     var _ticks = ctrl.ticks;
     with (obj_ncombat) {
         defeat = _lost_field ? 1 : 0;
@@ -5059,13 +6750,10 @@ function grid_shape_slots(ctrl, _shape, _units) {
             // refuses its middle and envelops rather than meeting a charge.
             var _arc = clamp(floor(ctrl.cols / 5), 2, 6);
             for (var _i = 0; _i < _n; _i++) {
-                var _band = _i mod ctrl.rows;
+                var _band = _i % ctrl.rows;
                 var _rank = floor(_i / ctrl.rows);
                 var _t = ((_band / max(1, ctrl.rows - 1)) * pi) - (pi / 2);
-                array_push(_slots, [
-                    clamp(_east - _rank - round(_arc * (1 - cos(_t))), _west, _east),
-                    clamp(_band, 0, ctrl.rows - 1),
-                ]);
+                array_push(_slots, [clamp(_east - _rank - round(_arc * (1 - cos(_t))), _west, _east), clamp(_band, 0, ctrl.rows - 1)]);
             }
             break;
         case "firing_line":
@@ -5073,10 +6761,7 @@ function grid_shape_slots(ctrl, _shape, _units) {
             // every squad has a clear lane down the field.
             for (var _j = 0; _j < _n; _j++) {
                 var _lrank = floor(_j / ctrl.rows);
-                array_push(_slots, [
-                    clamp(_east - 1 - (_lrank * 2), _west, _east),
-                    _j mod ctrl.rows,
-                ]);
+                array_push(_slots, [clamp(_east - 1 - (_lrank * 2), _west, _east), _j % ctrl.rows]);
             }
             break;
         case "phalanx":
@@ -5084,10 +6769,7 @@ function grid_shape_slots(ctrl, _shape, _units) {
             var _len = clamp(ceil(_n / 4), 3, ctrl.rows);
             var _r0 = clamp(_mid - floor(_len / 2), 0, max(0, ctrl.rows - _len));
             for (var _k = 0; _k < _n; _k++) {
-                array_push(_slots, [
-                    clamp(_east - floor(_k / _len), _west, _east),
-                    clamp(_r0 + (_k mod _len), 0, ctrl.rows - 1),
-                ]);
+                array_push(_slots, [clamp(_east - floor(_k / _len), _west, _east), clamp(_r0 + (_k % _len), 0, ctrl.rows - 1)]);
             }
             break;
         case "retinue":
@@ -5096,7 +6778,32 @@ function grid_shape_slots(ctrl, _shape, _units) {
             // with a hull sits in front as the thing they advance behind.
             var _cl_c = _east - 3;
             var _cl_r = 2;
-            var _ring = [[1, 0], [0, -1], [0, 1], [1, -1], [1, 1], [2, 0]];
+            var _ring = [
+                [
+                    1,
+                    0,
+                ],
+                [
+                    0,
+                    -1,
+                ],
+                [
+                    0,
+                    1,
+                ],
+                [
+                    1,
+                    -1,
+                ],
+                [
+                    1,
+                    1,
+                ],
+                [
+                    2,
+                    0,
+                ],
+            ];
             var _ri = 0;
             var _core = false;
             for (var _m = 0; _m < _n; _m++) {
@@ -5111,7 +6818,7 @@ function grid_shape_slots(ctrl, _shape, _units) {
                     // The middle belongs to whoever is worth guarding. If no
                     // leader reaches this cluster, the last man in takes it
                     // rather than leaving a hole in the middle of the squad.
-                    _core = ((_role == 5) || (_role == 2) || (_ri >= array_length(_ring)));
+                    _core = (_role == 5) || (_role == 2) || (_ri >= array_length(_ring));
                     if (!_core) {
                         _c = _cl_c + _ring[_ri][0];
                         _r = _cl_r + _ring[_ri][1];
@@ -5148,35 +6855,119 @@ function grid_enemy_set(_faction) {
     switch (grid_faction_index(_faction)) {
         case eFACTION.PLAYER:
             // A rival Chapter fields the player's own profiles.
-            return ["tactical", "assault", "terminator", "dreadnought", "rhino", "hq"];
+            return [
+                "tactical",
+                "assault",
+                "terminator",
+                "dreadnought",
+                "rhino",
+                "hq",
+            ];
         case eFACTION.IMPERIUM:
         case eFACTION.INQUISITION:
-            return ["ig_guardsman", "ig_ogryn", "ig_hwt", "ig_russ", "ig_chimera", "ig_basilisk"];
+            return [
+                "ig_guardsman",
+                "ig_ogryn",
+                "ig_hwt",
+                "ig_russ",
+                "ig_chimera",
+                "ig_basilisk",
+            ];
         case eFACTION.MECHANICUS:
             // The Mechanicus borrows the Guard's armour, which is what the
             // vanilla rosters do too.
-            return ["ad_thallax", "ig_ogryn", "ad_servitor", "ig_sentinel", "ig_chimera", "ig_basilisk"];
+            return [
+                "ad_thallax",
+                "ig_ogryn",
+                "ad_servitor",
+                "ig_sentinel",
+                "ig_chimera",
+                "ig_basilisk",
+            ];
         case eFACTION.ECCLESIARCHY:
-            return ["ec_sister", "ec_repentia", "ec_celestian", "ec_penitent", "ec_immolator", "ec_arco"];
+            return [
+                "ec_sister",
+                "ec_repentia",
+                "ec_celestian",
+                "ec_penitent",
+                "ec_immolator",
+                "ec_arco",
+            ];
         case eFACTION.ELDAR:
-            return ["el_guardian", "el_banshee", "el_avenger", "el_wraithlord", "el_falcon", "el_warlock"];
+            return [
+                "el_guardian",
+                "el_banshee",
+                "el_avenger",
+                "el_wraithlord",
+                "el_falcon",
+                "el_warlock",
+            ];
         case eFACTION.TAU:
-            return ["tau_firewarrior", "tau_kroot", "tau_crisis", "tau_broadside", "tau_devilfish", "tau_hammerhead"];
+            return [
+                "tau_firewarrior",
+                "tau_kroot",
+                "tau_crisis",
+                "tau_broadside",
+                "tau_devilfish",
+                "tau_hammerhead",
+            ];
         case eFACTION.TYRANIDS:
-            return ["ty_termagaunt", "ty_hormagaunt", "ty_warrior", "ty_carnifex", "ty_lictor", "ty_zoanthrope"];
+            return [
+                "ty_termagaunt",
+                "ty_hormagaunt",
+                "ty_warrior",
+                "ty_carnifex",
+                "ty_lictor",
+                "ty_zoanthrope",
+            ];
         case eFACTION.CHAOS:
             // Index 10 is the one that spawns the CSM warband in obj_ncombat
             // Alarm_0, and index 11 the cult. That pairing is inverted against
             // the enum names and is deliberate; do not "correct" it.
-            return ["ch_marine", "ch_berzerker", "ch_terminator", "ch_hellbrute", "ch_rhino", "ch_sorcerer"];
+            return [
+                "ch_marine",
+                "ch_berzerker",
+                "ch_terminator",
+                "ch_hellbrute",
+                "ch_rhino",
+                "ch_sorcerer",
+            ];
         case eFACTION.HERETICS:
-            return ["he_cultist", "he_mutant", "he_elite", "he_russ", "he_technical", "he_possessed"];
+            return [
+                "he_cultist",
+                "he_mutant",
+                "he_elite",
+                "he_russ",
+                "he_technical",
+                "he_possessed",
+            ];
         case eFACTION.GENESTEALER:
-            return ["gs_hybrid", "gs_stealer", "gs_aberrant", "gs_rockgrinder", "gs_truck", "gs_magus"];
+            return [
+                "gs_hybrid",
+                "gs_stealer",
+                "gs_aberrant",
+                "gs_rockgrinder",
+                "gs_truck",
+                "gs_magus",
+            ];
         case eFACTION.NECRONS:
-            return ["ne_warrior", "ne_flayed", "ne_lychguard", "ne_stalker", "ne_spyder", "ne_destroyer"];
+            return [
+                "ne_warrior",
+                "ne_flayed",
+                "ne_lychguard",
+                "ne_stalker",
+                "ne_spyder",
+                "ne_destroyer",
+            ];
     }
-    return ["ork_shoota", "ork_slugga", "ork_nob", "ork_dread", "ork_wagon", "ork_weirdboy"];
+    return [
+        "ork_shoota",
+        "ork_slugga",
+        "ork_nob",
+        "ork_dread",
+        "ork_wagon",
+        "ork_weirdboy",
+    ];
 }
 
 /// @function grid_reinforce
@@ -5202,11 +6993,17 @@ function grid_reinforce(ctrl) {
         if ((_s.side != 0) || _s.deployed || !_s.alive) {
             continue;
         }
-        var _spot = [-1, -1];
+        var _spot = [
+            -1,
+            -1,
+        ];
         for (var _c = 0; (_c < GRIDC_DEPLOY_COLS) && (_spot[0] < 0); _c++) {
             for (var _r = ctrl.band_r1; (_r <= ctrl.band_r2) && (_spot[0] < 0); _r++) {
                 if (grid_passable(ctrl, _c, _r)) {
-                    _spot = [_c, _r];
+                    _spot = [
+                        _c,
+                        _r,
+                    ];
                 }
             }
         }

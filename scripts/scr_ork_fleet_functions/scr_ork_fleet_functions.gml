@@ -36,15 +36,27 @@ function ork_world_tick(_star, _planet) {
     // Organic expansion: an Ork-held world whose Stronghold is well-built, with no Ork fleet already in
     // orbit, has a small chance to muster one (it wanders off to spread the bloom). Bigger holds and a live
     // WAAAGH launch more often. (Replaces the old grow_ork_forces ship logic; growth stays with the bloom.)
-    if (_star.p_owner[_planet] != eFACTION.ORK) { return; }
-    if (_star.p_type[_planet] == "Dead") { return; }
+    if (_star.p_owner[_planet] != eFACTION.ORK) {
+        return;
+    }
+    if (_star.p_type[_planet] == "Dead") {
+        return;
+    }
     var _pd = _star.get_planet_data(_planet);
-    if (!_pd.has_feature(eP_FEATURES.ORKSTRONGHOLD)) { return; }
+    if (!_pd.has_feature(eP_FEATURES.ORKSTRONGHOLD)) {
+        return;
+    }
     var _sh = _pd.get_features(eP_FEATURES.ORKSTRONGHOLD)[0];
-    if (_sh.tier < 2) { return; }                                       // only an established hold builds ships
-    if (scr_orbiting_fleet(eFACTION.ORK, _star) != noone) { return; }   // already have a fleet here
-    var _chance = 2 + floor(_sh.tier) * 2;                              // ~6-12%/turn
-    if (obj_controller.known[eFACTION.ORK] > 0) { _chance += 4; }       // a live WAAAGH is more aggressive
+    if (_sh.tier < 2) {
+        return;
+    } // only an established hold builds ships
+    if (scr_orbiting_fleet(eFACTION.ORK, _star) != noone) {
+        return;
+    } // already have a fleet here
+    var _chance = 2 + floor(_sh.tier) * 2; // ~6-12%/turn
+    if (obj_controller.known[eFACTION.ORK] > 0) {
+        _chance += 4;
+    } // a live WAAAGH is more aggressive
     if (irandom(99) < _chance) {
         new_ork_fleet(_star.x, _star.y);
     }
@@ -118,12 +130,10 @@ function ork_fleet_arrive_target() {
         if (_allow_landing) {
             for (var i = 0; i < planets; i++) {
                 var _planet = _planets[i];
-                var _contested = (p_guardsmen[_planet] + p_pdf[_planet] + p_player[_planet] + p_traitors[_planet] + p_tau[_planet] > 0);
-                var _open = ((p_owner[_planet] != 7) && (p_orks[_planet] <= 0));
+                var _contested = p_guardsmen[_planet] + p_pdf[_planet] + p_player[_planet] + p_traitors[_planet] + p_tau[_planet] > 0;
+                var _open = (p_owner[_planet] != 7) && (p_orks[_planet] <= 0);
                 // Skip worlds whose bloom is already at its ceiling — let the fleet carry on and spread.
-                var _saturated = variable_instance_exists(id, "p_race_pop")
-                    ? (p_race_pop[_planet][eFACTION.ORK] >= ork_bloom_cap(p_type[_planet]))
-                    : (p_orks[_planet] >= 6);
+                var _saturated = variable_instance_exists(id, "p_race_pop") ? (p_race_pop[_planet][eFACTION.ORK] >= ork_bloom_cap(p_type[_planet])) : (p_orks[_planet] >= 6);
                 if ((_contested || _open) && (p_type[_planet] != "Dead") && !_saturated) {
                     var _lpdata = get_planet_data(_planet);
                     // The WAAAGH plants (or reinforces) a growing FUNGAL BLOOM — POPULATION-driven, not a 0-6
@@ -135,16 +145,16 @@ function ork_fleet_arrive_target() {
                     var _boss_landing = fleet_has_cargo("ork_warboss", _ork_fleet);
                     var _drop = ork_bloom_seed(p_type[_planet]) * (_boss_landing ? 8 : 1);
                     if (variable_instance_exists(id, "p_race_pop")) {
-                        var _had_orks = (p_race_pop[_planet][eFACTION.ORK] > 0);
+                        var _had_orks = p_race_pop[_planet][eFACTION.ORK] > 0;
                         p_race_pop[_planet][eFACTION.ORK] += _drop;
                         p_orks[_planet] = count_to_level(eFACTION.ORK, p_race_pop[_planet][eFACTION.ORK]);
                         if (_had_orks) {
-                            ork_add_landing_warband(id, _planet);   // incoming mob = another clan -> MIXING (§16g)
+                            ork_add_landing_warband(id, _planet); // incoming mob = another clan -> MIXING (§16g)
                         } else {
-                            planet_ork_clans(id, _planet);          // fresh world -> a single pure founding clan
+                            planet_ork_clans(id, _planet); // fresh world -> a single pure founding clan
                         }
                     } else {
-                        p_orks[_planet] = min(6, p_orks[_planet] + 2);   // pre-population save fallback
+                        p_orks[_planet] = min(6, p_orks[_planet] + 2); // pre-population save fallback
                     }
                     if (_boss_landing) {
                         array_push(p_feature[_planet], _ork_fleet.cargo_data.ork_warboss);
@@ -208,9 +218,13 @@ function merge_ork_fleets() {
 function sector_ork_population() {
     var _total = 0;
     with (obj_star) {
-        if (!variable_instance_exists(self, "p_race_pop")) { continue; }
+        if (!variable_instance_exists(self, "p_race_pop")) {
+            continue;
+        }
         for (var i = 1; i <= planets; i++) {
-            if (i < array_length(p_race_pop)) { _total += p_race_pop[i][eFACTION.ORK]; }
+            if (i < array_length(p_race_pop)) {
+                _total += p_race_pop[i][eFACTION.ORK];
+            }
         }
     }
     return _total;
@@ -223,9 +237,13 @@ function sector_ork_population() {
 function sector_ork_world_count() {
     var _n = 0;
     with (obj_star) {
-        if (!variable_instance_exists(self, "p_race_pop")) { continue; }
+        if (!variable_instance_exists(self, "p_race_pop")) {
+            continue;
+        }
         for (var i = 1; i <= planets; i++) {
-            if ((i < array_length(p_race_pop)) && (p_race_pop[i][eFACTION.ORK] > 0)) { _n++; }
+            if ((i < array_length(p_race_pop)) && (p_race_pop[i][eFACTION.ORK] > 0)) {
+                _n++;
+            }
         }
     }
     return _n;
@@ -240,29 +258,39 @@ function sector_ork_world_count() {
 ///              local horde; if there is nowhere to plant him, a WAAAGH fleet warps in from the sector edge.
 /// @param {Bool} override  force the muster (cheat / scripted)
 function init_ork_waagh(override = false) {
-    if ((obj_controller.known[eFACTION.ORK] != 0) && !override) { return; }   // already active / not dormant
+    if ((obj_controller.known[eFACTION.ORK] != 0) && !override) {
+        return;
+    } // already active / not dormant
 
     var _ork_pop = sector_ork_population();
     var _ork_worlds = sector_ork_world_count();
-    if ((_ork_pop <= 0) && !override) { return; }        // no greenskins anywhere to rally
+    if ((_ork_pop <= 0) && !override) {
+        return;
+    } // no greenskins anywhere to rally
 
     // Escalating trigger keyed to the total greenskin headcount (bloom + holdings), not owned-star count.
     var _fire = false;
     var _msg = "";
-    if (_ork_pop >= 100000000) {                         // >= 100M — a sector-wide menace
-        _fire = override || (irandom(3) == 3);           // ~25% / turn
+    if (_ork_pop >= 100000000) {
+        // >= 100M — a sector-wide menace
+        _fire = override || (irandom(3) == 3); // ~25% / turn
         _msg = "The greenskins have gone unchallenged for far too long. A towering Warboss has rallied the ork hordes and halted their infighting. Now unified, the greenskins pose a dire threat to the entire sector!";
-    } else if (_ork_pop >= 5000000) {                    // 5M - 100M — a swelling menace
-        _fire = override || (irandom(9) == 3);           // ~10% / turn
+    } else if (_ork_pop >= 5000000) {
+        // 5M - 100M — a swelling menace
+        _fire = override || (irandom(9) == 3); // ~10% / turn
         _msg = "The greenskins have swelled in activity, their numbers increasing seemingly without relent. A massive Warboss has risen to take control, leading most of the sector's Orks on a massive WAAAGH!";
-    } else if ((_ork_worlds > 0) && (_ork_worlds <= 5) && (_ork_pop < 1000000)) {   // nearly scoured
-        _fire = override || (irandom(3) == 3);           // ~25% / turn — a desperate reclamation
+    } else if ((_ork_worlds > 0) && (_ork_worlds <= 5) && (_ork_pop < 1000000)) {
+        // nearly scoured
+        _fire = override || (irandom(3) == 3); // ~25% / turn — a desperate reclamation
         _msg = "The orks are nearly defeated, but in a final desperate push, a new Warboss has mustered a fresh WAAAGH! and begun reclaiming their lost worlds.";
-    } else {                                             // still building — only a rare early spark
-        _fire = override || (irandom(300) == 33);        // ~0.3% / turn
+    } else {
+        // still building — only a rare early spark
+        _fire = override || (irandom(300) == 33); // ~0.3% / turn
         _msg = "The greenskins have swelled in activity, their numbers increasing seemingly without relent. A massive Warboss has risen to take control, leading most of the sector's Orks on a massive WAAAGH!";
     }
-    if (!_fire) { return; }
+    if (!_fire) {
+        return;
+    }
 
     scr_popup("WAAAAGH!", _msg, "waaagh", "");
     scr_event_log("red", "Ork WAAAAGH! begins.");
@@ -272,7 +300,9 @@ function init_ork_waagh(override = false) {
     var _ork_stars = scr_get_stars(false, [eFACTION.ORK]);
     for (var p = 0; p < array_length(_ork_stars); p++) {
         with (_ork_stars[p]) {
-            for (var i = 1; i <= planets; i++) { ork_ship_production(i); }
+            for (var i = 1; i <= planets; i++) {
+                ork_ship_production(i);
+            }
         }
     }
 
@@ -281,26 +311,37 @@ function init_ork_waagh(override = false) {
     var _cands = [];
     var _cands_clear = [];
     with (obj_star) {
-        if (!variable_instance_exists(self, "p_race_pop")) { continue; }
+        if (!variable_instance_exists(self, "p_race_pop")) {
+            continue;
+        }
         for (var i = 1; i <= planets; i++) {
-            if (i >= array_length(p_race_pop)) { continue; }
+            if (i >= array_length(p_race_pop)) {
+                continue;
+            }
             if (p_race_pop[i][eFACTION.ORK] > 0) {
                 array_push(_cands, [id, i]);
-                if ((p_pdf[i] == 0) && (p_guardsmen[i] == 0)) { array_push(_cands_clear, [id, i]); }
+                if ((p_pdf[i] == 0) && (p_guardsmen[i] == 0)) {
+                    array_push(_cands_clear, [id, i]);
+                }
             }
         }
     }
 
     var _pick = noone;
-    if (array_length(_cands_clear) > 0)     { _pick = array_random_element(_cands_clear); }
-    else if (array_length(_cands) > 0)      { _pick = array_random_element(_cands); }
+    if (array_length(_cands_clear) > 0) {
+        _pick = array_random_element(_cands_clear);
+    } else if (array_length(_cands) > 0) {
+        _pick = array_random_element(_cands);
+    }
 
     if (_pick != noone) {
         var _pstar = _pick[0];
         var _pplan = _pick[1];
         var _pdata = _pstar.get_planet_data(_pplan);
         var _boss = _pdata.add_feature(eP_FEATURES.ORKWARBOSS);
-        if (override) { _boss.player_hidden = false; }
+        if (override) {
+            _boss.player_hidden = false;
+        }
         // The Warboss rallies the local horde — boyz boil out of the spore-fields to follow him (a real
         // population surge, not a 0-6 level bump).
         if (variable_instance_exists(_pstar, "p_race_pop")) {
@@ -322,7 +363,7 @@ function init_ork_waagh(override = false) {
         scr_popup("WAAAAGH!", "My lord, our Auspex scans indicate that Warboss " + ork_wb_boss(_lead_wb) + " leading " + _lead_wb.name + " is rallying a WAAAGH within the " + string(_pdata.system.name) + " system. We must strike swiftly before he relocates.", "waaagh", "");
         scr_event_log("red", $"Warboss {ork_wb_boss(_lead_wb)} ({_lead_wb.name}) on {_pdata.name()}", _pdata.system.name);
     } else {
-        out_of_system_warboss(true);   // greenskins present but nowhere to plant him — warp a WAAAGH fleet in
+        out_of_system_warboss(true); // greenskins present but nowhere to plant him — warp a WAAAGH fleet in
     }
 }
 

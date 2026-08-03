@@ -444,7 +444,6 @@ function reset_manage_unit_constants(unit) {
             delete unit_manage_image;
         }
 
-
         unit_manage_image = unit.draw_unit_image();
 
         temp[122] = unit.handle_stat_growth();
@@ -1145,9 +1144,7 @@ function scr_ui_manage() {
             // there unchanged. Gate on purpose_code "manage" so every Manage Units entry
             // (fleet Ship Management, system view, planet view) gets the same list,
             // instead of matching one screen's purpose string.
-            var _ship_mgmt_list = (managing < 0) && is_struct(selection_data)
-                && struct_exists(selection_data, "purpose_code")
-                && (selection_data.purpose_code == "manage");
+            var _ship_mgmt_list = (managing < 0) && is_struct(selection_data) && struct_exists(selection_data, "purpose_code") && (selection_data.purpose_code == "manage");
             if ((managing == 16) && auxilia_squad_collapse) {
                 draw_auxilia_squad_rows(xx, yy, stats_displayed);
             } else if ((((managing >= 1) && (managing <= 10)) || _ship_mgmt_list) && marine_squad_collapse) {
@@ -1157,121 +1154,121 @@ function scr_ui_manage() {
                 // Command-slot prompts are company furniture; the ship list passes none.
                 draw_marine_squad_rows(xx, yy, stats_displayed, _ship_mgmt_list ? [] : get_command_slots_data());
             } else {
-            var repetitions = min(man_max, MANAGE_MAN_SEE);
-            man_count = 0;
-            if ((managing == 16) || ((managing >= 1) && (managing <= 10)) || _ship_mgmt_list) {
-                // First roster row becomes the view toggle, consuming a row slot the same
-                // way company command-slot prompts do. "Squad List" for marines to avoid
-                // clashing with the existing Squad View button in the unit panel.
-                var _sq_label = (managing == 16) ? "Switch to Squad View" : "Switch to Squad List View";
-                var _flat_filter_here = manage_filter_context();
-                if (_flat_filter_here) {
-                    manage_company_filter_button(xx + 684, yy + 64, xx + 974, yy + 85);
-                }
-                var _sq_btn = draw_unit_buttons([xx + 25, yy + 64, _flat_filter_here ? (xx + 680) : (xx + 974), yy + 85], _sq_label, [1, 1], CM_GREEN_COLOR, fa_center, fnt_40k_14b);
-                draw_set_halign(fa_left);
-                draw_set_valign(fa_top);
-                if (point_and_click(_sq_btn)) {
-                    if (managing == 16) {
-                        auxilia_squad_collapse = true;
-                    } else {
-                        marine_squad_collapse = true;
+                var repetitions = min(man_max, MANAGE_MAN_SEE);
+                man_count = 0;
+                if ((managing == 16) || ((managing >= 1) && (managing <= 10)) || _ship_mgmt_list) {
+                    // First roster row becomes the view toggle, consuming a row slot the same
+                    // way company command-slot prompts do. "Squad List" for marines to avoid
+                    // clashing with the existing Squad View button in the unit panel.
+                    var _sq_label = (managing == 16) ? "Switch to Squad View" : "Switch to Squad List View";
+                    var _flat_filter_here = manage_filter_context();
+                    if (_flat_filter_here) {
+                        manage_company_filter_button(xx + 684, yy + 64, xx + 974, yy + 85);
                     }
-                    man_current = 0;
-                }
-                yy += 20;
-                repetitions--;
-            }
-
-            var _command_slots_data = get_command_slots_data();
-            draw_set_font(fnt_40k_14);
-            if (managing > 0 && managing <= 10) {
-                for (var r = 0; r < array_length(_command_slots_data); r++) {
-                    var role = _command_slots_data[r];
-                    if (company_data[$ role.unit_check] == "none") {
-                        var _clicked = command_slot_draw(xx, yy, role.button_text);
-                        if (_clicked) {
-                            command_slot_prompt(role.search_params, role.role_group_params, role.purpose, role.purpose_code);
+                    var _sq_btn = draw_unit_buttons([xx + 25, yy + 64, _flat_filter_here ? (xx + 680) : (xx + 974), yy + 85], _sq_label, [1, 1], CM_GREEN_COLOR, fa_center, fnt_40k_14b);
+                    draw_set_halign(fa_left);
+                    draw_set_valign(fa_top);
+                    if (point_and_click(_sq_btn)) {
+                        if (managing == 16) {
+                            auxilia_squad_collapse = true;
+                        } else {
+                            marine_squad_collapse = true;
                         }
-                        yy += 20;
-                        if (managing == -1) {
-                            exit;
-                        }
-                        repetitions--;
+                        man_current = 0;
                     }
+                    yy += 20;
+                    repetitions--;
                 }
-            }
 
-            var _only_display_selected = instance_exists(obj_popup) && (obj_popup.type == 5 || obj_popup.type == 5.1 || obj_popup.type == 6);
-            for (var i = 0; i < max(0, repetitions); i++) {
+                var _command_slots_data = get_command_slots_data();
                 draw_set_font(fnt_40k_14);
-                if (sel >= array_length(display_unit)) {
-                    break;
+                if (managing > 0 && managing <= 10) {
+                    for (var r = 0; r < array_length(_command_slots_data); r++) {
+                        var role = _command_slots_data[r];
+                        if (company_data[$ role.unit_check] == "none") {
+                            var _clicked = command_slot_draw(xx, yy, role.button_text);
+                            if (_clicked) {
+                                command_slot_prompt(role.search_params, role.role_group_params, role.purpose, role.purpose_code);
+                            }
+                            yy += 20;
+                            if (managing == -1) {
+                                exit;
+                            }
+                            repetitions--;
+                        }
+                    }
                 }
 
-                while ((sel <= array_length(display_unit) - 1) && (man[sel] == "hide" || (man_sel[sel] != 1 && _only_display_selected) || manage_company_filter_skip(sel))) {
+                var _only_display_selected = instance_exists(obj_popup) && (obj_popup.type == 5 || obj_popup.type == 5.1 || obj_popup.type == 6);
+                for (var i = 0; i < max(0, repetitions); i++) {
+                    draw_set_font(fnt_40k_14);
+                    if (sel >= array_length(display_unit)) {
+                        break;
+                    }
+
+                    while ((sel <= array_length(display_unit) - 1) && (man[sel] == "hide" || (man_sel[sel] != 1 && _only_display_selected) || manage_company_filter_skip(sel))) {
+                        sel += 1;
+                    }
+                    if (sel >= array_length(display_unit)) {
+                        break;
+                    }
+                    if (scr_draw_management_unit(sel, yy, xx, true, _only_display_selected) == "continue") {
+                        sel++;
+                        i--;
+                        continue;
+                    }
+                    if (i == 0) {
+                        if (point_and_click([xx + 25 + 8, yy + 64, xx + 974, yy + 85])) {
+                            man_current = man_current > 0 ? man_current - 1 : 0;
+                        }
+                    } else if (i == repetitions - 1) {
+                        if (point_and_click([xx + 25 + 8, yy + 64, xx + 974, yy + 85])) {
+                            man_current = man_current < man_max - MANAGE_MAN_SEE ? man_current + 1 : man_current == (man_max - MANAGE_MAN_SEE);
+                            man_current++;
+                        }
+                    }
+                    yy += 20;
                     sel += 1;
                 }
-                if (sel >= array_length(display_unit)) {
-                    break;
-                }
-                if (scr_draw_management_unit(sel, yy, xx, true, _only_display_selected) == "continue") {
-                    sel++;
-                    i--;
-                    continue;
-                }
-                if (i == 0) {
-                    if (point_and_click([xx + 25 + 8, yy + 64, xx + 974, yy + 85])) {
-                        man_current = man_current > 0 ? man_current - 1 : 0;
+                if (sel_all != "" || squad_sel_count > 0) {
+                    for (var i = 0; i < top; i++) {
+                        scr_draw_management_unit(i, yy, xx, false);
                     }
-                } else if (i == repetitions - 1) {
-                    if (point_and_click([xx + 25 + 8, yy + 64, xx + 974, yy + 85])) {
-                        man_current = man_current < man_max - MANAGE_MAN_SEE ? man_current + 1 : man_current == (man_max - MANAGE_MAN_SEE);
-                        man_current++;
+                    for (var i = sel; i < array_length(display_unit); i++) {
+                        scr_draw_management_unit(i, yy, xx, false);
                     }
                 }
-                yy += 20;
-                sel += 1;
-            }
-            if (sel_all != "" || squad_sel_count > 0) {
-                for (var i = 0; i < top; i++) {
-                    scr_draw_management_unit(i, yy, xx, false);
+                sel_all = "";
+
+                draw_set_color(c_black);
+                draw_rectangle(xx + 974, yy + 165, xx + 1005, yy + 822, 0);
+                draw_set_color(c_gray);
+                draw_rectangle(xx + 974, yy + 165, xx + 1005, yy + 822, 1);
+
+                // Squad outline
+                draw_rectangle(xx + 25, yy + 142, xx + 14 + 8, yy + 822, 1);
+
+                draw_set_color(0);
+                draw_rectangle(xx + 974, yy + 141, xx + 1005, yy + 172, 0);
+                draw_rectangle(xx + 974, yy + 790, xx + 1005, yy + 822, 0);
+                draw_set_color(c_gray);
+                draw_rectangle(xx + 974, yy + 141, xx + 1005, yy + 172, 1);
+                draw_rectangle(xx + 974, yy + 790, xx + 1005, yy + 822, 1);
+
+                draw_sprite_stretched(spr_arrow, 2, xx + 974, yy + 141, 31, 30);
+                draw_sprite_stretched(spr_arrow, 3, xx + 974, yy + 791, 31, 30);
+
+                yy += 8;
+                var _draw_selec_buttons = !obj_controller.unit_profile && !stats_displayed;
+                if (_draw_selec_buttons && instance_exists(obj_popup)) {
+                    _draw_selec_buttons = obj_popup.type != ePOPUP_TYPE.EQUIP;
                 }
-                for (var i = sel; i < array_length(display_unit); i++) {
-                    scr_draw_management_unit(i, yy, xx, false);
+                if (_draw_selec_buttons && is_struct(obj_controller.unit_focus)) {
+                    draw_manage_selection_buttons(xx, yy);
                 }
-            }
-            sel_all = "";
 
-            draw_set_color(c_black);
-            draw_rectangle(xx + 974, yy + 165, xx + 1005, yy + 822, 0);
-            draw_set_color(c_gray);
-            draw_rectangle(xx + 974, yy + 165, xx + 1005, yy + 822, 1);
-
-            // Squad outline
-            draw_rectangle(xx + 25, yy + 142, xx + 14 + 8, yy + 822, 1);
-
-            draw_set_color(0);
-            draw_rectangle(xx + 974, yy + 141, xx + 1005, yy + 172, 0);
-            draw_rectangle(xx + 974, yy + 790, xx + 1005, yy + 822, 0);
-            draw_set_color(c_gray);
-            draw_rectangle(xx + 974, yy + 141, xx + 1005, yy + 172, 1);
-            draw_rectangle(xx + 974, yy + 790, xx + 1005, yy + 822, 1);
-
-            draw_sprite_stretched(spr_arrow, 2, xx + 974, yy + 141, 31, 30);
-            draw_sprite_stretched(spr_arrow, 3, xx + 974, yy + 791, 31, 30);
-
-            yy += 8;
-            var _draw_selec_buttons = !obj_controller.unit_profile && !stats_displayed;
-            if (_draw_selec_buttons && instance_exists(obj_popup)) {
-                _draw_selec_buttons = obj_popup.type != ePOPUP_TYPE.EQUIP;
-            }
-            if (_draw_selec_buttons && is_struct(obj_controller.unit_focus)) {
-                draw_manage_selection_buttons(xx, yy);
-            }
-
-            draw_set_color(#3f7e5d);
-            scr_scrollbar(974, 172, 1005, 790, 34, man_max, man_current);
+                draw_set_color(#3f7e5d);
+                scr_scrollbar(974, 172, 1005, 790, 34, man_max, man_current);
             }
         }
         if (instance_exists(obj_controller) && is_struct(obj_controller.unit_focus)) {
@@ -1613,13 +1610,11 @@ function draw_manage_selection_buttons(xx, yy) {
     button.y1 = action_button_bottom_y + 30 + _load_button_h_gap;
     button.x2 = button.x1 + button.w;
     button.y2 = button.y1 + button.h;
-    var _embarking = (sel_loading == -1);
+    var _embarking = sel_loading == -1;
     button.label = _embarking ? "Embark" : "Disembark";
     var load_unload_possible = man_size > 0;
     button.keystroke = keyboard_check(vk_shift) && keyboard_check_pressed(ord("L"));
-    button.tooltip = _embarking
-        ? "Embarks the selected units onto a ship of your choosing. (Shift L)"
-        : "Disembarks the selected units from this ship down onto a planet. (Shift L)";
+    button.tooltip = _embarking ? "Embarks the selected units onto a ship of your choosing. (Shift L)" : "Disembarks the selected units from this ship down onto a planet. (Shift L)";
     if (load_unload_possible) {
         button.alpha = 1;
         if (sel_loading == -1) {
@@ -1666,15 +1661,15 @@ function draw_manage_selection_buttons(xx, yy) {
         // Anything standing on a surface here? ma_wid holds the planet a unit is on (0 = aboard ship).
         var _surface_count = 0;
         for (var _rq = 0; _rq < array_length(display_unit); _rq++) {
-            if ((_rq < array_length(ma_wid)) && (ma_wid[_rq] > 0)) { _surface_count += 1; }
+            if ((_rq < array_length(ma_wid)) && (ma_wid[_rq] > 0)) {
+                _surface_count += 1;
+            }
         }
         button.move("right", true);
         button.label = "Recall All";
         button.keystroke = false;
-        button.tooltip = _region_scoped
-            ? $"Reembarks all units to their ships instantly - every one of the {_surface_count} in this sector. No selection needed."
-            : $"Reembarks all units to their ships instantly - all {_surface_count} on the surface. No selection needed.";
-        var recall_possible = (_surface_count > 0);
+        button.tooltip = _region_scoped ? $"Reembarks all units to their ships instantly - every one of the {_surface_count} in this sector. No selection needed." : $"Reembarks all units to their ships instantly - all {_surface_count} on the surface. No selection needed.";
+        var recall_possible = _surface_count > 0;
         if (recall_possible) {
             button.alpha = 1;
             if (button.draw()) {
@@ -1839,7 +1834,10 @@ function draw_auxilia_squad_rows(xx, yy, _stats_displayed = false) {
         if ((_role == "Guard Sergeant") || (_role == "Guardsman")) {
             var _loc = string(ma_loc[i]);
             if (!struct_exists(_buckets, _loc)) {
-                _buckets[$ _loc] = {sgts: [], grds: []};
+                _buckets[$ _loc] = {
+                    sgts: [],
+                    grds: [],
+                };
                 array_push(_locs, _loc);
             }
             if (_role == "Guard Sergeant") {
@@ -1950,7 +1948,12 @@ function draw_auxilia_squad_rows(xx, yy, _stats_displayed = false) {
             _label += $"  ({_sel_count}/{_count} selected)";
         }
 
-        var _rect = [xx + 25, _yy + 64, xx + 974, _yy + 85];
+        var _rect = [
+            xx + 25,
+            _yy + 64,
+            xx + 974,
+            _yy + 85,
+        ];
         draw_set_color(c_black);
         draw_rectangle(_rect[0], _rect[1], _rect[2], _rect[3], 0);
         if (_sel_count > 0) {
@@ -2087,16 +2090,12 @@ function draw_auxilia_squad_rows(xx, yy, _stats_displayed = false) {
 /// time a manage screen opens (group_selection).
 /// @self Asset.GMObject.obj_controller
 function manage_filter_context() {
-    return (managing < 0) && is_struct(selection_data)
-        && struct_exists(selection_data, "purpose_code")
-        && (selection_data.purpose_code == "manage");
+    return (managing < 0) && is_struct(selection_data) && struct_exists(selection_data, "purpose_code") && (selection_data.purpose_code == "manage");
 }
 
 /// Company of a display index; -100 buckets vehicles and anything without one.
 function manage_unit_company(_i) {
-    if ((man[_i] == "man") && is_struct(display_unit[_i])
-    && variable_struct_exists(display_unit[_i], "company")
-    && is_real(display_unit[_i].company)) {
+    if ((man[_i] == "man") && is_struct(display_unit[_i]) && variable_struct_exists(display_unit[_i], "company") && is_real(display_unit[_i].company)) {
         return display_unit[_i].company;
     }
     return -100;
@@ -2146,10 +2145,18 @@ function manage_companies_present() {
 }
 
 function manage_company_filter_label(_c) {
-    if (_c == -1) { return "All Companies"; }
-    if (_c == 0) { return "HQ / Unassigned"; }
-    if (_c == 16) { return "Auxilia"; }
-    if (_c == -100) { return "Vehicles & Others"; }
+    if (_c == -1) {
+        return "All Companies";
+    }
+    if (_c == 0) {
+        return "HQ / Unassigned";
+    }
+    if (_c == 16) {
+        return "Auxilia";
+    }
+    if (_c == -100) {
+        return "Vehicles & Others";
+    }
     return $"{int_to_roman(_c)} Company";
 }
 
@@ -2190,9 +2197,7 @@ function manage_company_filter_button(_x1, _y1, _x2, _y2) {
     draw_set_valign(fa_top);
     if (point_and_click(_btn) && (scrollbar_engaged == 0)) {
         manage_company_filter_cycle(1);
-    } else if (mouse_check_button_pressed(mb_right)
-    && point_in_rectangle(mouse_x, mouse_y, _x1, _y1, _x2, _y2)
-    && (scrollbar_engaged == 0)) {
+    } else if (mouse_check_button_pressed(mb_right) && point_in_rectangle(mouse_x, mouse_y, _x1, _y1, _x2, _y2) && (scrollbar_engaged == 0)) {
         manage_company_filter_cycle(-1);
     }
 }
@@ -2226,7 +2231,11 @@ function draw_marine_squad_rows(xx, yy, _stats_displayed = false, _command_slots
         if ((_sq_id != "none") && is_string(_sq_id) && struct_exists(obj_ini.squads, _sq_id)) {
             var _key = _sq_id + "|" + string(ma_loc[i]);
             if (!struct_exists(_groups, _key)) {
-                var _grp = {squad_members: [], squad_id: _sq_id, loc: string(ma_loc[i])};
+                var _grp = {
+                    squad_members: [],
+                    squad_id: _sq_id,
+                    loc: string(ma_loc[i]),
+                };
                 _groups[$ _key] = _grp;
                 array_push(_rows, _grp);
                 if (!struct_exists(_squad_num, _sq_id)) {
@@ -2239,7 +2248,10 @@ function draw_marine_squad_rows(xx, yy, _stats_displayed = false, _command_slots
                         _type_counts[$ _tname] = 0;
                     }
                     _type_counts[$ _tname]++;
-                    _squad_num[$ _sq_id] = {num: _type_counts[$ _tname], tname: _tname};
+                    _squad_num[$ _sq_id] = {
+                        num: _type_counts[$ _tname],
+                        tname: _tname,
+                    };
                 }
             }
             array_push(_groups[$ _key].squad_members, i);
@@ -2259,9 +2271,7 @@ function draw_marine_squad_rows(xx, yy, _stats_displayed = false, _command_slots
     for (var _er = 0; _er < array_length(_rows); _er++) {
         var _erow = _rows[_er];
         array_push(_expanded_rows, _erow);
-        if (!struct_exists(_erow, "unit_row")
-        && struct_exists(obj_controller.squad_view_expanded, _erow.squad_id)
-        && obj_controller.squad_view_expanded[$ _erow.squad_id]) {
+        if (!struct_exists(_erow, "unit_row") && struct_exists(obj_controller.squad_view_expanded, _erow.squad_id) && obj_controller.squad_view_expanded[$ _erow.squad_id]) {
             for (var _em = 0; _em < array_length(_erow.squad_members); _em++) {
                 array_push(_expanded_rows, {unit_row: _erow.squad_members[_em]});
             }
@@ -2396,11 +2406,20 @@ function draw_marine_squad_rows(xx, yy, _stats_displayed = false, _command_slots
             _label += $"  ({_sel_count}/{_count} selected)";
         }
 
-        var _rect = [xx + 25, _yy + 64, xx + 974, _yy + 85];
+        var _rect = [
+            xx + 25,
+            _yy + 64,
+            xx + 974,
+            _yy + 85,
+        ];
         // Per-squad expander: its own hitbox, consumed before the select-all click.
-        var _is_open = struct_exists(obj_controller.squad_view_expanded, _row.squad_id)
-            && obj_controller.squad_view_expanded[$ _row.squad_id];
-        var _glyph_rect = [xx + 27, _yy + 65, xx + 55, _yy + 84];
+        var _is_open = struct_exists(obj_controller.squad_view_expanded, _row.squad_id) && obj_controller.squad_view_expanded[$ _row.squad_id];
+        var _glyph_rect = [
+            xx + 27,
+            _yy + 65,
+            xx + 55,
+            _yy + 84,
+        ];
         var _glyph_hit = point_and_click(_glyph_rect) && (scrollbar_engaged == 0);
         if (_glyph_hit) {
             obj_controller.squad_view_expanded[$ _row.squad_id] = !_is_open;

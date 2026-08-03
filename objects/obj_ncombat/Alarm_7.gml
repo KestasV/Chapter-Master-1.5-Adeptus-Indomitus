@@ -14,7 +14,7 @@ try {
     // GUARD_VETERAN_XP / GUARD_BATTLE_XP survived battles makes one eligible for
     // promotion to Veteran Guard (see promote_auxilia_to_veteran).
     if (!defeat) {
-        var _grd_survivors = collect_role_group("all", "", false, { roles: ["Guardsman"] });
+        var _grd_survivors = collect_role_group("all", "", false, {roles: ["Guardsman"]});
         for (var _gs = 0; _gs < array_length(_grd_survivors); _gs++) {
             var _grd = _grd_survivors[_gs];
             if (_grd.location_string == obj_ncombat.battle_loc) {
@@ -28,7 +28,7 @@ try {
         // hold tickets, so credit lands unevenly: veterancy diverges instead of the
         // whole levy promoting in lockstep, and Veterans and Sergeants bank XP toward
         // future promotion tiers.
-        var _grd_lottery = collect_role_group("all", "", false, { roles: ["Guardsman", "Veteran Guard", "Guard Sergeant"] });
+        var _grd_lottery = collect_role_group("all", "", false, {roles: ["Guardsman", "Veteran Guard", "Guard Sergeant"]});
         var _grd_here = [];
         for (var _gl = 0; _gl < array_length(_grd_lottery); _gl++) {
             if (_grd_lottery[_gl].location_string == obj_ncombat.battle_loc) {
@@ -214,7 +214,7 @@ try {
             // the daemonic incursion he anchors from the battle planet, so repeat
             // purges no longer respawn the duel (and re-announce his death) while the
             // world pumps heresy forever. Mirrors the Ork warboss departure pattern.
-            var _first_kill = (obj_controller.faction_defeated[10] == 0);
+            var _first_kill = obj_controller.faction_defeated[10] == 0;
             if (instance_exists(battle_object)) {
                 delete_features(battle_object.p_feature[battle_id], eP_FEATURES.WARLORD10);
                 delete_features(battle_object.p_feature[battle_id], eP_FEATURES.DAEMONIC_INCURSION);

@@ -435,7 +435,6 @@ if (defeat == 0 && _reduce_power) {
         part10 = "Necrons";
     }
 
-
     if (instance_exists(battle_object) && (enemy_power > 2)) {
         if (awake_tomb_world(battle_object.p_feature[battle_id]) != 0) {
             scr_gov_disp(battle_object.name, battle_id, floor(enemy_power / 2));

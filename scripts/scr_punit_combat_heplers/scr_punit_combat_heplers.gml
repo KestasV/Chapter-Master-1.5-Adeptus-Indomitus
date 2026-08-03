@@ -191,24 +191,42 @@ function block_position_collision(position_x, position_y) {
 /// @desc Human-readable name for a formation type, for combat-log order confirmations.
 function formation_display_name(_ftype) {
     switch (_ftype) {
-        case "command": return "Command squad";
-        case "honor": return "Honor Guard";
-        case "librarian": return "Librarians";
-        case "techmarine": return "Techmarines";
-        case "terminator": return "Terminators";
-        case "veteran": return "Veterans";
-        case "tactical": return "Tactical Marines";
-        case "devastator": return "Devastators";
-        case "assault": return "Assault Marines";
-        case "scout": return "Scouts";
-        case "dreadnought": return "Dreadnoughts";
-        case "hire": return "Hirelings";
-        case "rhino": return "Rhinos";
-        case "predator": return "Predators";
-        case "landraider": return "Land Raiders";
-        case "landspeeder": return "Land Speeders";
-        case "whirlwind": return "Whirlwinds";
-        case "deathco": return "Death Company";
+        case "command":
+            return "Command squad";
+        case "honor":
+            return "Honor Guard";
+        case "librarian":
+            return "Librarians";
+        case "techmarine":
+            return "Techmarines";
+        case "terminator":
+            return "Terminators";
+        case "veteran":
+            return "Veterans";
+        case "tactical":
+            return "Tactical Marines";
+        case "devastator":
+            return "Devastators";
+        case "assault":
+            return "Assault Marines";
+        case "scout":
+            return "Scouts";
+        case "dreadnought":
+            return "Dreadnoughts";
+        case "hire":
+            return "Hirelings";
+        case "rhino":
+            return "Rhinos";
+        case "predator":
+            return "Predators";
+        case "landraider":
+            return "Land Raiders";
+        case "landspeeder":
+            return "Land Speeders";
+        case "whirlwind":
+            return "Whirlwinds";
+        case "deathco":
+            return "Death Company";
     }
     return "formation";
 }
@@ -341,8 +359,7 @@ function move_unit_block(direction, blocks = 1, allow_collision = false, leapfro
         // order. Never onto a position an enemy holds, so contact still stops movement.
         // The seeded auto-advance keeps vanilla stall behaviour so the body forms a line
         // behind the front instead of piling into the front block's column.
-        if (leapfrog && (object_index == obj_pnunit) && (_step != 0)
-            && collision_point(_new_pos, y, obj_pnunit, 0, 1) && !collision_point(_new_pos, y, obj_enunit, 0, 1)) {
+        if (leapfrog && (object_index == obj_pnunit) && (_step != 0) && collision_point(_new_pos, y, obj_pnunit, 0, 1) && !collision_point(_new_pos, y, obj_enunit, 0, 1)) {
             x = _new_pos;
             return true;
         }
@@ -381,16 +398,11 @@ function enemy_formation_type(_name) {
         return "line";
     }
     // Tanks, transports and flyers.
-    if (enemy_name_has(_name, ["Battlewagon", "Trukk", "Chimera", "Leman Russ", "Basilisk", "Predator",
-        "Rhino", "Land Raider", "Vindicator", "Immolator", "Exorcist", "Devilfish", "Hammerhead",
-        "Falcon", "Fire Prism", "Night Spinner", "Wave Serpent", "Monolith", "Doomsday Arc", "Vyper",
-        "Goliath", "Ridgerunner", "Technical", "Vendetta", "Heldrake", "Grav Platform"])) {
+    if (enemy_name_has(_name, ["Battlewagon", "Trukk", "Chimera", "Leman Russ", "Basilisk", "Predator", "Rhino", "Land Raider", "Vindicator", "Immolator", "Exorcist", "Devilfish", "Hammerhead", "Falcon", "Fire Prism", "Night Spinner", "Wave Serpent", "Monolith", "Doomsday Arc", "Vyper", "Goliath", "Ridgerunner", "Technical", "Vendetta", "Heldrake", "Grav Platform"])) {
         return "vehicle";
     }
     // Walkers and monstrous creatures: they never take cover and anchor a line.
-    if (enemy_name_has(_name, ["Wraithlord", "Deff Dread", "Killa Kan", "Carnifex", "Helbrute", "Defiler",
-        "Maulerfiend", "Soul Grinder", "Penitent Engine", "Dreadnought", "Tomb Stalker", "Canoptek Spyder",
-        "Greater Daemon", "Avatar", "Phantom Titan", "Toxicrene", "Trygon"])) {
+    if (enemy_name_has(_name, ["Wraithlord", "Deff Dread", "Killa Kan", "Carnifex", "Helbrute", "Defiler", "Maulerfiend", "Soul Grinder", "Penitent Engine", "Dreadnought", "Tomb Stalker", "Canoptek Spyder", "Greater Daemon", "Avatar", "Phantom Titan", "Toxicrene", "Trygon"])) {
         return "walker";
     }
     // Super heavy infantry: the terminator tier and its xenos equivalents.
@@ -398,34 +410,23 @@ function enemy_formation_type(_name) {
         return "terminator";
     }
     // Warlords and characters: the assassination targets an Assault leap goes after.
-    if (enemy_name_has(_name, ["Warboss", "Chaos Lord", "Sorcerer", "Farseer", "Autarch", "Warlock",
-        "Hive Tyrant", "Overlord", "Commander", "Arch Heretic", "Magus", "Primus", "Palatine", "Canoness",
-        "Ethereal", "Leader", "Mistress"])) {
+    if (enemy_name_has(_name, ["Warboss", "Chaos Lord", "Sorcerer", "Farseer", "Autarch", "Warlock", "Hive Tyrant", "Overlord", "Commander", "Arch Heretic", "Magus", "Primus", "Palatine", "Canoness", "Ethereal", "Leader", "Mistress"])) {
         return "warlord";
     }
     // Fire support: the gunline that holds and shoots.
-    if (enemy_name_has(_name, ["Havoc", "Dark Reaper", "Broadside", "Heavy Weapons", "Long Fang",
-        "Loota", "Flash Git", "Tank Busta", "Devastator", "Retributor", "Zoanthrope", "Fire Dragon",
-        "Destroyer"])) {
+    if (enemy_name_has(_name, ["Havoc", "Dark Reaper", "Broadside", "Heavy Weapons", "Long Fang", "Loota", "Flash Git", "Tank Busta", "Devastator", "Retributor", "Zoanthrope", "Fire Dragon", "Destroyer"])) {
         return "heavy";
     }
     // Fast attack and dedicated close combat: these leap the line.
-    if (enemy_name_has(_name, ["Raptor", "Stormboy", "Warp Spider", "Swooping Hawk", "Shining Spear",
-        "Howling Banshee", "Striking Scorpian", "Striking Scorpion", "Genestealer", "Hormagaunt",
-        "Berzerker", "Seraphim", "Repentia", "Arco-Flagellent", "Jackal", "Vespid", "Necron Wraith",
-        "Spyrer", "Possessed"])) {
+    if (enemy_name_has(_name, ["Raptor", "Stormboy", "Warp Spider", "Swooping Hawk", "Shining Spear", "Howling Banshee", "Striking Scorpian", "Striking Scorpion", "Genestealer", "Hormagaunt", "Berzerker", "Seraphim", "Repentia", "Arco-Flagellent", "Jackal", "Vespid", "Necron Wraith", "Spyrer", "Possessed"])) {
         return "assault";
     }
     // Skirmishers, infiltrators and light screens.
-    if (enemy_name_has(_name, ["Gretchin", "Kommando", "Ranger", "Pathfinder", "Stealthsuit", "XV25",
-        "Lictor", "Kroot", "Drone", "Scout"])) {
+    if (enemy_name_has(_name, ["Gretchin", "Kommando", "Ranger", "Pathfinder", "Stealthsuit", "XV25", "Lictor", "Kroot", "Drone", "Scout"])) {
         return "scout";
     }
     // Veterans and heavy infantry.
-    if (enemy_name_has(_name, ["Nob", "Ard Boy", "Chosen", "Veteran", "Aberrant", "Tyrant Guard",
-        "Tyranid Warrior", "Lychguard", "Immortal", "Wraithguard", "Celestian", "Dominion", "Exarch",
-        "Ogryn", "Cultist Elite", "Fallen", "Daemonhost", "Praetorian", "Thallax", "Ogre", "Mek",
-        "Priest", "XV8"])) {
+    if (enemy_name_has(_name, ["Nob", "Ard Boy", "Chosen", "Veteran", "Aberrant", "Tyrant Guard", "Tyranid Warrior", "Lychguard", "Immortal", "Wraithguard", "Celestian", "Dominion", "Exarch", "Ogryn", "Cultist Elite", "Fallen", "Daemonhost", "Praetorian", "Thallax", "Ogre", "Mek", "Priest", "XV8"])) {
         return "elite";
     }
     return "line";
@@ -438,15 +439,24 @@ function enemy_formation_type(_name) {
 /// @returns {String}
 function enemy_formation_display_name(_ftype) {
     switch (_ftype) {
-        case "warlord": return "Warlords";
-        case "terminator": return "Elite Heavy Infantry";
-        case "elite": return "Elites";
-        case "heavy": return "Fire Support";
-        case "assault": return "Assault Troops";
-        case "scout": return "Skirmishers";
-        case "walker": return "Walkers";
-        case "vehicle": return "Vehicles";
-        case "line": return "Line Infantry";
+        case "warlord":
+            return "Warlords";
+        case "terminator":
+            return "Elite Heavy Infantry";
+        case "elite":
+            return "Elites";
+        case "heavy":
+            return "Fire Support";
+        case "assault":
+            return "Assault Troops";
+        case "scout":
+            return "Skirmishers";
+        case "walker":
+            return "Walkers";
+        case "vehicle":
+            return "Vehicles";
+        case "line":
+            return "Line Infantry";
     }
     return "Enemy formation";
 }
@@ -580,9 +590,13 @@ function blocks_in_scan_order(_object_index, _from, _forward) {
         }
     }
     if (_forward) {
-        array_sort(_out, function(_a, _b) { return _a.x - _b.x; });
+        array_sort(_out, function(_a, _b) {
+            return _a.x - _b.x;
+        });
     } else {
-        array_sort(_out, function(_a, _b) { return _b.x - _a.x; });
+        array_sort(_out, function(_a, _b) {
+            return _b.x - _a.x;
+        });
     }
     return _out;
 }
@@ -997,4 +1011,4 @@ function resolve_block_label(_inst) {
         return $"[{enemy_formation_display_name(_inst.formation_type)}] <{_desc}>";
     }
     return $"<{_desc}>";
-};
+}

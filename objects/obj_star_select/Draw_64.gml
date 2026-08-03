@@ -73,7 +73,7 @@ try {
                     shutter_1,
                     shutter_2,
                     shutter_3,
-                    shutter_4
+                    shutter_4,
                 ];
                 for (var i = 0; i < 4; i++) {
                     var shutter_button = shutters[i];

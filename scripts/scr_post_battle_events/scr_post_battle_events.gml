@@ -169,10 +169,7 @@ function space_hulk_explore_battle_aftermath() {
         pop.hulk_loot_ship = _shi;
         pop.hulk_loot_loc = _loc;
         with (pop) {
-            replace_options([
-                { str1: "Strip it for the Chapter", choice_func: space_hulk_strip },
-                { str1: "Tow it to the nearest Forge World", choice_func: space_hulk_surrender }
-            ]);
+            replace_options([{str1: "Strip it for the Chapter", choice_func: space_hulk_strip}, {str1: "Tow it to the nearest Forge World", choice_func: space_hulk_surrender}]);
         }
     }
 }
@@ -208,7 +205,7 @@ function space_hulk_strip() {
     // Rare STC fragment in the haul. Kept low on purpose: a guaranteed STC would let the player
     // gift it back to the Mechanicus and buy back the disposition they just lost (the loyalty
     // hit above is what they can never undo).
-    var _found_stc = (random(1) < 0.20);
+    var _found_stc = random(1) < 0.20;
     if (_found_stc) {
         scr_add_stc_fragment();
     }

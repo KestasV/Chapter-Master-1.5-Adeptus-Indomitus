@@ -414,7 +414,7 @@ function new_player_ship(type, start_loc = "home", new_name = "") {
         obj_ini.ship_wep_facing[index][5] = "most";
         obj_ini.ship_wep_condition[index][5] = "";
         obj_ini.ship_capacity[index] = 600;
-        obj_ini.ship_guardsmen_max[index] = 500000;  // Battle Barge: Guard auxilia capacity
+        obj_ini.ship_guardsmen_max[index] = 500000; // Battle Barge: Guard auxilia capacity
         obj_ini.ship_guardsmen[index] = 0;
         obj_ini.ship_carrying[index] = 0;
         obj_ini.ship_contents[index] = "";
@@ -445,7 +445,7 @@ function new_player_ship(type, start_loc = "home", new_name = "") {
         obj_ini.ship_wep_facing[index][4] = "most";
         obj_ini.ship_wep_condition[index][4] = "";
         obj_ini.ship_capacity[index] = 250;
-        obj_ini.ship_guardsmen_max[index] = 150000;  // Strike Cruiser: Guard auxilia capacity
+        obj_ini.ship_guardsmen_max[index] = 150000; // Strike Cruiser: Guard auxilia capacity
         obj_ini.ship_guardsmen[index] = 0;
         obj_ini.ship_carrying[index] = 0;
         obj_ini.ship_contents[index] = "";
@@ -466,7 +466,7 @@ function new_player_ship(type, start_loc = "home", new_name = "") {
         obj_ini.ship_wep_facing[index][1] = "most";
         obj_ini.ship_wep_condition[index][1] = "";
         obj_ini.ship_capacity[index] = 30;
-        obj_ini.ship_guardsmen_max[index] = 0;       // Gladius escort: no Guard capacity
+        obj_ini.ship_guardsmen_max[index] = 0; // Gladius escort: no Guard capacity
         obj_ini.ship_guardsmen[index] = 0;
         obj_ini.ship_carrying[index] = 0;
         obj_ini.ship_contents[index] = "";
@@ -490,7 +490,7 @@ function new_player_ship(type, start_loc = "home", new_name = "") {
         obj_ini.ship_wep_facing[index][2] = "most";
         obj_ini.ship_wep_condition[index][2] = "";
         obj_ini.ship_capacity[index] = 25;
-        obj_ini.ship_guardsmen_max[index] = 0;       // Hunter escort: no Guard capacity
+        obj_ini.ship_guardsmen_max[index] = 0; // Hunter escort: no Guard capacity
         obj_ini.ship_guardsmen[index] = 0;
         obj_ini.ship_carrying[index] = 0;
         obj_ini.ship_contents[index] = "";
@@ -655,15 +655,25 @@ function embark_guardsmen(system_name, planet) {
     ensure_ship_guardsmen_arrays();
     with (obj_ini) {
         for (var i = 0; i < array_length(ship); i++) {
-            if (ship[i] == "") continue;                   // empty roster slot
-            if (ship_location[i] != system_name) continue; // ship must be here
+            if (ship[i] == "") {
+                continue;
+            } // empty roster slot
+            if (ship_location[i] != system_name) {
+                continue;
+            } // ship must be here
             var _space = ship_guardsmen_max[i] - ship_guardsmen[i];
-            if (_space <= 0) continue;                      // no hull room (escorts = 0)
+            if (_space <= 0) {
+                continue;
+            } // no hull room (escorts = 0)
             var _take = min(_space, _available - _loaded);
-            if (_take <= 0) break;
+            if (_take <= 0) {
+                break;
+            }
             ship_guardsmen[i] += _take;
             _loaded += _take;
-            if (_loaded >= _available) break;
+            if (_loaded >= _available) {
+                break;
+            }
         }
     }
 
@@ -686,9 +696,15 @@ function deploy_guardsmen(system_name, planet) {
     ensure_ship_guardsmen_arrays();
     with (obj_ini) {
         for (var i = 0; i < array_length(ship); i++) {
-            if (ship[i] == "") continue;
-            if (ship_location[i] != system_name) continue;
-            if (ship_guardsmen[i] <= 0) continue;
+            if (ship[i] == "") {
+                continue;
+            }
+            if (ship_location[i] != system_name) {
+                continue;
+            }
+            if (ship_guardsmen[i] <= 0) {
+                continue;
+            }
             _unloaded += ship_guardsmen[i];
             ship_guardsmen[i] = 0;
         }
@@ -739,8 +755,12 @@ function player_guardsmen_at(system_name) {
     var _total = 0;
     with (obj_ini) {
         for (var i = 0; i < array_length(ship); i++) {
-            if (ship[i] == "") continue;
-            if (ship_location[i] != system_name) continue;
+            if (ship[i] == "") {
+                continue;
+            }
+            if (ship_location[i] != system_name) {
+                continue;
+            }
             _total += ship_guardsmen[i];
         }
     }
@@ -801,7 +821,10 @@ function recall_forces_at_world(_star) {
     var _recalled = 0;
     var _stranded = 0;
     if (!instance_exists(_star)) {
-        return { recalled: 0, stranded: 0 };
+        return {
+            recalled: 0,
+            stranded: 0,
+        };
     }
     var _star_name = _star.name;
 
@@ -850,5 +873,8 @@ function recall_forces_at_world(_star) {
             _recalled++;
         }
     }
-    return { recalled: _recalled, stranded: _stranded };
+    return {
+        recalled: _recalled,
+        stranded: _stranded,
+    };
 }

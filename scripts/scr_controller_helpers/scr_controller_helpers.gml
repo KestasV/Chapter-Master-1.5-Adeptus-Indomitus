@@ -551,7 +551,7 @@ function eldar_intel_grant() {
     var _clue_texts = [
         "Among the alien dead your Apothecaries recover spirit stones that pulse in unison, all straining toward some distant point in the void. The Librarium begins triangulating.",
         "A dying Warlock's staff yields a shard of wraithbone etched with webway routes. Cross-referenced with the spirit stones, the search narrows to a handful of sectors.",
-        "A captured wayseer's runes, broken under the Librarium's interrogation, complete the pattern. The hidden Craftworld's position is laid bare."
+        "A captured wayseer's runes, broken under the Librarium's interrogation, complete the pattern. The hidden Craftworld's position is laid bare.",
     ];
     var _text = _clue_texts[min(_n, array_length(_clue_texts)) - 1];
     if (_n >= ELDAR_INTEL_REQUIRED) {

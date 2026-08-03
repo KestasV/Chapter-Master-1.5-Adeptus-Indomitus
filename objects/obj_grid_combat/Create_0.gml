@@ -168,4 +168,4 @@ hover_r = -1;
 
 // The field itself is built on the first Step, not here: instance_create runs
 // this event immediately, so the cheat has not yet had a chance to set
-// pending_width when Create fires.
+// pending_width when Create fires. 

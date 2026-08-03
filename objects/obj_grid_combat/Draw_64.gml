@@ -254,8 +254,7 @@ if (_tp >= 20) {
 // placement ghost
 if (placing) {
     var _pn = array_length(placing_list);
-    var _dragging = place_drag && (place_c0 >= 0) && (hover_c >= 0)
-        && ((hover_c != place_c0) || (hover_r != place_r0));
+    var _dragging = place_drag && (place_c0 >= 0) && (hover_c >= 0) && ((hover_c != place_c0) || (hover_r != place_r0));
     if (_dragging) {
         // Live drag: show the exact tiles the block will stand on and the line
         // the front rank is being drawn along, so the shape is chosen by eye.
@@ -271,8 +270,7 @@ if (placing) {
             draw_rectangle(_dpx + 2, _dpy + 2, _dpx + _tp - 2, _dpy + _tp - 2, true);
         }
         draw_set_color(_dok ? GRIDC_GREEN : GRIDC_RED);
-        draw_line(grid_sx(id, place_c0) + (_tp / 2), grid_sy(id, place_r0) + (_tp / 2),
-            grid_sx(id, hover_c) + (_tp / 2), grid_sy(id, hover_r) + (_tp / 2));
+        draw_line(grid_sx(id, place_c0) + (_tp / 2), grid_sy(id, place_r0) + (_tp / 2), grid_sx(id, hover_c) + (_tp / 2), grid_sy(id, hover_r) + (_tp / 2));
     }
     var _fp = grid_footprint(id, _pn);
     var _ok = (hover_c >= 0) && grid_placement_valid(id, placing_list, hover_c, hover_r);
@@ -340,8 +338,7 @@ for (var _fx = 0; _fx < array_length(shots); _fx++) {
     } else if (_sh.kind == GRIDFX_TRACER) {
         draw_set_alpha(0.9);
         var _t0 = max(0, _prog - 0.22);
-        draw_line_width(lerp(_sax, _sbx, _t0), lerp(_say, _sby, _t0),
-            lerp(_sax, _sbx, _prog), lerp(_say, _sby, _prog), 2);
+        draw_line_width(lerp(_sax, _sbx, _t0), lerp(_say, _sby, _t0), lerp(_sax, _sbx, _prog), lerp(_say, _sby, _prog), 2);
     } else if (_sh.kind == GRIDFX_MISSILE) {
         if (_prog < 0.6) {
             var _mp = _prog / 0.6;
@@ -362,7 +359,7 @@ for (var _fx = 0; _fx < array_length(shots); _fx++) {
         // bolt crackles across as a jittered double arc, then blooms at the
         // target with a radius that matches the power's real area. Variation
         // comes from the blast size: wide powers get a second trailing ring.
-        var _selfcast = ((_sh.c0 == _sh.c1) && (_sh.r0 == _sh.r1));
+        var _selfcast = (_sh.c0 == _sh.c1) && (_sh.r0 == _sh.r1);
         if (!_selfcast && (_prog < 0.5)) {
             var _bp = _prog / 0.5;
             var _hx = lerp(_sax, _sbx, _bp);
@@ -409,8 +406,7 @@ for (var _fd = 0; _fd < array_length(floaters); _fd++) {
 draw_set_halign(fa_left);
 
 // order-drag preview: where the selection will stand, and the line being drawn
-if (ord_drag && (ord_c0 >= 0) && (hover_c >= 0)
-    && ((hover_c != ord_c0) || (hover_r != ord_r0))) {
+if (ord_drag && (ord_c0 >= 0) && (hover_c >= 0) && ((hover_c != ord_c0) || (hover_r != ord_r0))) {
     var _osn = array_length(grid_selected_squads(id));
     if (_osn > 1) {
         var _opv = grid_drag_slots(id, ord_c0, ord_r0, hover_c, hover_r, _osn, ord_depth);
@@ -423,12 +419,10 @@ if (ord_drag && (ord_c0 >= 0) && (hover_c >= 0)
             draw_set_alpha(0.95);
             draw_rectangle(_opx + 2, _opy + 2, _opx + _tp - 2, _opy + _tp - 2, true);
         }
-        draw_line(grid_sx(id, ord_c0) + (_tp / 2), grid_sy(id, ord_r0) + (_tp / 2),
-            grid_sx(id, hover_c) + (_tp / 2), grid_sy(id, hover_r) + (_tp / 2));
+        draw_line(grid_sx(id, ord_c0) + (_tp / 2), grid_sy(id, ord_r0) + (_tp / 2), grid_sx(id, hover_c) + (_tp / 2), grid_sy(id, hover_r) + (_tp / 2));
         draw_set_alpha(1);
         draw_set_font(fnt_40k_12);
-        draw_text(grid_sx(id, hover_c) + 12, grid_sy(id, hover_r) + 12,
-            $"{_osn} squads, {ord_depth} deep (R)");
+        draw_text(grid_sx(id, hover_c) + 12, grid_sy(id, hover_r) + 12, $"{_osn} squads, {ord_depth} deep (R)");
     }
 }
 
@@ -440,9 +434,7 @@ if ((hover_time >= GRIDC_TIP_DELAY) && (hover_c >= 0) && (phase != GRIDPH_END) &
     if (_occ >= 0) {
         var _us = squads[_occ];
         _tip = _us.name;
-        _sub = _us.is_vehicle
-            ? $"{round((_us.hp_pool / max(1, _us.hp_max)) * 100)}% hull, armour {_us.armour}, reach {_us.rng}"
-            : $"{_us.men} of {_us.men0} standing, armour {_us.armour}, reach {_us.rng}";
+        _sub = _us.is_vehicle ? $"{round((_us.hp_pool / max(1, _us.hp_max)) * 100)}% hull, armour {_us.armour}, reach {_us.rng}" : $"{_us.men} of {_us.men0} standing, armour {_us.armour}, reach {_us.rng}";
     } else {
         var _bt2 = blk[hover_c][hover_r];
         if (_bt2 == GRIDT_WALL) {
@@ -486,61 +478,220 @@ if (show_legend) {
     var _lgx = GRIDC_BF_X1 + 16;
     var _lgy = GRIDC_BF_Y1 + 16;
     var _lcol = [
-        ["TERRAIN", ""],
-        ["Solid grey", "Wall. Impassable, stops shots dead."],
-        ["Half grey", "Barrier: window, sandbags, low wall."],
-        ["", "Impassable, shots pass, heavy cover."],
-        ["Green box", "Trees, scrub, rubble. Walk through, light cover."],
-        ["Green ~~", "Trench or crater. Cover from every side."],
-        ["Red xx", "Open ground. You take more fire here."],
-        ["", ""],
-        ["HITS", ""],
-        ["MISS", "Grey. The shot went wide."],
-        ["DEFLECTED", "Grey. Armour turned it, or a hull took it."],
-        ["DODGED", "Yellow. Cover took the shot."],
-        ["GRAZED", "Damage landed, nobody died."],
-        ["WOUNDED", "Models lost. Red is ours, green theirs."],
-        ["", ""],
-        ["COVER", ""],
-        ["Directional", "Flank a squad and what it hid behind stops"],
-        ["", "counting. Trenches cannot be flanked."],
-        ["By race", "Tau best, then humans, marines, Orks."],
-        ["", "Tyranids barely use it at all."],
+        [
+            "TERRAIN",
+            "",
+        ],
+        [
+            "Solid grey",
+            "Wall. Impassable, stops shots dead.",
+        ],
+        [
+            "Half grey",
+            "Barrier: window, sandbags, low wall.",
+        ],
+        [
+            "",
+            "Impassable, shots pass, heavy cover.",
+        ],
+        [
+            "Green box",
+            "Trees, scrub, rubble. Walk through, light cover.",
+        ],
+        [
+            "Green ~~",
+            "Trench or crater. Cover from every side.",
+        ],
+        [
+            "Red xx",
+            "Open ground. You take more fire here.",
+        ],
+        [
+            "",
+            "",
+        ],
+        [
+            "HITS",
+            "",
+        ],
+        [
+            "MISS",
+            "Grey. The shot went wide.",
+        ],
+        [
+            "DEFLECTED",
+            "Grey. Armour turned it, or a hull took it.",
+        ],
+        [
+            "DODGED",
+            "Yellow. Cover took the shot.",
+        ],
+        [
+            "GRAZED",
+            "Damage landed, nobody died.",
+        ],
+        [
+            "WOUNDED",
+            "Models lost. Red is ours, green theirs.",
+        ],
+        [
+            "",
+            "",
+        ],
+        [
+            "COVER",
+            "",
+        ],
+        [
+            "Directional",
+            "Flank a squad and what it hid behind stops",
+        ],
+        [
+            "",
+            "counting. Trenches cannot be flanked.",
+        ],
+        [
+            "By race",
+            "Tau best, then humans, marines, Orks.",
+        ],
+        [
+            "",
+            "Tyranids barely use it at all.",
+        ],
     ];
     var _rcol = [
-        ["DEPLOYING", ""],
-        ["Drag left mouse", "Draw the front rank. The block forms along it."],
-        ["Click left mouse", "Drop the block as a rectangle instead."],
-        ["R", "Reshape the block: swap frontage for depth."],
-        ["Mouse wheel", "Widen or narrow the block."],
-        ["Right click", "Take a deployed formation back off the field."],
-        ["Escape", "Cancel what you are holding."],
-        ["Deploy All", "Lays the army out by your formation settings."],
-        ["", ""],
-        ["COMMANDING", ""],
-        ["Left click", "Select a formation. Drag a box for several."],
-        ["Right click", "Move there. On an enemy, focus fire."],
-        ["Drag right mouse", "Place the selection in the shape you draw."],
-        ["R while dragging", "Set how many ranks deep."],
-        ["Alt + left click", "Detach one squad for individual orders."],
-        ["X", "Break the selection into single squads."],
-        ["Ctrl + 1..9", "Bind a control group. Number alone recalls."],
-        ["F1..F6", "Chapter orders: hold, fire line, advance,"],
-        ["", "advance and hold, full assault, fall back."],
-        ["", ""],
-        ["VIEW AND TIME", ""],
-        ["WASD or arrows", "Pan the field. Works while deploying."],
-        ["Tab", "Toggle the whole-field overview."],
-        ["Space", "Pause."],
-        ["- and +", "Step the clock down or up."],
-        ["Speed button", "Left click faster, right click slower."],
-        ["Hover a tile", "Hold still a moment and it tells you what it is."],
-        ["Hold Ctrl", "Shade everything the selection can see and reach."],
-        ["Click a log line", "Jump the camera to whoever it names."],
-        ["Corner pip", "Red: fights hand to hand. Blue: fights at range."],
-        ["Ammo", "Squads carry limited volleys. Dry squads charge."],
-        ["Auto button", "Your formations fight on their own."],
-        ["L", "Close this."],
+        [
+            "DEPLOYING",
+            "",
+        ],
+        [
+            "Drag left mouse",
+            "Draw the front rank. The block forms along it.",
+        ],
+        [
+            "Click left mouse",
+            "Drop the block as a rectangle instead.",
+        ],
+        [
+            "R",
+            "Reshape the block: swap frontage for depth.",
+        ],
+        [
+            "Mouse wheel",
+            "Widen or narrow the block.",
+        ],
+        [
+            "Right click",
+            "Take a deployed formation back off the field.",
+        ],
+        [
+            "Escape",
+            "Cancel what you are holding.",
+        ],
+        [
+            "Deploy All",
+            "Lays the army out by your formation settings.",
+        ],
+        [
+            "",
+            "",
+        ],
+        [
+            "COMMANDING",
+            "",
+        ],
+        [
+            "Left click",
+            "Select a formation. Drag a box for several.",
+        ],
+        [
+            "Right click",
+            "Move there. On an enemy, focus fire.",
+        ],
+        [
+            "Drag right mouse",
+            "Place the selection in the shape you draw.",
+        ],
+        [
+            "R while dragging",
+            "Set how many ranks deep.",
+        ],
+        [
+            "Alt + left click",
+            "Detach one squad for individual orders.",
+        ],
+        [
+            "X",
+            "Break the selection into single squads.",
+        ],
+        [
+            "Ctrl + 1..9",
+            "Bind a control group. Number alone recalls.",
+        ],
+        [
+            "F1..F6",
+            "Chapter orders: hold, fire line, advance,",
+        ],
+        [
+            "",
+            "advance and hold, full assault, fall back.",
+        ],
+        [
+            "",
+            "",
+        ],
+        [
+            "VIEW AND TIME",
+            "",
+        ],
+        [
+            "WASD or arrows",
+            "Pan the field. Works while deploying.",
+        ],
+        [
+            "Tab",
+            "Toggle the whole-field overview.",
+        ],
+        [
+            "Space",
+            "Pause.",
+        ],
+        [
+            "- and +",
+            "Step the clock down or up.",
+        ],
+        [
+            "Speed button",
+            "Left click faster, right click slower.",
+        ],
+        [
+            "Hover a tile",
+            "Hold still a moment and it tells you what it is.",
+        ],
+        [
+            "Hold Ctrl",
+            "Shade everything the selection can see and reach.",
+        ],
+        [
+            "Click a log line",
+            "Jump the camera to whoever it names.",
+        ],
+        [
+            "Corner pip",
+            "Red: fights hand to hand. Blue: fights at range.",
+        ],
+        [
+            "Ammo",
+            "Squads carry limited volleys. Dry squads charge.",
+        ],
+        [
+            "Auto button",
+            "Your formations fight on their own.",
+        ],
+        [
+            "L",
+            "Close this.",
+        ],
     ];
     var _lines = max(array_length(_lcol), array_length(_rcol));
     var _lgw = 1020;
@@ -609,7 +760,6 @@ for (var _sf = 0; _sf < array_length(selected); _sf++) {
         draw_rectangle(_tx + 2, _ty + 2, _tx + _tp - 2, _ty + _tp - 2, true);
     }
 }
-
 
 draw_set_alpha(1);
 draw_set_halign(fa_left);
@@ -749,9 +899,19 @@ if (array_length(selected) > 0) {
             var _k2 = _is.type;
             if (!variable_struct_exists(_agg, _k2)) {
                 _agg[$ _k2] = {
-                    disp: grid_unit_def(_k2).disp, n: 0, veh: _is.is_vehicle,
-                    hp: 0, hp0: 0, men: 0, men0: 0, arm: 999, amo: 99999,
-                    mel: _is.mel, bal: _is.bal, rng: _is.rng, spd: _is.spd,
+                    disp: grid_unit_def(_k2).disp,
+                    n: 0,
+                    veh: _is.is_vehicle,
+                    hp: 0,
+                    hp0: 0,
+                    men: 0,
+                    men0: 0,
+                    arm: 999,
+                    amo: 99999,
+                    mel: _is.mel,
+                    bal: _is.bal,
+                    rng: _is.rng,
+                    spd: _is.spd,
                 };
                 array_push(_types, _k2);
             }
@@ -892,7 +1052,6 @@ if (popup_open) {
         draw_text(_px + 46, _ry + 30, $"HP {_hp}   Armour {_ar}   Melee {_ml}   Ballistic {_bl}   Speed {_mv}");
         draw_set_font(fnt_40k_12);
         draw_set_color(GRIDC_GREEN);
-
     }
 
     var _ps = grid_picked_stats(id);

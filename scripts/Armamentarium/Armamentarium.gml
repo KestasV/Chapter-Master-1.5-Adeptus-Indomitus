@@ -820,7 +820,15 @@ function Armamentarium(_controller) constructor {
                 // across the feature levels (L2 Hull, L4 Armour, L6 Warp). The old
                 // stc_ships * 5 gave 5/10/15/20/25/30, which mismatched every label
                 // and overshot the 25% cap at L6.
-                var _ship_tiers = [0, 8, 8, 16, 16, 25, 25];
+                var _ship_tiers = [
+                    0,
+                    8,
+                    8,
+                    16,
+                    16,
+                    25,
+                    25,
+                ];
                 discount_stc = _ship_tiers[clamp(controller.stc_ships, 0, STC_MAX_LEVEL)];
                 if (discount_stc > 0) {
                     global_cost_tooltip += $"Ship STC: -{discount_stc}%\n";
