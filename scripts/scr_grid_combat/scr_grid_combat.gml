@@ -4409,10 +4409,48 @@ function grid_collect_blocks() {
                 _gear.src_men += 1;
             }
         }
-        for (var _v = 0; _v < array_length(veh_type); _v++) {
+                for (var _v = 1; _v < array_length(veh_type); _v++) {
             if (veh_type[_v] == "") {
                 continue;
             }
+
+            // Build vehicle-specific gear from its own weapon slots.
+            var _vg = undefined;
+            if (variable_instance_exists(id, "veh_wep1") && is_array(veh_wep1)) {
+                _vg = { stacks: [], src_men: 1 };
+                var _vwn = [veh_wep1[_v], veh_wep2[_v], veh_wep3[_v]];
+                for (var _vw = 0; _vw < 3; _vw++) {
+                    var _wname = _vwn[_vw];
+                    if ((_wname == "") || !is_string(_wname)) {
+                        continue;
+                    }
+                    // Read straight from the weapon table. attack is a quality
+                    // struct, so pull the standard quality out before use.
+                    var _wdata = (variable_global_exists("weapons") && is_struct(global.weapons)
+                        && struct_exists(global.weapons, _wname))
+                        ? global.weapons[$ _wname] : -1;
+                    if (!is_struct(_wdata)) {
+                        // Fallback: the name still registers, with conservative numbers.
+                        array_push(_vg.stacks, { w: _wname, n: 1, att: 1, ap: 0, rng: 5, amm: 0 });
+                        continue;
+                    }
+                    var _att = 1;
+                    if (is_struct(_wdata.attack)) {
+                        _att = (variable_struct_exists(_wdata.attack, "standard") && is_real(_wdata.attack.standard))
+                            ? _wdata.attack.standard : 1;
+                    } else if (is_real(_wdata.attack)) {
+                        _att = _wdata.attack;
+                    }
+                    var _ap = (variable_struct_exists(_wdata, "arp") && is_real(_wdata.arp)) ? _wdata.arp : 0;
+                    var _rng = (variable_struct_exists(_wdata, "range") && is_real(_wdata.range)) ? _wdata.range : 5;
+                    var _amm = (variable_struct_exists(_wdata, "ammo") && is_real(_wdata.ammo)) ? _wdata.ammo : 0;
+                    array_push(_vg.stacks, { w: _wname, n: 1, att: _att, ap: _ap, rng: _rng, amm: _amm });
+                }
+                if (array_length(_vg.stacks) <= 0) {
+                    _vg = undefined;
+                }
+            }
+
             array_push(_out, {
                 gtype: grid_role_to_type(veh_type[_v]),
                 uid: "",
@@ -4420,13 +4458,10 @@ function grid_collect_blocks() {
                 slot: veh_id[_v],
                 veh: true,
                 ally: veh_ally[_v],
-                gear: _gear,
+                gear: _vg,            // now vehicle-specific rather than the infantry stack
                 vac: (variable_instance_exists(id, "veh_ac") && (_v < array_length(veh_ac))) ? veh_ac[_v] : -1,
                 vhp: (variable_instance_exists(id, "veh_hp") && (_v < array_length(veh_hp))) ? veh_hp[_v] : -1,
             });
-            if (_gear != undefined) {
-                _gear.src_men += 1;
-            }
         }
     }
     return _out;
