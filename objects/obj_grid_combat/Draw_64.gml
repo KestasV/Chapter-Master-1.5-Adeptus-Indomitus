@@ -435,49 +435,62 @@ if (ord_drag && (ord_c0 >= 0) && (hover_c >= 0)
 // hover tooltip: hold still over a tile and it tells you what it is
 if ((hover_time >= GRIDC_TIP_DELAY) && (hover_c >= 0) && (phase != GRIDPH_END) && !show_legend) {
     var _tip = "";
-    var _sub = "";
+    var _lines = [];
     var _occ = grid_squad_at(id, hover_c, hover_r);
     if (_occ >= 0) {
         var _us = squads[_occ];
         _tip = _us.name;
-        _sub = _us.is_vehicle
-            ? $"{round((_us.hp_pool / max(1, _us.hp_max)) * 100)}% hull, armour {_us.armour}, reach {_us.rng}"
-            : $"{_us.men} of {_us.men0} standing, armour {_us.armour}, reach {_us.rng}";
+        if (_us.is_vehicle) {
+            array_push(_lines, $"{round((_us.hp_pool / max(1, _us.hp_max)) * 100)}% hull, armour {_us.armour}");
+            for (var _tl = 0; _tl < array_length(_us.weapons); _tl++) {
+                var _twp = _us.weapons[_tl];
+                array_push(_lines, $"{_twp.wep}: {_twp.bal} bal, rng {_twp.rng}, AP {_twp.ap_r}, ammo {_twp.ammo}");
+            }
+        } else {
+            array_push(_lines, $"{_us.men} of {_us.men0} standing, armour {_us.armour}, reach {grid_max_range(_us)}");
+        }
     } else {
         var _bt2 = blk[hover_c][hover_r];
         if (_bt2 == GRIDT_WALL) {
             _tip = "Wall";
-            _sub = "Impassable. Blocks all fire through it.";
+            array_push(_lines, "Impassable. Blocks all fire through it.");
         } else if (_bt2 == GRIDT_BARRIER) {
             _tip = "Window or sandbags";
-            _sub = $"Heavy cover, about {round(GRIDC_BARRIER_SOAK * 100)}%. Impassable, fire passes. Flankable.";
+            array_push(_lines, $"Heavy cover, about {round(GRIDC_BARRIER_SOAK * 100)}%. Impassable, fire passes. Flankable.");
         } else if (_bt2 == GRIDT_LIGHT) {
             _tip = "Trees or rubble";
-            _sub = $"Light cover, about {round(GRIDC_LIGHT_SOAK * 100)}%. Passable. Flankable.";
+            array_push(_lines, $"Light cover, about {round(GRIDC_LIGHT_SOAK * 100)}%. Passable. Flankable.");
         } else if (cov[hover_c][hover_r] == 1) {
             _tip = "Trench";
-            _sub = $"About {round((1 - GRIDC_COVER_GOOD) * 100)}% cover from every direction. Cannot be flanked.";
+            array_push(_lines, $"About {round((1 - GRIDC_COVER_GOOD) * 100)}% cover from every direction. Cannot be flanked.");
         } else if (cov[hover_c][hover_r] == -1) {
             _tip = "Open ground";
-            _sub = $"Exposed. Takes about {round((GRIDC_COVER_BAD - 1) * 100)}% more fire.";
+            array_push(_lines, $"Exposed. Takes about {round((GRIDC_COVER_BAD - 1) * 100)}% more fire.");
         } else {
             _tip = "Bare ground";
-            _sub = "No cover either way.";
+            array_push(_lines, "No cover either way.");
         }
     }
-    var _tw = max(string_width(_tip), string_width(_sub)) + 20;
-    var _tx2 = min(grid_sx(id, hover_c) + 18, GRIDC_BF_X2 - _tw - 4);
-    var _ty2 = min(grid_sy(id, hover_r) + 18, GRIDC_BF_Y2 - 46);
+    var _lh = 16;
+    var _tw2 = string_width(_tip) + 20;
+    for (var _ml = 0; _ml < array_length(_lines); _ml++) {
+        _tw2 = max(_tw2, string_width(_lines[_ml]) + 20);
+    }
+    var _bh = 8 + (array_length(_lines) * _lh) + 8;
+    var _tx2 = min(grid_sx(id, hover_c) + 18, GRIDC_BF_X2 - _tw2 - 4);
+    var _ty2 = min(grid_sy(id, hover_r) + 18, GRIDC_BF_Y2 - _bh - 4);
     draw_set_font(fnt_40k_12);
     draw_set_color(c_black);
     draw_set_alpha(0.92);
-    draw_rectangle(_tx2, _ty2, _tx2 + _tw, _ty2 + 40, false);
+    draw_rectangle(_tx2, _ty2, _tx2 + _tw2, _ty2 + _bh, false);
     draw_set_alpha(1);
     draw_set_color(GRIDC_GREEN);
-    draw_rectangle(_tx2, _ty2, _tx2 + _tw, _ty2 + 40, true);
-    draw_text(_tx2 + 8, _ty2 + 3, _tip);
+    draw_rectangle(_tx2, _ty2, _tx2 + _tw2, _ty2 + _bh, true);
+    draw_text(_tx2 + 8, _ty2 + 4, _tip);
     draw_set_color(c_white);
-    draw_text(_tx2 + 8, _ty2 + 21, _sub);
+    for (var _dl = 0; _dl < array_length(_lines); _dl++) {
+        draw_text(_tx2 + 8, _ty2 + 22 + (_dl * _lh), _lines[_dl]);
+    }
 }
 
 // legend: every mark on the field and every binding, in two columns so it fits
@@ -704,6 +717,49 @@ if (array_length(selected) > 0) {
         _py2 += 20;
         draw_text(GRIDC_RP_X1 + 10, _py2, $"Melee {_one.mel}  Ranged {_one.bal}");
         _py2 += 20;
+        if (array_length(_one.weapons) > 1) {
+            for (var _wi = 0; _wi < array_length(_one.weapons); _wi++) {
+                var _w = _one.weapons[_wi];
+                draw_set_color(c_white);
+                draw_text(GRIDC_RP_X1 + 10, _py2, _w.wep);
+                _py2 += 16;
+                draw_set_color(GRIDC_GREEN);
+                draw_text(GRIDC_RP_X1 + 26, _py2, $"Ballistic {_w.bal}  Range {_w.rng}  AP {_w.ap_r}");
+                _py2 += 14;
+                draw_text(GRIDC_RP_X1 + 26, _py2, $"Ammo {_w.ammo}{(_w.fire_int > 1) ? $"  Fires every {_w.fire_int} ticks" : ""}");
+                _py2 += 18;
+            }
+        } else {
+            var _w0 = _one.weapons[0];
+            if (_one.geared) {
+                var _apx = "";
+                if ((_w0.ap_r > 0) || (_one.ap_m > 0)) {
+                    _apx = $"  AP {max(_w0.ap_r, _one.ap_m)}";
+                }
+                var _mob2 = "";
+                if (_one.can_jump && (_one.type != "assault") && (_one.type != "assault_term")) {
+                    _mob2 = "  Jump Packs";
+                } else if (_one.spd > grid_unit_def(_one.type).spd) {
+                    _mob2 = "  Bikes";
+                }
+                draw_text(GRIDC_RP_X1 + 10, _py2, $"{_w0.wep}{_apx}{_mob2}");
+                _py2 += 20;
+            }
+            draw_text(GRIDC_RP_X1 + 10, _py2, $"Range {_w0.rng} tiles  Speed {_one.spd}");
+            _py2 += 20;
+            if (_w0.fire_int > 1) {
+                draw_text(GRIDC_RP_X1 + 10, _py2, $"Fires every {_w0.fire_int} ticks");
+                _py2 += 20;
+            }
+            if (_w0.ammo <= 0) {
+                draw_set_color(GRIDC_ORANGE);
+                draw_text(GRIDC_RP_X1 + 10, _py2, "OUT OF AMMO");
+                draw_set_color(GRIDC_GREEN);
+            } else {
+                draw_text(GRIDC_RP_X1 + 10, _py2, $"Ammo: {_w0.ammo} volleys");
+            }
+            _py2 += 20;
+        }
         // The armoury line: what the squad actually carries, and how well it
         // bites through plate. Only shown when the numbers came from real gear.
         if (_one.geared) {
@@ -752,11 +808,13 @@ if (array_length(selected) > 0) {
                     disp: grid_unit_def(_k2).disp, n: 0, veh: _is.is_vehicle,
                     hp: 0, hp0: 0, men: 0, men0: 0, arm: 999, amo: 99999,
                     mel: _is.mel, bal: _is.bal, rng: _is.rng, spd: _is.spd,
+                    mounts: 0,
                 };
                 array_push(_types, _k2);
             }
             var _a2 = _agg[$ _k2];
             _a2.n += 1;
+            _a2.mounts = max(_a2.mounts, array_length(_is.weapons));
             _a2.arm = min(_a2.arm, _is.armour);
             _a2.amo = min(_a2.amo, _is.ammo);
             if (_is.is_vehicle) {
@@ -778,7 +836,7 @@ if (array_length(selected) > 0) {
             draw_text(GRIDC_RP_X1 + 10, _py2, $"{_g2.n}x {_g2.disp}");
             draw_set_color(GRIDC_GREEN);
             if (_g2.veh) {
-                draw_text(GRIDC_RP_X1 + 10, _py2 + 16, $"  Hull {round(_g2.hp)}/{round(_g2.hp0)}  Armour {_g2.arm}");
+                draw_text(GRIDC_RP_X1 + 10, _py2 + 16, $"  Hull {round(_g2.hp)}/{round(_g2.hp0)}  Armour {_g2.arm}  Mounts {_g2.mounts}");
             } else {
                 draw_text(GRIDC_RP_X1 + 10, _py2 + 16, $"  {_g2.men}/{_g2.men0} men  HP {round(_g2.hp)}/{round(_g2.hp0)}  Arm {_g2.arm}");
             }
