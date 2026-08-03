@@ -28,7 +28,10 @@ function boot_sequence() {
 
     // Phase 3: Version info
 
-    global.build_date = "unknown build";
+    // GM_build_date is the compiler's own timestamp: zero maintenance, always
+    // truthful, and it ends the "which exe is this tester actually running"
+    // guessing game that has now cost three separate diagnoses.
+    global.build_date = date_datetime_string(GM_build_date);
     global.game_version = "unknown version";
     global.commit_hash = "unknown hash";
 
